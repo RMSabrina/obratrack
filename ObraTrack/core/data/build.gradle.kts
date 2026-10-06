@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.unaj.appmoviles.data"
+    namespace = "com.unaj.appmoviles.obratrack.core.data"
     compileSdk {
         version = release(37)
     }
@@ -27,4 +27,12 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+
+    implementation(project(":core:domain"))
+
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation("com.google.firebase:firebase-auth")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
 }

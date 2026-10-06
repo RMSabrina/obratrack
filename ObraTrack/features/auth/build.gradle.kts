@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
-}
+    alias(libs.plugins.kotlin.compose)}
 
 android {
     namespace = "com.unaj.appmoviles.auth"
@@ -27,4 +27,15 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+
+    implementation(project(":core:domain"))
+    implementation(project(":core:ui"))
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
 }

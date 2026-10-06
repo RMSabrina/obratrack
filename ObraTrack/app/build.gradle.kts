@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -51,4 +53,10 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+
+    // El módulo app conecta todas las piezas de la arquitectura
+    implementation(project(":core:domain"))
+    implementation(project(":core:data"))
+    implementation(project(":features:auth")) // Para poder renderizar la pantalla de login
 }
