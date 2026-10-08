@@ -1,4 +1,22 @@
 package com.unaj.appmoviles.obratrack.core.domain.usecase
 
-class RegisterUseCase {
+import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
+import com.unaj.appmoviles.obratrack.core.domain.error.AuthError
+import com.unaj.appmoviles.obratrack.core.domain.model.Credentials
+import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
+
+class RegisterUseCase(
+    private val authRepository: AuthRepository
+) {
+    suspend operator fun invoke(name: String, credentials: Credentials): AppResult<Unit> {
+        if (credentials.email.isBlank() || !credentials.email.contains("@")) {
+            return AppResult.Error(AuthError.InvalidEmail)
+        }
+        // Validar la longitud mínima que exige Firebase (6 caracteres)
+        if (credentials.password.length < 6) {
+            return AppResult.Error(AuthError.PasswordTooShort)
+        }
+        // Si la validación local pasa, registrar en el repositorio
+        return authRepository.register(name, credentials)
+    }
 }

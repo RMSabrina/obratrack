@@ -1,4 +1,5 @@
 package com.unaj.appmoviles.obratrack.core.data.repository
 
-class AuthRepositoryImpl {
-}
+import com.unaj.appmoviles.obratrack.core.domain.model.User
+import kotlinx.coroutines.flow.Flow
+

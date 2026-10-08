@@ -1,4 +1,6 @@
 package com.unaj.appmoviles.features.auth.register
 
-class RegisterScreen {
-}
+data class User(
+    val id: String,
+    val email: String
+)
