@@ -6,8 +6,8 @@ import com.unaj.appmoviles.obratrack.core.domain.model.User
 import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
-    fun observeUser(): Flow<User?>
-    suspend fun login(credentials: Credentials): AppResult<Unit>
-    suspend fun register(name: String, credentials: Credentials): AppResult<Unit>
-    suspend fun logout()
+    val session: Flow<User?>
+    suspend fun login(credentials: Credentials): AppResult<User>
+    suspend fun register(name: String, credentials: Credentials): AppResult<User>
+    fun logout()
 }
