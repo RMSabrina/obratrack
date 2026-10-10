@@ -29,6 +29,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
 
     implementation(project(":core:domain"))
+    implementation(project(":core:firebase"))
 
     implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-auth")
