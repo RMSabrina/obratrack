@@ -10,6 +10,7 @@ class RegisterUseCase(
     private val authRepository: AuthRepository
 ) {
     suspend operator fun invoke(name: String, credentials: Credentials): AppResult<User> {
+        if (name.isBlank()) return AppResult.Error(AuthError.BlankName)
         if (credentials.email.isBlank() || !credentials.email.contains("@")) {
             return AppResult.Error(AuthError.InvalidEmail)
         }
