@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_invalid_email">Email inválido</string>
+    <string name="error_password_too_short">Mínimo 6 caracteres</string>
+    <string name="error_blank_name">Ingresá tu nombre</string>
+    <string name="error_invalid_credentials">Email o contraseña incorrectos</string>
+    <string name="error_email_in_use">Ya existe una cuenta con ese email</string>
+    <string name="error_network">Sin conexión. Revisá tu internet</string>
+    <string name="error_unknown">Ocurrió un error inesperado</string>
+</resources>
