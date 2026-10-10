@@ -24,7 +24,9 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
 
-    implementation(platform(libs.firebase.bom))
+    api(platform(libs.firebase.bom))
+    api(libs.firebase.auth)                       // FirebaseAuth aparece en el constructor público
+
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
 
