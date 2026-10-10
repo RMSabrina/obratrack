@@ -9,5 +9,5 @@ interface AuthRepository {
     val session: Flow<User?>
     suspend fun login(credentials: Credentials): AppResult<User>
     suspend fun register(name: String, credentials: Credentials): AppResult<User>
-    fun logout()
+    suspend fun logout()
 }
