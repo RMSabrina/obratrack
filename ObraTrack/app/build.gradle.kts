@@ -67,5 +67,5 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:firebase"))
     implementation(project(":features:auth")) // Para poder renderizar la pantalla de login
-// más adelante: implementation(project(":features:obras")), etc.
+    implementation(project(":features:obras"))
 }

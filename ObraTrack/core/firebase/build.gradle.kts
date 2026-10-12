@@ -26,6 +26,7 @@ dependencies {
 
     api(platform(libs.firebase.bom))
     api(libs.firebase.auth)                       // FirebaseAuth aparece en el constructor público
+    api(libs.firebase.firestore)                  // FirebaseFirestore aparece en el constructor público
 
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
