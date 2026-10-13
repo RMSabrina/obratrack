@@ -3,8 +3,8 @@ package com.unaj.appmoviles.features.obras.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
-import com.unaj.appmoviles.obratrack.core.domain.usecase.ObserveObrasUseCase
-import com.unaj.appmoviles.obratrack.core.domain.usecase.ObserveSessionUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

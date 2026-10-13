@@ -1,4 +1,4 @@
-package com.unaj.appmoviles.obratrack.core.domain.usecase
+package com.unaj.appmoviles.obratrack.core.domain.usecase.obras
 
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft

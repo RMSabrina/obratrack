@@ -6,6 +6,8 @@ import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.CreateObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.UpdateObraUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking

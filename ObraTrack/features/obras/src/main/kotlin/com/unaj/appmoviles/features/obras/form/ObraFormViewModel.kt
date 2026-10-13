@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
-import com.unaj.appmoviles.obratrack.core.domain.usecase.CreateObraUseCase
-import com.unaj.appmoviles.obratrack.core.domain.usecase.ObserveSessionUseCase
-import com.unaj.appmoviles.obratrack.core.domain.usecase.UpdateObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.CreateObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.UpdateObraUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
