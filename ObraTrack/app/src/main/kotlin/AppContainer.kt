@@ -18,6 +18,7 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.LogoutUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.RegisterUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ResendVerificationUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.UpdateObraUseCase
 import com.unaj.appmoviles.obratrack.core.firebase.FirebaseAuthDataSourceImpl
 import com.unaj.appmoviles.obratrack.core.firebase.FirestoreObraDataSourceImpl
@@ -43,11 +44,10 @@ class AppContainer {
     private val updateObraUseCase = UpdateObraUseCase(obraRepository)
 
     val loginViewModelFactory = viewModelFactory { initializer { LoginViewModel(loginUseCase) } }
-    val registerViewModelFactory = viewModelFactory { initializer {
-        RegisterViewModel(
-            registerUseCase
-        )
-    } }
+    private val resendVerificationUseCase = ResendVerificationUseCase(authRepository)
+    val registerViewModelFactory = viewModelFactory {
+        initializer { RegisterViewModel(registerUseCase, resendVerificationUseCase) }
+    }
     val sessionViewModelFactory = viewModelFactory {
         initializer { SessionViewModel(observeSessionUseCase, logoutUseCase) }
     }
