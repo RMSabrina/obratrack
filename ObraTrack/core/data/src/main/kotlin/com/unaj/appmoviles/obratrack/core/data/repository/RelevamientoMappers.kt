@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
 import com.unaj.appmoviles.obratrack.core.firebase.ObraForbiddenException
 import com.unaj.appmoviles.obratrack.core.firebase.ObraNotFoundException
 import com.unaj.appmoviles.obratrack.core.firebase.RelevamientoDto
@@ -16,7 +17,13 @@ fun RelevamientoDto.toDomain(): Relevamiento = Relevamiento(
     obraId = obraId,
     userId = userId,
     fecha = fechaMillis,
-    nota = nota
+    nota = nota,
+    fotoUrl = fotoUrl,
+    ubicacion = run {
+        val lat = latitud
+        val lng = longitud
+        if (lat != null && lng != null) Ubicacion(lat, lng) else null
+    }
 )
 
 fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = RelevamientoDto(
@@ -24,7 +31,10 @@ fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = R
     obraId = obraId,
     userId = userId,
     fechaMillis = fecha,
-    nota = nota
+    nota = nota,
+    fotoUrl = fotoUrl,
+    latitud = ubicacion?.latitud,
+    longitud = ubicacion?.longitud
 )
 
 fun Exception.toRelevamientoError(): RelevamientoError = when (this) {

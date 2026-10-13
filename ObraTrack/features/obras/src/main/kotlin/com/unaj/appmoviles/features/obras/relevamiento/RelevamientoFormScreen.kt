@@ -29,7 +29,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.FileProvider
+import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
+import android.Manifest
+import android.content.Context
+import android.location.LocationManager
+import android.net.Uri
+import android.os.Build
+import android.os.Looper
+import java.io.File
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
@@ -40,7 +56,10 @@ data class RelevamientoFormInitial(
     val obraId: String,
     val relevamientoId: String?,
     val nota: String,
-    val fechaMillis: Long
+    val fechaMillis: Long,
+    val fotoUrl: String? = null,
+    val latitud: Double? = null,
+    val longitud: Double? = null
 )
 
 @Composable
@@ -69,7 +88,7 @@ fun RelevamientoFormScreen(
     initial: RelevamientoFormInitial,
     state: RelevamientoFormUiState,
     onBack: () -> Unit,
-    onSave: (RelevamientoDraft) -> Unit,
+    onSave: (RelevamientoDraft, ByteArray?) -> Unit,
     onInputChanged: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -78,6 +97,40 @@ fun RelevamientoFormScreen(
         mutableLongStateOf(if (initial.fechaMillis > 0L) initial.fechaMillis else startOfTodayUtc())
     }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var fotoLocal by rememberSaveable { mutableStateOf<String?>(null) }
+    var fotoRemota by rememberSaveable { mutableStateOf(initial.fotoUrl) }
+    var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
+    var longitud by rememberSaveable { mutableStateOf(initial.longitud) }
+    var ubicacionMensaje by rememberSaveable { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val tomarFoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        if (!ok) fotoLocal = null
+    }
+    val pedirCamara = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (!granted) return@rememberLauncherForActivityResult
+        val file = File(context.cacheDir, "relevamiento-${System.currentTimeMillis()}.jpg")
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        fotoLocal = uri.toString()
+        tomarFoto.launch(uri)
+    }
+    val elegirFoto = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+        if (uri != null) fotoLocal = uri.toString()
+    }
+    val pedirUbicacion = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            capturarUbicacion(context) { ubicacion ->
+                if (ubicacion == null) {
+                    ubicacionMensaje = "No se pudo obtener la ubicación"
+                } else {
+                    latitud = ubicacion.latitud
+                    longitud = ubicacion.longitud
+                    ubicacionMensaje = null
+                }
+            }
+        } else {
+            ubicacionMensaje = "Se necesita permiso de ubicación"
+        }
+    }
     val error = (state as? RelevamientoFormUiState.Error)?.error
     val isLoading = state is RelevamientoFormUiState.Loading
 
@@ -131,6 +184,27 @@ fun RelevamientoFormScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             TextButton(onClick = { showDatePicker = true }) { Text("Cambiar fecha") }
+            val vistaPrevia = fotoLocal ?: fotoRemota
+            if (vistaPrevia != null) {
+                AsyncImage(
+                    model = vistaPrevia,
+                    contentDescription = "Foto del relevamiento",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { pedirCamara.launch(Manifest.permission.CAMERA) }) { Text("Cámara") }
+                TextButton(onClick = {
+                    elegirFoto.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                }) { Text("Galería") }
+            }
+            TextButton(onClick = {
+                pedirUbicacion.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }) { Text("Capturar ubicación") }
+            if (latitud != null && longitud != null) {
+                Text("Ubicación: $latitud, $longitud")
+            }
+            ubicacionMensaje?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             OutlinedTextField(
                 value = nota,
                 onValueChange = { nota = it; onInputChanged() },
@@ -150,7 +224,18 @@ fun RelevamientoFormScreen(
                 Text(error.asMessage(), color = MaterialTheme.colorScheme.error)
             }
             Button(
-                onClick = { onSave(RelevamientoDraft(fecha = fecha, nota = nota)) },
+                onClick = {
+                    val bytes = fotoLocal?.let { uri ->
+                        context.contentResolver.openInputStream(Uri.parse(uri))?.use { it.readBytes() }
+                    }
+                    val lat = latitud
+                    val lng = longitud
+                    val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
+                    onSave(
+                        RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion),
+                        bytes
+                    )
+                },
                 enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -171,4 +256,27 @@ private fun startOfTodayUtc(): Long {
     calendar.set(Calendar.SECOND, 0)
     calendar.set(Calendar.MILLISECOND, 0)
     return calendar.timeInMillis
+}
+
+private fun capturarUbicacion(context: Context, onResult: (Ubicacion?) -> Unit) {
+    val manager = context.getSystemService(LocationManager::class.java)
+    val provider = when {
+        manager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+        manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+        else -> null
+    }
+    if (provider == null) {
+        onResult(null)
+        return
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        manager.getCurrentLocation(provider, null, context.mainExecutor) { location ->
+            onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
+        }
+    } else {
+        @Suppress("DEPRECATION")
+        manager.requestSingleUpdate(provider, { location ->
+            onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
+        }, Looper.getMainLooper())
+    }
 }

@@ -5,5 +5,7 @@ data class Relevamiento(
     val obraId: String,
     val userId: String,
     val fecha: Long,
-    val nota: String
+    val nota: String,
+    val fotoUrl: String? = null,
+    val ubicacion: Ubicacion? = null
 )

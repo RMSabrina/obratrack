@@ -64,7 +64,10 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                                 obraId = destination.obraId,
                                 relevamientoId = relevamiento.id,
                                 nota = relevamiento.nota,
-                                fechaMillis = relevamiento.fecha
+                                fechaMillis = relevamiento.fecha,
+                                fotoUrl = relevamiento.fotoUrl,
+                                latitud = relevamiento.ubicacion?.latitud,
+                                longitud = relevamiento.ubicacion?.longitud
                             )
                         )
                     }
@@ -97,7 +100,10 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                         obraId = destination.obraId,
                         relevamientoId = destination.relevamientoId,
                         nota = destination.nota,
-                        fechaMillis = destination.fechaMillis
+                        fechaMillis = destination.fechaMillis,
+                        fotoUrl = destination.fotoUrl,
+                        latitud = destination.latitud,
+                        longitud = destination.longitud
                     ),
                     onBack = ::goBack,
                     onSaved = ::goBack

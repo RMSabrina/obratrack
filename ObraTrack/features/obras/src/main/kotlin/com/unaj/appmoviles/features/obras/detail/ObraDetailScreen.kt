@@ -20,7 +20,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.height
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
+import coil.compose.AsyncImage
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unaj.appmoviles.features.obras.formatFecha
@@ -127,10 +132,26 @@ fun ObraDetailScreen(
 
 @Composable
 private fun RelevamientoCard(relevamiento: Relevamiento, onClick: () -> Unit) {
+    val context = LocalContext.current
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(formatFecha(relevamiento.fecha), style = MaterialTheme.typography.labelLarge)
+            relevamiento.fotoUrl?.let { url ->
+                AsyncImage(
+                    model = url,
+                    contentDescription = "Foto del relevamiento",
+                    modifier = Modifier.fillMaxWidth().height(180.dp)
+                )
+            }
             Text(relevamiento.nota, maxLines = 3)
+            relevamiento.ubicacion?.let { ubicacion ->
+                TextButton(onClick = {
+                    val geo = Uri.parse(
+                        "geo:${ubicacion.latitud},${ubicacion.longitud}?q=${ubicacion.latitud},${ubicacion.longitud}"
+                    )
+                    context.startActivity(Intent(Intent.ACTION_VIEW, geo))
+                }) { Text("Ver en el mapa") }
+            }
         }
     }
 }

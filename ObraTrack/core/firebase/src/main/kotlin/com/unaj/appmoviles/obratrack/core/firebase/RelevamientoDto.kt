@@ -9,5 +9,8 @@ data class RelevamientoDto(
     val obraId: String,
     val userId: String,
     val fechaMillis: Long,
-    val nota: String
+    val nota: String,
+    val fotoUrl: String? = null,
+    val latitud: Double? = null,
+    val longitud: Double? = null
 )

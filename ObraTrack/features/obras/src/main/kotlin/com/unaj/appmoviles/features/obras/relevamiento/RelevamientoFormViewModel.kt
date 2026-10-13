@@ -25,7 +25,7 @@ class RelevamientoFormViewModel(
     private val _uiState = MutableStateFlow<RelevamientoFormUiState>(RelevamientoFormUiState.Idle)
     val uiState: StateFlow<RelevamientoFormUiState> = _uiState.asStateFlow()
 
-    fun save(draft: RelevamientoDraft) {
+    fun save(draft: RelevamientoDraft, photo: ByteArray?) {
         if (_uiState.value is RelevamientoFormUiState.Loading) return
         _uiState.value = RelevamientoFormUiState.Loading
         viewModelScope.launch {
@@ -35,9 +35,9 @@ class RelevamientoFormViewModel(
                 return@launch
             }
             val result = if (relevamientoId == null) {
-                createRelevamiento(user.id, obraId, draft)
+                createRelevamiento(user.id, obraId, draft, photo)
             } else {
-                updateRelevamiento(user.id, obraId, relevamientoId, draft)
+                updateRelevamiento(user.id, obraId, relevamientoId, draft, photo)
             }
             _uiState.value = when (result) {
                 is AppResult.Success -> RelevamientoFormUiState.Saved

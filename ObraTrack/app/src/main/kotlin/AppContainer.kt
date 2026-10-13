@@ -4,6 +4,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.unaj.appmoviles.features.auth.login.LoginViewModel
 import com.unaj.appmoviles.features.auth.register.RegisterViewModel
 import com.unaj.appmoviles.features.obras.detail.ObraDetailViewModel
@@ -45,7 +46,12 @@ class AppContainer {
         ObraRepositoryImpl(FirestoreObraDataSourceImpl(FirebaseFirestore.getInstance()))
 
     val relevamientoRepository: RelevamientoRepository =
-        RelevamientoRepositoryImpl(FirestoreRelevamientoDataSourceImpl(FirebaseFirestore.getInstance()))
+        RelevamientoRepositoryImpl(
+            FirestoreRelevamientoDataSourceImpl(
+                FirebaseFirestore.getInstance(),
+                FirebaseStorage.getInstance()
+            )
+        )
 
     private val loginUseCase = LoginUseCase(authRepository)
     private val registerUseCase = RegisterUseCase(authRepository)

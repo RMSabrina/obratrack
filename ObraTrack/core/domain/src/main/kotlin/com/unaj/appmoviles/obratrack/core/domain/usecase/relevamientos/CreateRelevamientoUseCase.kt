@@ -11,10 +11,11 @@ class CreateRelevamientoUseCase(
     suspend operator fun invoke(
         userId: String,
         obraId: String,
-        draft: RelevamientoDraft
+        draft: RelevamientoDraft,
+        photo: ByteArray? = null
     ): AppResult<Relevamiento> {
         val normalized = draft.normalized()
         normalized.validationError()?.let { return AppResult.Error(it) }
-        return relevamientoRepository.create(userId, obraId, normalized)
+        return relevamientoRepository.create(userId, obraId, normalized, photo)
     }
 }

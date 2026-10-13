@@ -68,7 +68,8 @@ private class FakeRelevamientoRepository : RelevamientoRepository {
     override suspend fun create(
         userId: String,
         obraId: String,
-        draft: RelevamientoDraft
+        draft: RelevamientoDraft,
+        photo: ByteArray?
     ): AppResult<Relevamiento> {
         createCalls += 1
         lastObraId = obraId
@@ -82,7 +83,8 @@ private class FakeRelevamientoRepository : RelevamientoRepository {
         userId: String,
         obraId: String,
         relevamientoId: String,
-        draft: RelevamientoDraft
+        draft: RelevamientoDraft,
+        photo: ByteArray?
     ): AppResult<Relevamiento> {
         updateCalls += 1
         lastDraft = draft

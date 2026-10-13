@@ -12,10 +12,11 @@ class UpdateRelevamientoUseCase(
         userId: String,
         obraId: String,
         relevamientoId: String,
-        draft: RelevamientoDraft
+        draft: RelevamientoDraft,
+        photo: ByteArray? = null
     ): AppResult<Relevamiento> {
         val normalized = draft.normalized()
         normalized.validationError()?.let { return AppResult.Error(it) }
-        return relevamientoRepository.update(userId, obraId, relevamientoId, normalized)
+        return relevamientoRepository.update(userId, obraId, relevamientoId, normalized, photo)
     }
 }

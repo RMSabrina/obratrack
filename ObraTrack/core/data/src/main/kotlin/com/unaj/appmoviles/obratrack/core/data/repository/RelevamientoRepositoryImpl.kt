@@ -22,17 +22,23 @@ class RelevamientoRepositoryImpl(
     override suspend fun create(
         userId: String,
         obraId: String,
-        draft: RelevamientoDraft
+        draft: RelevamientoDraft,
+        photo: ByteArray?
     ): AppResult<Relevamiento> =
-        remoteDataSource.create(draft.toDto(userId, obraId)).toAppResult()
+        remoteDataSource.create(draft.toDto(userId, obraId), photo).toAppResult()
 
     override suspend fun update(
         userId: String,
         obraId: String,
         relevamientoId: String,
-        draft: RelevamientoDraft
+        draft: RelevamientoDraft,
+        photo: ByteArray?
     ): AppResult<Relevamiento> =
-        remoteDataSource.update(userId, draft.toDto(userId, obraId).copy(id = relevamientoId)).toAppResult()
+        remoteDataSource.update(
+            userId,
+            draft.toDto(userId, obraId).copy(id = relevamientoId),
+            photo
+        ).toAppResult()
 
     private fun FirebaseResult<RelevamientoDto>.toAppResult(): AppResult<Relevamiento> = when (this) {
         is FirebaseResult.Success -> AppResult.Success(data.toDomain())

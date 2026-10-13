@@ -42,7 +42,9 @@ service cloud.firestore {
         && data.fecha is timestamp
         && data.nota is string
         && data.nota.size() > 0
-        && data.nota.size() <= 2000;
+        && data.nota.size() <= 2000
+        && (!('fotoUrl' in data) || data.fotoUrl == null || data.fotoUrl is string)
+        && (!('ubicacion' in data) || data.ubicacion == null || data.ubicacion is latlng);
     }
 
     match /obras/{obraId} {

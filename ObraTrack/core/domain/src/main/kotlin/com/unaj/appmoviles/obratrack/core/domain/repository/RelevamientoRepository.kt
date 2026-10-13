@@ -7,11 +7,17 @@ import kotlinx.coroutines.flow.Flow
 
 interface RelevamientoRepository {
     fun observe(userId: String, obraId: String): Flow<List<Relevamiento>>
-    suspend fun create(userId: String, obraId: String, draft: RelevamientoDraft): AppResult<Relevamiento>
+    suspend fun create(
+        userId: String,
+        obraId: String,
+        draft: RelevamientoDraft,
+        photo: ByteArray? = null
+    ): AppResult<Relevamiento>
     suspend fun update(
         userId: String,
         obraId: String,
         relevamientoId: String,
-        draft: RelevamientoDraft
+        draft: RelevamientoDraft,
+        photo: ByteArray? = null
     ): AppResult<Relevamiento>
 }

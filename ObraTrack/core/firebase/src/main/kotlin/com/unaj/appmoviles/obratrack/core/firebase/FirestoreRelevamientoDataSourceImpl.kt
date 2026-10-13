@@ -3,7 +3,9 @@ package com.unaj.appmoviles.obratrack.core.firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -12,7 +14,8 @@ import java.util.Date
 import kotlin.coroutines.cancellation.CancellationException
 
 class FirestoreRelevamientoDataSourceImpl(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val storage: FirebaseStorage
 ) : FirestoreRelevamientoDataSource {
 
     override fun observe(userId: String, obraId: String): Flow<List<RelevamientoDto>> = callbackFlow {
@@ -29,7 +32,7 @@ class FirestoreRelevamientoDataSourceImpl(
         awaitClose { registration.remove() }
     }
 
-    override suspend fun create(dto: RelevamientoDto): FirebaseResult<RelevamientoDto> {
+    override suspend fun create(dto: RelevamientoDto, photo: ByteArray?): FirebaseResult<RelevamientoDto> {
         return try {
             val obraRef = firestore.collection(OBRAS).document(dto.obraId)
             val obra = obraRef.get().await()
@@ -39,7 +42,8 @@ class FirestoreRelevamientoDataSourceImpl(
             }
 
             val relevamientoRef = relevamientos(dto.obraId).document()
-            val stored = dto.copy(id = relevamientoRef.id)
+            val fotoUrl = photo?.let { uploadPhoto(dto.obraId, relevamientoRef.id, it) }
+            val stored = dto.copy(id = relevamientoRef.id, fotoUrl = fotoUrl ?: dto.fotoUrl)
             val currentUltimaVisita = obra.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time
             val ultimaVisita = maxOf(stored.fechaMillis, currentUltimaVisita ?: stored.fechaMillis)
 
@@ -56,7 +60,11 @@ class FirestoreRelevamientoDataSourceImpl(
         }
     }
 
-    override suspend fun update(userId: String, dto: RelevamientoDto): FirebaseResult<RelevamientoDto> {
+    override suspend fun update(
+        userId: String,
+        dto: RelevamientoDto,
+        photo: ByteArray?
+    ): FirebaseResult<RelevamientoDto> {
         return try {
             val obraRef = firestore.collection(OBRAS).document(dto.obraId)
             val obra = obraRef.get().await()
@@ -71,8 +79,10 @@ class FirestoreRelevamientoDataSourceImpl(
             if (snapshot.getString(FIELD_USER_ID) != userId) {
                 return FirebaseResult.Error(RelevamientoForbiddenException())
             }
-            ref.set(dto.toMap(), SetOptions.merge()).await()
-            FirebaseResult.Success(dto.copy(userId = userId, obraId = dto.obraId))
+            val fotoUrl = photo?.let { uploadPhoto(dto.obraId, dto.id, it) } ?: dto.fotoUrl
+            val stored = dto.copy(userId = userId, fotoUrl = fotoUrl)
+            ref.set(stored.toMap(), SetOptions.merge()).await()
+            FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -80,23 +90,40 @@ class FirestoreRelevamientoDataSourceImpl(
         }
     }
 
+    private suspend fun uploadPhoto(obraId: String, relevamientoId: String, bytes: ByteArray): String {
+        val ref = storage.reference.child("relevamientos/$obraId/$relevamientoId.jpg")
+        ref.putBytes(bytes).await()
+        return ref.downloadUrl.await().toString()
+    }
+
     private fun relevamientos(obraId: String) =
         firestore.collection(OBRAS).document(obraId).collection(RELEVAMIENTOS)
 
-    private fun RelevamientoDto.toMap(): Map<String, Any> = mapOf(
-        FIELD_USER_ID to userId,
-        FIELD_FECHA to Timestamp(Date(fechaMillis)),
-        FIELD_NOTA to nota
-    )
+    private fun RelevamientoDto.toMap(): Map<String, Any> {
+        val map = mutableMapOf<String, Any>(
+            FIELD_USER_ID to userId,
+            FIELD_FECHA to Timestamp(Date(fechaMillis)),
+            FIELD_NOTA to nota
+        )
+        fotoUrl?.let { map[FIELD_FOTO_URL] = it }
+        if (latitud != null && longitud != null) {
+            map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
+        }
+        return map
+    }
 
     private fun DocumentSnapshot.toRelevamientoDto(obraId: String): RelevamientoDto? {
         val ownerId = getString(FIELD_USER_ID) ?: return null
+        val geo = getGeoPoint(FIELD_UBICACION)
         return RelevamientoDto(
             id = id,
             obraId = obraId,
             userId = ownerId,
             fechaMillis = getTimestamp(FIELD_FECHA)?.toDate()?.time ?: 0L,
-            nota = getString(FIELD_NOTA).orEmpty()
+            nota = getString(FIELD_NOTA).orEmpty(),
+            fotoUrl = getString(FIELD_FOTO_URL),
+            latitud = geo?.latitude,
+            longitud = geo?.longitude
         )
     }
 
@@ -106,6 +133,8 @@ class FirestoreRelevamientoDataSourceImpl(
         const val FIELD_USER_ID = "userId"
         const val FIELD_FECHA = "fecha"
         const val FIELD_NOTA = "nota"
+        const val FIELD_FOTO_URL = "fotoUrl"
+        const val FIELD_UBICACION = "ubicacion"
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
     }
 }
