@@ -57,7 +57,6 @@ class FirestoreObraDataSourceImpl(
                     fechaInicioMillis = snapshot.getTimestamp(FIELD_FECHA_INICIO)?.toDate()?.time
                         ?: dto.fechaInicioMillis,
                     ultimaVisitaMillis = snapshot.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
-                    suscriptores = snapshot.stringList(FIELD_SUSCRIPTORES)
                 )
             )
         } catch (e: CancellationException) {
@@ -75,7 +74,6 @@ class FirestoreObraDataSourceImpl(
         FIELD_DIRECCION to direccion,
         FIELD_FECHA_INICIO to Timestamp(Date(fechaInicioMillis)),
         FIELD_ESTADO to estado,
-        FIELD_SUSCRIPTORES to suscriptores
     )
 
     private fun ObraDto.toUpdateMap(): Map<String, Any> = mapOf(
@@ -98,12 +96,9 @@ class FirestoreObraDataSourceImpl(
             fechaInicioMillis = getTimestamp(FIELD_FECHA_INICIO)?.toDate()?.time ?: 0L,
             estado = getString(FIELD_ESTADO) ?: ESTADO_ACTIVA,
             ultimaVisitaMillis = getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
-            suscriptores = stringList(FIELD_SUSCRIPTORES)
         )
     }
 
-    private fun DocumentSnapshot.stringList(field: String): List<String> =
-        (get(field) as? List<*>)?.mapNotNull { it as? String }.orEmpty()
 
     private companion object {
         const val COLLECTION = "obras"
@@ -115,7 +110,6 @@ class FirestoreObraDataSourceImpl(
         const val FIELD_FECHA_INICIO = "fechaInicio"
         const val FIELD_ESTADO = "estado"
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
-        const val FIELD_SUSCRIPTORES = "suscriptores"
         const val ESTADO_ACTIVA = "activa"
     }
 }
