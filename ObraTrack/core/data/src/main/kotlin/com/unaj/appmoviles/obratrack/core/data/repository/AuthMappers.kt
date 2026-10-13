@@ -25,7 +25,11 @@ fun <T, R> FirebaseResult<T>.toAppResult(mapData: (T) -> R): AppResult<R> {
                 is FirebaseAuthUserCollisionException -> AuthError.EmailAlreadyInUse
                 // Firebase lanza FirebaseNetworkException cuando no hay internet
                 is com.google.firebase.FirebaseNetworkException -> AuthError.NetworkError
-                else -> AuthError.Unknown
+                else -> when (this.exception.message) {
+                    "EMAIL_NOT_VERIFIED" -> AuthError.EmailNotVerified
+                    "EMAIL_ALREADY_VERIFIED" -> AuthError.EmailAlreadyVerified
+                    else -> AuthError.Unknown
+                }
             }
             AppResult.Error(domainError)
         }

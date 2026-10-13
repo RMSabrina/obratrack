@@ -8,4 +8,7 @@ sealed interface AuthError : DomainError {
     data object NetworkError : AuthError
     data object Unknown : AuthError
     data object BlankName : AuthError
+
+    data object EmailAlreadyVerified : AuthError
+    data object EmailNotVerified : AuthError
 }

@@ -16,6 +16,7 @@ fun DomainError.asMessage(): String = stringResource(
         AuthError.InvalidCredentials -> R.string.error_invalid_credentials
         AuthError.EmailAlreadyInUse -> R.string.error_email_in_use
         AuthError.NetworkError -> R.string.error_network
+        AuthError.EmailNotVerified -> R.string.error_email_not_verified
         ObraError.NombreVacio -> R.string.error_obra_nombre
         ObraError.ClienteVacio -> R.string.error_obra_cliente
         ObraError.DireccionVacia -> R.string.error_obra_direccion

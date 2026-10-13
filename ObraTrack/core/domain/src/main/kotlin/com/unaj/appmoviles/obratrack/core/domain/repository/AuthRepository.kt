@@ -10,4 +10,5 @@ interface AuthRepository {
     suspend fun login(credentials: Credentials): AppResult<User>
     suspend fun register(name: String, credentials: Credentials): AppResult<User>
     suspend fun logout()
+    suspend fun resendVerificationEmail(email: String, password: String): AppResult<Unit>
 }

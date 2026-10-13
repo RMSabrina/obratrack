@@ -6,6 +6,7 @@
     <string name="error_invalid_credentials">Email o contraseña incorrectos</string>
     <string name="error_email_in_use">Ya existe una cuenta con ese email</string>
     <string name="error_network">Sin conexión. Revisá tu internet</string>
+    <string name="error_email_not_verified">Por favor, revisá tu correo y verificá tu cuenta antes de ingresar.</string>
     <string name="error_unknown">Ocurrió un error inesperado</string>
     <string name="error_obra_nombre">Ingresá el nombre de la obra</string>
     <string name="error_obra_cliente">Ingresá el cliente</string>

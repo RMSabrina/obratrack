@@ -18,7 +18,9 @@ class AuthRepositoryImpl(
 
     override suspend fun login(credentials: Credentials): AppResult<User> {
         val result = remoteDataSource.login(credentials.email, credentials.password)
-        return result.toAppResult { it.toDomain() }
+        val mapped = result.toAppResult { it.toDomain() }
+        android.util.Log.d("LOGIN", "raw=$result mapped=$mapped")
+        return mapped
     }
 
     override suspend fun register(name: String, credentials: Credentials): AppResult<User> {
@@ -29,4 +31,7 @@ class AuthRepositoryImpl(
     override suspend fun logout() {
         remoteDataSource.logout()
     }
+
+    override suspend fun resendVerificationEmail(email: String, password: String): AppResult<Unit> =
+        remoteDataSource.resendVerificationEmail(email, password).toAppResult { it }
 }
