@@ -37,7 +37,8 @@ fun RegisterRoute(viewModel: RegisterViewModel, onNavigateBack: () -> Unit) {
         state = state,
         onRegisterClick = viewModel::onRegisterClick,
         onInputChanged = viewModel::onErrorShown,
-        onBackToLogin = onNavigateBack
+        onBackToLogin = onNavigateBack,
+        onResendVerification = viewModel::onResendVerification
     )
 }
 
@@ -47,8 +48,21 @@ fun RegisterScreen(
     onRegisterClick: (name: String, email: String, password: String) -> Unit,
     onInputChanged: () -> Unit,
     onBackToLogin: () -> Unit,
+    onResendVerification: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    if (state is RegisterUiState.VerificationSent) {
+        EmailVerificationSentScreen(
+            email = state.email,
+            isResending = state.isResending,
+            resendSent = state.resendSent,
+            resendError = state.resendError,
+            onBackToLogin = onBackToLogin,
+            onResend = onResendVerification
+        )
+        return
+    }
+
     var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -57,6 +71,7 @@ fun RegisterScreen(
 
     val error: DomainError? = when (state) {
         RegisterUiState.Idle, RegisterUiState.Loading -> null
+        is RegisterUiState.VerificationSent -> null
         is RegisterUiState.Error -> state.error
     }
     val isLoading = state is RegisterUiState.Loading
@@ -97,6 +112,48 @@ fun RegisterScreen(
         }
         TextButton(onClick = onBackToLogin, modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Text("¿Ya tenés cuenta? Iniciá sesión")
+        }
+    }
+}
+
+@Composable
+private fun EmailVerificationSentScreen(
+    email: String,
+    isResending: Boolean,
+    resendSent: Boolean,
+    resendError: DomainError?,
+    onBackToLogin: () -> Unit,
+    onResend: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("¡Cuenta creada!", style = MaterialTheme.typography.headlineSmall)
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "Te enviamos un correo a $email para verificar tu cuenta. " +
+                    "Revisá tu bandeja (y la carpeta de spam) antes de iniciar sesión.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(Modifier.height(24.dp))
+        Button(onClick = onBackToLogin, modifier = Modifier.fillMaxWidth()) {
+            Text("Volver al login")
+        }
+        TextButton(onClick = onResend, enabled = !isResending) {
+            if (isResending) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+            else Text("Reenviar correo")
+        }
+        if (resendSent) {
+            Text("Correo reenviado", style = MaterialTheme.typography.bodySmall)
+        }
+        if (resendError != null) {
+            Text(
+                resendError.asMessage(),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
