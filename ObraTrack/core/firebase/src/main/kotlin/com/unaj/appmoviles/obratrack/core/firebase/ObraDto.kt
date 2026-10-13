@@ -14,5 +14,5 @@ data class ObraDto(
     val fechaInicioMillis: Long,
     val estado: String,
     val ultimaVisitaMillis: Long?,
-    val suscriptores: List<String>
+    //val suscriptores: List<String>
 )

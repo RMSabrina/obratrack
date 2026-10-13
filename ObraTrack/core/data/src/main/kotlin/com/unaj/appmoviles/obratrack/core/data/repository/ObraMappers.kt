@@ -31,8 +31,7 @@ fun ObraDraft.toDto(userId: String, fechaInicioMillis: Long): ObraDto = ObraDto(
     direccion = direccion,
     fechaInicioMillis = fechaInicioMillis,
     estado = estado.toFirestoreValue(),
-    ultimaVisitaMillis = null,
-    suscriptores = emptyList()
+    ultimaVisitaMillis = null
 )
 
 fun Exception.toObraError(): ObraError = when (this) {
