@@ -1,11 +1,16 @@
 package com.unaj.appmoviles.features.auth.login
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,10 +60,12 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Logo (simulado con emoji) y Título
-        Text(
-            text = "👷",
-            style = MaterialTheme.typography.displayLarge
+        // Logo y Título
+        Icon(
+            imageVector = Icons.Default.Build,
+            contentDescription = "Logo",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -81,7 +88,7 @@ fun LoginScreen(
             onValueChange = { email = it; onInputChanged() },
             label = "Email",
             error = if (error == AuthError.InvalidEmail) error.asMessage() else null,
-            leadingIcon = { Text("✉️", modifier = Modifier.padding(start = 8.dp)) },
+            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.Gray) },
             keyboardType = KeyboardType.Email
         )
         Spacer(Modifier.height(8.dp))
@@ -90,7 +97,7 @@ fun LoginScreen(
             onValueChange = { password = it; onInputChanged() },
             label = "Contraseña",
             error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
-            leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 8.dp)) },
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) },
             isPassword = true
         )
 

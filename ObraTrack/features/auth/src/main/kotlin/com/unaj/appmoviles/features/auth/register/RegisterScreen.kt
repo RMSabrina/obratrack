@@ -10,8 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -22,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -109,7 +115,7 @@ fun RegisterScreen(
             onValueChange = { name = it; onInputChanged() },
             label = "Nombre",
             error = if (error == AuthError.BlankName) error.asMessage() else null,
-            leadingIcon = { Text("👤", modifier = Modifier.padding(start = 8.dp)) }
+            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray) }
         )
         Spacer(Modifier.height(8.dp))
         AuthTextField(
@@ -118,7 +124,7 @@ fun RegisterScreen(
             label = "Email",
             error = if (error == AuthError.InvalidEmail || error == AuthError.EmailAlreadyInUse) error.asMessage() else null,
             keyboardType = KeyboardType.Email,
-            leadingIcon = { Text("✉️", modifier = Modifier.padding(start = 8.dp)) }
+            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.Gray) }
         )
         Spacer(Modifier.height(8.dp))
         AuthTextField(
@@ -127,7 +133,7 @@ fun RegisterScreen(
             label = "Contraseña",
             error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
             isPassword = true,
-            leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 8.dp)) }
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) }
         )
         Spacer(Modifier.height(8.dp))
         AuthTextField(
@@ -136,7 +142,7 @@ fun RegisterScreen(
             label = "Confirmar contraseña",
             error = if (mismatch) "Las contraseñas no coinciden" else null,
             isPassword = true,
-            leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 8.dp)) }
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) }
         )
 
         if (error != null && error !in fieldErrors) {
