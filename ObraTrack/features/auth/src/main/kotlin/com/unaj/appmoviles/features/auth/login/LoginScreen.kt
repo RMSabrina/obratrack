@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,12 +48,40 @@ fun LoginScreen(
     }
     val isLoading = state is LoginUiState.Loading
 
-    Column(modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Logo (simulado con emoji) y Título
+        Text(
+            text = "👷",
+            style = MaterialTheme.typography.displayLarge
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "ObraTrack",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Iniciá sesión para continuar",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+
         AuthTextField(
             value = email,
             onValueChange = { email = it; onInputChanged() },
             label = "Email",
             error = if (error == AuthError.InvalidEmail) error.asMessage() else null,
+            leadingIcon = { Text("✉️", modifier = Modifier.padding(start = 8.dp)) },
             keyboardType = KeyboardType.Email
         )
         Spacer(Modifier.height(8.dp))
@@ -61,6 +90,7 @@ fun LoginScreen(
             onValueChange = { password = it; onInputChanged() },
             label = "Contraseña",
             error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
+            leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 8.dp)) },
             isPassword = true
         )
 
@@ -69,13 +99,24 @@ fun LoginScreen(
             Text(error.asMessage(), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
         }
 
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = { onLoginClick(email, password) }, enabled = !isLoading, modifier = Modifier.fillMaxWidth()) {
-            if (isLoading) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-            else Text("Iniciar sesión")
+        Spacer(Modifier.height(24.dp))
+        
+        Button(
+            onClick = { onLoginClick(email, password) },
+            enabled = !isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            if (isLoading) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+            else Text("Iniciar sesión", fontWeight = FontWeight.Bold)
         }
-        TextButton(onClick = onRegisterClick, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text("¿No tenés cuenta? Registrate")
+        
+        Spacer(Modifier.height(16.dp))
+        
+        TextButton(onClick = onRegisterClick) {
+            Text("¿No tenés cuenta? ", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Registrate", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
     }
 }

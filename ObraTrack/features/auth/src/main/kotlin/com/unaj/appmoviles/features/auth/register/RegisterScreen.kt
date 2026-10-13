@@ -22,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,8 +49,8 @@ fun RegisterScreen(
     onRegisterClick: (name: String, email: String, password: String) -> Unit,
     onInputChanged: () -> Unit,
     onBackToLogin: () -> Unit,
-    onResendVerification: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onResendVerification: () -> Unit = {}
 ) {
     if (state is RegisterUiState.VerificationSent) {
         EmailVerificationSentScreen(
@@ -81,37 +82,87 @@ fun RegisterScreen(
     )
 
     Column(
-        modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.Center
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.Start
     ) {
-        AuthTextField(name, { name = it; onInputChanged() }, "Nombre",
-            if (error == AuthError.BlankName) error.asMessage() else null)
-        AuthTextField(email, { email = it; onInputChanged() }, "Email",
-            if (error == AuthError.InvalidEmail || error == AuthError.EmailAlreadyInUse) error.asMessage() else null,
-            keyboardType = KeyboardType.Email)
-        AuthTextField(password, { password = it; mismatch = false; onInputChanged() }, "Contraseña",
-            if (error == AuthError.PasswordTooShort) error.asMessage() else null, isPassword = true)
-        AuthTextField(confirm, { confirm = it; mismatch = false }, "Repetir contraseña",
-            if (mismatch) "Las contraseñas no coinciden" else null, isPassword = true)
+        Text(
+            text = "Crear cuenta",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Completá tus datos para registrarte",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+
+        AuthTextField(
+            value = name,
+            onValueChange = { name = it; onInputChanged() },
+            label = "Nombre",
+            error = if (error == AuthError.BlankName) error.asMessage() else null,
+            leadingIcon = { Text("👤", modifier = Modifier.padding(start = 8.dp)) }
+        )
+        Spacer(Modifier.height(8.dp))
+        AuthTextField(
+            value = email,
+            onValueChange = { email = it; onInputChanged() },
+            label = "Email",
+            error = if (error == AuthError.InvalidEmail || error == AuthError.EmailAlreadyInUse) error.asMessage() else null,
+            keyboardType = KeyboardType.Email,
+            leadingIcon = { Text("✉️", modifier = Modifier.padding(start = 8.dp)) }
+        )
+        Spacer(Modifier.height(8.dp))
+        AuthTextField(
+            value = password,
+            onValueChange = { password = it; mismatch = false; onInputChanged() },
+            label = "Contraseña",
+            error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
+            isPassword = true,
+            leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 8.dp)) }
+        )
+        Spacer(Modifier.height(8.dp))
+        AuthTextField(
+            value = confirm,
+            onValueChange = { confirm = it; mismatch = false },
+            label = "Confirmar contraseña",
+            error = if (mismatch) "Las contraseñas no coinciden" else null,
+            isPassword = true,
+            leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 8.dp)) }
+        )
 
         if (error != null && error !in fieldErrors) {
             Text(error.asMessage(), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(24.dp))
         Button(
             onClick = {
                 if (password != confirm) mismatch = true
                 else onRegisterClick(name, email, password)
             },
             enabled = !isLoading,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
         ) {
-            if (isLoading) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-            else Text("Crear cuenta")
+            if (isLoading) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+            else Text("Registrarse", fontWeight = FontWeight.Bold)
         }
+        
+        Spacer(Modifier.height(16.dp))
+        
         TextButton(onClick = onBackToLogin, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text("¿Ya tenés cuenta? Iniciá sesión")
+            Text("¿Ya tenés cuenta? ", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Iniciá sesión", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
     }
 }
