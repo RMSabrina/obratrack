@@ -13,4 +13,8 @@
     <string name="error_obra_direccion">Ingresá la dirección</string>
     <string name="error_obra_not_found">No encontramos esa obra</string>
     <string name="error_obra_forbidden">No podés modificar esta obra</string>
+    <string name="error_relevamiento_nota">Escribí una nota del relevamiento</string>
+    <string name="error_relevamiento_fecha">Elegí la fecha de la visita</string>
+    <string name="error_relevamiento_not_found">No encontramos ese relevamiento</string>
+    <string name="error_relevamiento_forbidden">No podés modificar este relevamiento</string>
 </resources>

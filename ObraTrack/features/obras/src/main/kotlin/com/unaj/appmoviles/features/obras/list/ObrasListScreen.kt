@@ -22,26 +22,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.label
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun ObrasListRoute(
     viewModel: ObrasListViewModel,
     onCreate: () -> Unit,
-    onEdit: (Obra) -> Unit,
+    onOpen: (Obra) -> Unit,
     onLogout: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObrasListScreen(
         state = state,
         onCreate = onCreate,
-        onEdit = onEdit,
+        onOpen = onOpen,
         onLogout = onLogout
     )
 }
@@ -51,7 +49,7 @@ fun ObrasListRoute(
 fun ObrasListScreen(
     state: ObrasListUiState,
     onCreate: () -> Unit,
-    onEdit: (Obra) -> Unit,
+    onOpen: (Obra) -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -91,7 +89,7 @@ fun ObrasListScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(state.obras, key = { it.id }) { obra ->
-                        ObraCard(obra = obra, onClick = { onEdit(obra) })
+                        ObraCard(obra = obra, onClick = { onOpen(obra) })
                     }
                 }
             }
@@ -116,6 +114,5 @@ private fun ObraCard(obra: Obra, onClick: () -> Unit) {
 
 private fun formatUltimaVisita(millis: Long?): String {
     if (millis == null) return "Sin visitas"
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("es-AR"))
-    return "Última visita ${formatter.format(Date(millis))}"
+    return "Última visita ${formatFecha(millis)}"
 }

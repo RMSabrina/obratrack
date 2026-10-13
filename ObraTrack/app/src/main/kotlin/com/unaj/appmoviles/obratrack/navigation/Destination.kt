@@ -20,3 +20,16 @@ data class ObraFormDestination(
     val estado: String = "activa",
     val publica: Boolean = false
 ) : NavKey
+
+@Serializable
+data class ObraDetailDestination(
+    val obraId: String
+) : NavKey
+
+@Serializable
+data class RelevamientoFormDestination(
+    val obraId: String,
+    val relevamientoId: String? = null,
+    val nota: String = "",
+    val fechaMillis: Long = 0L
+) : NavKey

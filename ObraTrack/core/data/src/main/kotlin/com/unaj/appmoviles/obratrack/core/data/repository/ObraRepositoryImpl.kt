@@ -19,6 +19,9 @@ class ObraRepositoryImpl(
             obras.map(ObraDto::toDomain).sortedWith(OBRA_ORDER)
         }
 
+    override fun observeOne(userId: String, obraId: String): Flow<Obra?> =
+        remoteDataSource.observeOne(userId, obraId).map { it?.toDomain() }
+
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> {
         val dto = draft.toDto(userId = userId, fechaInicioMillis = System.currentTimeMillis())
         return remoteDataSource.create(dto).toAppResult()

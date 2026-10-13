@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isSignedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidEstado(value) {
+      return value in ['activa', 'pausada', 'finalizada'];
+    }
+
+    function isValidObra() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['userId', 'nombre', 'cliente', 'publica', 'direccion', 'fechaInicio', 'estado'])
+        && data.userId is string
+        && data.userId == request.auth.uid
+        && data.nombre is string
+        && data.nombre.size() > 0
+        && data.nombre.size() <= 200
+        && data.cliente is string
+        && data.cliente.size() > 0
+        && data.cliente.size() <= 200
+        && data.direccion is string
+        && data.direccion.size() > 0
+        && data.direccion.size() <= 300
+        && data.publica is bool
+        && data.fechaInicio is timestamp
+        && data.estado is string
+        && isValidEstado(data.estado)
+        && (!('ultimaVisita' in data) || data.ultimaVisita == null || data.ultimaVisita is timestamp);
+    }
+
+    function isValidRelevamiento() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['userId', 'fecha', 'nota'])
+        && data.userId is string
+        && data.userId == request.auth.uid
+        && data.fecha is timestamp
+        && data.nota is string
+        && data.nota.size() > 0
+        && data.nota.size() <= 2000;
+    }
+
+    match /obras/{obraId} {
+      function isOwnerOfParent() {
+        return isSignedIn()
+          && get(/databases/$(database)/documents/obras/$(obraId)).data.userId == request.auth.uid;
+      }
+
+      allow read, delete: if isOwner();
+      allow create: if isSignedIn() && isValidObra();
+      allow update: if isOwner()
+        && request.resource.data.userId == resource.data.userId
+        && isValidObra();
+
+      match /relevamientos/{relevamientoId} {
+        allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+        allow create: if isOwnerOfParent() && isValidRelevamiento();
+        allow update: if isOwnerOfParent()
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == resource.data.userId
+          && isValidRelevamiento();
+        allow delete: if isOwnerOfParent() && resource.data.userId == request.auth.uid;
+      }
+    }
+  }
+}

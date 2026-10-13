@@ -6,22 +6,31 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.unaj.appmoviles.features.auth.login.LoginViewModel
 import com.unaj.appmoviles.features.auth.register.RegisterViewModel
+import com.unaj.appmoviles.features.obras.detail.ObraDetailViewModel
 import com.unaj.appmoviles.features.obras.form.ObraFormViewModel
 import com.unaj.appmoviles.features.obras.list.ObrasListViewModel
+import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormViewModel
 import com.unaj.appmoviles.obratrack.core.data.repository.AuthRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.ObraRepositoryImpl
+import com.unaj.appmoviles.obratrack.core.data.repository.RelevamientoRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
-import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.CreateObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.LoginUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.LogoutUseCase
-import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.RegisterUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ResendVerificationUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.CreateObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.UpdateObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.CreateRelevamientoUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.UpdateRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.firebase.FirebaseAuthDataSourceImpl
 import com.unaj.appmoviles.obratrack.core.firebase.FirestoreObraDataSourceImpl
+import com.unaj.appmoviles.obratrack.core.firebase.FirestoreRelevamientoDataSourceImpl
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -35,6 +44,9 @@ class AppContainer {
     val obraRepository: ObraRepository =
         ObraRepositoryImpl(FirestoreObraDataSourceImpl(FirebaseFirestore.getInstance()))
 
+    val relevamientoRepository: RelevamientoRepository =
+        RelevamientoRepositoryImpl(FirestoreRelevamientoDataSourceImpl(FirebaseFirestore.getInstance()))
+
     private val loginUseCase = LoginUseCase(authRepository)
     private val registerUseCase = RegisterUseCase(authRepository)
     private val logoutUseCase = LogoutUseCase(authRepository)
@@ -42,6 +54,10 @@ class AppContainer {
     private val observeObrasUseCase = ObserveObrasUseCase(obraRepository)
     private val createObraUseCase = CreateObraUseCase(obraRepository)
     private val updateObraUseCase = UpdateObraUseCase(obraRepository)
+    private val observeObraUseCase = ObserveObraUseCase(obraRepository)
+    private val observeRelevamientosUseCase = ObserveRelevamientosUseCase(relevamientoRepository)
+    private val createRelevamientoUseCase = CreateRelevamientoUseCase(relevamientoRepository)
+    private val updateRelevamientoUseCase = UpdateRelevamientoUseCase(relevamientoRepository)
 
     val loginViewModelFactory = viewModelFactory { initializer { LoginViewModel(loginUseCase) } }
     private val resendVerificationUseCase = ResendVerificationUseCase(authRepository)
@@ -62,6 +78,29 @@ class AppContainer {
                 createObraUseCase,
                 updateObraUseCase,
                 obraId
+            )
+        }
+    }
+
+    fun obraDetailViewModelFactory(obraId: String) = viewModelFactory {
+        initializer {
+            ObraDetailViewModel(
+                obraId,
+                observeSessionUseCase,
+                observeObraUseCase,
+                observeRelevamientosUseCase
+            )
+        }
+    }
+
+    fun relevamientoFormViewModelFactory(obraId: String, relevamientoId: String?) = viewModelFactory {
+        initializer {
+            RelevamientoFormViewModel(
+                observeSessionUseCase,
+                createRelevamientoUseCase,
+                updateRelevamientoUseCase,
+                obraId,
+                relevamientoId
             )
         }
     }

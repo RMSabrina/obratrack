@@ -8,9 +8,12 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.unaj.appmoviles.features.obras.detail.ObraDetailRoute
 import com.unaj.appmoviles.features.obras.form.ObraFormInitial
 import com.unaj.appmoviles.features.obras.form.ObraFormRoute
 import com.unaj.appmoviles.features.obras.list.ObrasListRoute
+import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormInitial
+import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormRoute
 import com.unaj.appmoviles.features.obras.toStorageValue
 
 @Composable
@@ -32,7 +35,15 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                 ObrasListRoute(
                     viewModel = viewModel(factory = container.obrasListViewModelFactory),
                     onCreate = { backStack.add(ObraFormDestination()) },
-                    onEdit = { obra ->
+                    onOpen = { obra -> backStack.add(ObraDetailDestination(obra.id)) },
+                    onLogout = onLogout
+                )
+            }
+            entry<ObraDetailDestination> { destination ->
+                ObraDetailRoute(
+                    viewModel = viewModel(factory = container.obraDetailViewModelFactory(destination.obraId)),
+                    onBack = ::goBack,
+                    onEditObra = { obra ->
                         backStack.add(
                             ObraFormDestination(
                                 obraId = obra.id,
@@ -44,7 +55,19 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                             )
                         )
                     },
-                    onLogout = onLogout
+                    onCreateRelevamiento = {
+                        backStack.add(RelevamientoFormDestination(obraId = destination.obraId))
+                    },
+                    onEditRelevamiento = { relevamiento ->
+                        backStack.add(
+                            RelevamientoFormDestination(
+                                obraId = destination.obraId,
+                                relevamientoId = relevamiento.id,
+                                nota = relevamiento.nota,
+                                fechaMillis = relevamiento.fecha
+                            )
+                        )
+                    }
                 )
             }
             entry<ObraFormDestination> { destination ->
@@ -57,6 +80,24 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                         direccion = destination.direccion,
                         estado = destination.estado,
                         publica = destination.publica
+                    ),
+                    onBack = ::goBack,
+                    onSaved = ::goBack
+                )
+            }
+            entry<RelevamientoFormDestination> { destination ->
+                RelevamientoFormRoute(
+                    viewModel = viewModel(
+                        factory = container.relevamientoFormViewModelFactory(
+                            destination.obraId,
+                            destination.relevamientoId
+                        )
+                    ),
+                    initial = RelevamientoFormInitial(
+                        obraId = destination.obraId,
+                        relevamientoId = destination.relevamientoId,
+                        nota = destination.nota,
+                        fechaMillis = destination.fechaMillis
                     ),
                     onBack = ::goBack,
                     onSaved = ::goBack
