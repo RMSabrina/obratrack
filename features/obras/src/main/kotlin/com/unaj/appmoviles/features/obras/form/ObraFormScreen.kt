@@ -2,22 +2,30 @@ package com.unaj.appmoviles.features.obras.form
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -91,9 +99,45 @@ fun ObraFormScreen(
             TopAppBar(
                 title = { Text(if (initial.obraId == null) "Nueva obra" else "Editar obra") },
                 navigationIcon = {
-                    TextButton(onClick = onBack) { Text("Volver") }
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
                 }
             )
+        },
+        bottomBar = {
+            BottomAppBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                Button(
+                    onClick = {
+                        onSave(
+                            ObraDraft(
+                                nombre = nombre,
+                                cliente = cliente,
+                                direccion = direccion,
+                                publica = publica,
+                                estado = estadoActual
+                            )
+                        )
+                    },
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Guardando...")
+                    } else {
+                        Text("Guardar Obra")
+                    }
+                }
+            }
         }
     ) { padding ->
         Column(
@@ -101,91 +145,85 @@ fun ObraFormScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = nombre,
-                onValueChange = { nombre = it; onInputChanged() },
-                label = { Text("Nombre") },
-                isError = error == ObraError.NombreVacio,
-                supportingText = {
-                    if (error == ObraError.NombreVacio) Text(error.asMessage())
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = cliente,
-                onValueChange = { cliente = it; onInputChanged() },
-                label = { Text("Cliente") },
-                isError = error == ObraError.ClienteVacio,
-                supportingText = {
-                    if (error == ObraError.ClienteVacio) Text(error.asMessage())
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = direccion,
-                onValueChange = { direccion = it; onInputChanged() },
-                label = { Text("Dirección") },
-                isError = error == ObraError.DireccionVacia,
-                supportingText = {
-                    if (error == ObraError.DireccionVacia) Text(error.asMessage())
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text("Estado", style = MaterialTheme.typography.labelLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                EstadoObra.entries.forEach { option ->
-                    FilterChip(
-                        selected = estadoActual == option,
-                        onClick = { estado = option.toStorageValue(); onInputChanged() },
-                        label = { Text(option.label()) }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Información General", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = nombre,
+                    onValueChange = { nombre = it; onInputChanged() },
+                    label = { Text("Nombre") },
+                    isError = error == ObraError.NombreVacio,
+                    supportingText = {
+                        if (error == ObraError.NombreVacio) Text(error.asMessage())
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = cliente,
+                    onValueChange = { cliente = it; onInputChanged() },
+                    label = { Text("Cliente") },
+                    isError = error == ObraError.ClienteVacio,
+                    supportingText = {
+                        if (error == ObraError.ClienteVacio) Text(error.asMessage())
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = direccion,
+                    onValueChange = { direccion = it; onInputChanged() },
+                    label = { Text("Dirección") },
+                    isError = error == ObraError.DireccionVacia,
+                    supportingText = {
+                        if (error == ObraError.DireccionVacia) Text(error.asMessage())
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Estado", style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    EstadoObra.entries.forEach { option ->
+                        FilterChip(
+                            selected = estadoActual == option,
+                            onClick = { estado = option.toStorageValue(); onInputChanged() },
+                            label = { Text(option.label()) }
+                        )
+                    }
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Configuración", style = MaterialTheme.typography.titleMedium)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Obra pública", style = MaterialTheme.typography.bodyLarge)
+                    Switch(
+                        checked = publica,
+                        onCheckedChange = { publica = it; onInputChanged() }
                     )
                 }
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Obra pública")
-                Switch(
-                    checked = publica,
-                    onCheckedChange = { publica = it; onInputChanged() }
-                )
-            }
+
             if (
                 error != null &&
                 error != ObraError.NombreVacio &&
                 error != ObraError.ClienteVacio &&
                 error != ObraError.DireccionVacia
             ) {
-                Text(error.asMessage(), color = MaterialTheme.colorScheme.error)
-            }
-            Button(
-                onClick = {
-                    onSave(
-                        ObraDraft(
-                            nombre = nombre,
-                            cliente = cliente,
-                            direccion = direccion,
-                            publica = publica,
-                            estado = estadoActual
-                        )
-                    )
-                },
-                enabled = !isLoading,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(Modifier.padding(2.dp), strokeWidth = 2.dp)
-                } else {
-                    Text("Guardar")
-                }
+                Text(
+                    text = error.asMessage(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }
