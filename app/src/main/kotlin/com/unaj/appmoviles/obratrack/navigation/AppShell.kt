@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.unaj.appmoviles.features.auth.profile.ProfileRoute
 import com.unaj.appmoviles.features.obras.detail.ObraDetailRoute
 import com.unaj.appmoviles.features.obras.form.ObraFormInitial
 import com.unaj.appmoviles.features.obras.form.ObraFormRoute
@@ -42,6 +43,7 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                     onNavigateToObras = { backStack.add(ObrasDestination) },
                     onNavigateToObraSelection = { backStack.add(ObraSelectionDestination) },
                     onNavigateToObrasPublicas = { backStack.add(ObrasPublicasDestination) },
+                    onNavigateToProfile = { backStack.add(ProfileDestination) },
                     onOpenRelevamiento = { relevamiento -> 
                         backStack.add(RelevamientoFormDestination(
                             obraId = relevamiento.obraId, 
@@ -64,6 +66,13 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                         backStack.add(RelevamientoFormDestination(obraId = obra.id))
                     },
                     onBack = ::goBack
+                )
+            }
+            entry<ProfileDestination> {
+                ProfileRoute(
+                    viewModel = viewModel(factory = container.profileViewModelFactory),
+                    onBack = ::goBack,
+                    onLogout = onLogout
                 )
             }
             entry<ObrasDestination> {

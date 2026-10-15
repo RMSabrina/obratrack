@@ -102,6 +102,10 @@ private class FakeObraRepository : ObraRepository {
 
     override fun observeOne(userId: String, obraId: String): Flow<Obra?> = emptyFlow()
 
+    override fun observePublicas(): Flow<List<Obra>> = emptyFlow()
+
+    override fun observePublica(obraId: String): Flow<Obra?> = emptyFlow()
+
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> {
         createCalls += 1
         lastUserId = userId

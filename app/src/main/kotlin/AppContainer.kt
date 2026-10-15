@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.unaj.appmoviles.features.auth.login.LoginViewModel
+import com.unaj.appmoviles.features.auth.profile.ProfileViewModel
 import com.unaj.appmoviles.features.auth.register.RegisterViewModel
 import com.unaj.appmoviles.features.obras.detail.ObraDetailViewModel
 import com.unaj.appmoviles.features.obras.detail.ObraPublicaDetailViewModel
@@ -25,6 +26,7 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.LogoutUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.RegisterUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ResendVerificationUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.UpdateProfileNameUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.CreateObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraPublicaUseCase
@@ -76,6 +78,7 @@ class AppContainer {
     private val registerUseCase = RegisterUseCase(authRepository)
     private val logoutUseCase = LogoutUseCase(authRepository)
     private val observeSessionUseCase = ObserveSessionUseCase(authRepository)
+    private val updateProfileNameUseCase = UpdateProfileNameUseCase(authRepository)
     private val observeObrasUseCase = ObserveObrasUseCase(obraRepository)
     private val createObraUseCase = CreateObraUseCase(obraRepository)
     private val updateObraUseCase = UpdateObraUseCase(obraRepository)
@@ -92,6 +95,9 @@ class AppContainer {
     private val resendVerificationUseCase = ResendVerificationUseCase(authRepository)
     val registerViewModelFactory = viewModelFactory {
         initializer { RegisterViewModel(registerUseCase, resendVerificationUseCase) }
+    }
+    val profileViewModelFactory = viewModelFactory {
+        initializer { ProfileViewModel(observeSessionUseCase, updateProfileNameUseCase) }
     }
     val sessionViewModelFactory = viewModelFactory {
         initializer { SessionViewModel(observeSessionUseCase, logoutUseCase) }

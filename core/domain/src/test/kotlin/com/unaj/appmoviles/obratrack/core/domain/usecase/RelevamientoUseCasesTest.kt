@@ -68,6 +68,8 @@ private class FakeRelevamientoRepository : RelevamientoRepository {
 
     override fun observe(userId: String, obraId: String): Flow<List<Relevamiento>> = emptyFlow()
 
+    override fun observeByObra(obraId: String): Flow<List<Relevamiento>> = emptyFlow()
+
     override suspend fun create(
         userId: String,
         obraId: String,

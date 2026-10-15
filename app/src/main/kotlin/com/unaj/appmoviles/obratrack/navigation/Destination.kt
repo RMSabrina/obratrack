@@ -12,6 +12,9 @@ data object RegisterDestination : NavKey
 data object HomeDestination : NavKey
 
 @Serializable
+data object ProfileDestination : NavKey
+
+@Serializable
 data object ObraSelectionDestination : NavKey
 
 @Serializable

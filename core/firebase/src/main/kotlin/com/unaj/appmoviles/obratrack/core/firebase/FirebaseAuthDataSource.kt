@@ -8,5 +8,6 @@ interface FirebaseAuthDataSource {
     suspend fun register(name: String, email: String, pass: String): FirebaseResult<UserDto>
 
     suspend fun resendVerificationEmail(email: String, pass: String): FirebaseResult<Unit>
+    suspend fun updateProfileName(newName: String): FirebaseResult<UserDto>
     suspend fun logout()
 }

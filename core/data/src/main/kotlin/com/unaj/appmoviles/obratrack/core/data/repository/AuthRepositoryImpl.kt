@@ -34,4 +34,7 @@ class AuthRepositoryImpl(
 
     override suspend fun resendVerificationEmail(email: String, password: String): AppResult<Unit> =
         remoteDataSource.resendVerificationEmail(email, password).toAppResult { it }
+
+    override suspend fun updateProfileName(newName: String): AppResult<User> =
+        remoteDataSource.updateProfileName(newName).toAppResult { it.toDomain() }
 }

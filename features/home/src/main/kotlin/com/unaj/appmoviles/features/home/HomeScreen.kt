@@ -61,6 +61,7 @@ fun HomeScreen(
     onNavigateToObras: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
     onNavigateToObrasPublicas: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -69,7 +70,8 @@ fun HomeScreen(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             HomeBottomNavigation(
-                onNavigateToObras = onNavigateToObras
+                onNavigateToObras = onNavigateToObras,
+                onNavigateToProfile = onNavigateToProfile
             )
         }
     ) { padding ->
@@ -305,7 +307,8 @@ fun BannerLocation(
 
 @Composable
 fun HomeBottomNavigation(
-    onNavigateToObras: () -> Unit
+    onNavigateToObras: () -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.background,
@@ -350,7 +353,7 @@ fun HomeBottomNavigation(
         )
         NavigationBarItem(
             selected = false,
-            onClick = { /* TODO */ },
+            onClick = onNavigateToProfile,
             icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
             label = { Text("Perfil") },
             colors = NavigationBarItemDefaults.colors(
