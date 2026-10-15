@@ -37,4 +37,13 @@ class AuthRepositoryImpl(
 
     override suspend fun updateProfileName(newName: String): AppResult<User> =
         remoteDataSource.updateProfileName(newName).toAppResult { it.toDomain() }
+
+    override suspend fun updatePassword(newPassword: String): AppResult<Unit> =
+        remoteDataSource.updatePassword(newPassword).toAppResult { it }
+
+    override suspend fun deleteAccount(): AppResult<Unit> =
+        remoteDataSource.deleteAccount().toAppResult { it }
+
+    override suspend fun reauthenticate(password: String): AppResult<Unit> =
+        remoteDataSource.reauthenticate(password).toAppResult { it }
 }

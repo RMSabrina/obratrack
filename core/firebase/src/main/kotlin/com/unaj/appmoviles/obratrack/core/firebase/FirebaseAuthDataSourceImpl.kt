@@ -1,7 +1,9 @@
 package com.unaj.appmoviles.obratrack.core.firebase
 
 import android.util.Log
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.NonCancellable
@@ -109,6 +111,61 @@ class FirebaseAuthDataSourceImpl(
                 FirebaseResult.Success(user.toDto())
             } catch (e: Exception) {
                 Log.e("VERIF", "Error al actualizar perfil", e)
+                FirebaseResult.Error(e)
+            }
+        }
+
+    override suspend fun updatePassword(newPassword: String): FirebaseResult<Unit> =
+        withContext(NonCancellable) {
+            try {
+                val user = firebaseAuth.currentUser
+                    ?: return@withContext FirebaseResult.Error(Exception("Usuario no autenticado"))
+
+                user.updatePassword(newPassword).await()
+                FirebaseResult.Success(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: FirebaseAuthRecentLoginRequiredException) {
+                FirebaseResult.Error(e)
+            } catch (e: Exception) {
+                Log.e("AUTH", "Error al cambiar contraseña", e)
+                FirebaseResult.Error(e)
+            }
+        }
+
+    override suspend fun deleteAccount(): FirebaseResult<Unit> =
+        withContext(NonCancellable) {
+            try {
+                val user = firebaseAuth.currentUser
+                    ?: return@withContext FirebaseResult.Error(Exception("Usuario no autenticado"))
+
+                user.delete().await()
+                FirebaseResult.Success(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: FirebaseAuthRecentLoginRequiredException) {
+                FirebaseResult.Error(e)
+            } catch (e: Exception) {
+                Log.e("AUTH", "Error al eliminar cuenta", e)
+                FirebaseResult.Error(e)
+            }
+        }
+
+    override suspend fun reauthenticate(password: String): FirebaseResult<Unit> =
+        withContext(NonCancellable) {
+            try {
+                val user = firebaseAuth.currentUser
+                    ?: return@withContext FirebaseResult.Error(Exception("Usuario no autenticado"))
+                val email = user.email
+                    ?: return@withContext FirebaseResult.Error(Exception("Email no disponible"))
+
+                val credential = EmailAuthProvider.getCredential(email, password)
+                user.reauthenticate(credential).await()
+                FirebaseResult.Success(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("AUTH", "Error al reautenticar", e)
                 FirebaseResult.Error(e)
             }
         }

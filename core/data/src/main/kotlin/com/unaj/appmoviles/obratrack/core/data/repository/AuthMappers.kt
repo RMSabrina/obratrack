@@ -23,6 +23,7 @@ fun <T, R> FirebaseResult<T>.toAppResult(mapData: (T) -> R): AppResult<R> {
             val domainError = when (this.exception) {
                 is FirebaseAuthInvalidCredentialsException -> AuthError.InvalidCredentials
                 is FirebaseAuthUserCollisionException -> AuthError.EmailAlreadyInUse
+                is com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException -> AuthError.RequiresRecentLogin
                 // Firebase lanza FirebaseNetworkException cuando no hay internet
                 is com.google.firebase.FirebaseNetworkException -> AuthError.NetworkError
                 else -> when (this.exception.message) {
