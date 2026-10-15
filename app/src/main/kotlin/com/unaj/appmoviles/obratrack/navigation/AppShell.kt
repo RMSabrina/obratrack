@@ -12,6 +12,8 @@ import com.unaj.appmoviles.features.obras.detail.ObraDetailRoute
 import com.unaj.appmoviles.features.obras.form.ObraFormInitial
 import com.unaj.appmoviles.features.obras.form.ObraFormRoute
 import com.unaj.appmoviles.features.obras.list.ObrasListRoute
+import com.unaj.appmoviles.features.obras.list.ObrasPublicasListRoute
+import com.unaj.appmoviles.features.obras.detail.ObraPublicaDetailRoute
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormInitial
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormRoute
 import com.unaj.appmoviles.features.home.HomeRoute
@@ -39,6 +41,7 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                     viewModel = viewModel(factory = container.homeViewModelFactory),
                     onNavigateToObras = { backStack.add(ObrasDestination) },
                     onNavigateToObraSelection = { backStack.add(ObraSelectionDestination) },
+                    onNavigateToObrasPublicas = { backStack.add(ObrasPublicasDestination) },
                     onOpenRelevamiento = { relevamiento -> 
                         backStack.add(RelevamientoFormDestination(
                             obraId = relevamiento.obraId, 
@@ -69,6 +72,19 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                     onCreate = { backStack.add(ObraFormDestination()) },
                     onOpen = { obra -> backStack.add(ObraDetailDestination(obra.id)) },
                     onLogout = onLogout
+                )
+            }
+            entry<ObrasPublicasDestination> {
+                ObrasPublicasListRoute(
+                    viewModel = viewModel(factory = container.obrasPublicasListViewModelFactory),
+                    onOpen = { obra -> backStack.add(ObraPublicaDetailDestination(obra.id)) },
+                    onBack = ::goBack
+                )
+            }
+            entry<ObraPublicaDetailDestination> { destination ->
+                ObraPublicaDetailRoute(
+                    viewModel = viewModel(factory = container.obraPublicaDetailViewModelFactory(destination.obraId)),
+                    onBack = ::goBack
                 )
             }
             entry<ObraDetailDestination> { destination ->

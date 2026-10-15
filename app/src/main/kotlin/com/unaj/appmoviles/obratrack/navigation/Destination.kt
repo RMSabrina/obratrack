@@ -33,6 +33,14 @@ data class ObraDetailDestination(
 ) : NavKey
 
 @Serializable
+data object ObrasPublicasDestination : NavKey
+
+@Serializable
+data class ObraPublicaDetailDestination(
+    val obraId: String
+) : NavKey
+
+@Serializable
 data class RelevamientoFormDestination(
     val obraId: String,
     val relevamientoId: String? = null,

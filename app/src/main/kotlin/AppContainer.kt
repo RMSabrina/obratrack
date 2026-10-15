@@ -8,8 +8,10 @@ import com.google.firebase.storage.FirebaseStorage
 import com.unaj.appmoviles.features.auth.login.LoginViewModel
 import com.unaj.appmoviles.features.auth.register.RegisterViewModel
 import com.unaj.appmoviles.features.obras.detail.ObraDetailViewModel
+import com.unaj.appmoviles.features.obras.detail.ObraPublicaDetailViewModel
 import com.unaj.appmoviles.features.obras.form.ObraFormViewModel
 import com.unaj.appmoviles.features.obras.list.ObrasListViewModel
+import com.unaj.appmoviles.features.obras.list.ObrasPublicasListViewModel
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormViewModel
 import com.unaj.appmoviles.features.home.HomeViewModel
 import com.unaj.appmoviles.obratrack.core.data.repository.AuthRepositoryImpl
@@ -25,11 +27,14 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.RegisterUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ResendVerificationUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.CreateObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraPublicaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasPublicasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.UpdateObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveAllRelevamientosUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.CreateRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosDeObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.UpdateRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.firebase.FirebaseAuthDataSourceImpl
 import com.unaj.appmoviles.obratrack.core.firebase.FirestoreObraDataSourceImpl
@@ -75,7 +80,10 @@ class AppContainer {
     private val createObraUseCase = CreateObraUseCase(obraRepository)
     private val updateObraUseCase = UpdateObraUseCase(obraRepository)
     private val observeObraUseCase = ObserveObraUseCase(obraRepository)
+    private val observeObrasPublicasUseCase = ObserveObrasPublicasUseCase(obraRepository)
+    private val observeObraPublicaUseCase = ObserveObraPublicaUseCase(obraRepository)
     private val observeRelevamientosUseCase = ObserveRelevamientosUseCase(relevamientoRepository)
+    private val observeRelevamientosDeObraUseCase = ObserveRelevamientosDeObraUseCase(relevamientoRepository)
     private val observeAllRelevamientosUseCase = ObserveAllRelevamientosUseCase(relevamientoRepository)
     private val createRelevamientoUseCase = CreateRelevamientoUseCase(relevamientoRepository)
     private val updateRelevamientoUseCase = UpdateRelevamientoUseCase(relevamientoRepository)
@@ -90,6 +98,9 @@ class AppContainer {
     }
     val obrasListViewModelFactory = viewModelFactory {
         initializer { ObrasListViewModel(observeSessionUseCase, observeObrasUseCase) }
+    }
+    val obrasPublicasListViewModelFactory = viewModelFactory {
+        initializer { ObrasPublicasListViewModel(observeObrasPublicasUseCase) }
     }
 
     val homeViewModelFactory = viewModelFactory {
@@ -114,6 +125,16 @@ class AppContainer {
                 observeSessionUseCase,
                 observeObraUseCase,
                 observeRelevamientosUseCase
+            )
+        }
+    }
+
+    fun obraPublicaDetailViewModelFactory(obraId: String) = viewModelFactory {
+        initializer {
+            ObraPublicaDetailViewModel(
+                obraId,
+                observeObraPublicaUseCase,
+                observeRelevamientosDeObraUseCase
             )
         }
     }
