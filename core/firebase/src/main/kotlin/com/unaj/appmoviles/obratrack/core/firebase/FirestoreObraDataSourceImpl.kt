@@ -41,6 +41,33 @@ class FirestoreObraDataSourceImpl(
         awaitClose { registration.remove() }
     }
 
+    override fun observePublicas(): Flow<List<ObraDto>> = callbackFlow {
+        val registration = firestore.collection(COLLECTION)
+            .whereEqualTo(FIELD_PUBLICA, true)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val obras = snapshot?.documents?.mapNotNull { it.toObraDto() }.orEmpty()
+                trySend(obras)
+            }
+        awaitClose { registration.remove() }
+    }
+
+    override fun observePublica(obraId: String): Flow<ObraDto?> = callbackFlow {
+        val registration = firestore.collection(COLLECTION).document(obraId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val obra = snapshot?.toObraDto()
+                trySend(if (obra?.publica == true) obra else null)
+            }
+        awaitClose { registration.remove() }
+    }
+
     override suspend fun create(dto: ObraDto): FirebaseResult<ObraDto> {
         return try {
             val ref = firestore.collection(COLLECTION).document()

@@ -25,6 +25,11 @@ class RelevamientoRepositoryImpl(
             relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
         }
 
+    override fun observeByObra(obraId: String): Flow<List<Relevamiento>> =
+        remoteDataSource.observeByObra(obraId).map { relevamientos ->
+            relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
+        }
+
     override suspend fun create(
         userId: String,
         obraId: String,

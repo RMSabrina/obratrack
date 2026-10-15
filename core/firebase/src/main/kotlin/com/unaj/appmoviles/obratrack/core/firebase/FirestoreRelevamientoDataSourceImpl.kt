@@ -49,6 +49,19 @@ class FirestoreRelevamientoDataSourceImpl(
         awaitClose { registration.remove() }
     }
 
+    override fun observeByObra(obraId: String): Flow<List<RelevamientoDto>> = callbackFlow {
+        val registration = relevamientos(obraId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val items = snapshot?.documents?.mapNotNull { it.toRelevamientoDto(obraId) }.orEmpty()
+                trySend(items)
+            }
+        awaitClose { registration.remove() }
+    }
+
     override suspend fun create(dto: RelevamientoDto, photo: ByteArray?): FirebaseResult<RelevamientoDto> {
         return try {
             val obraRef = firestore.collection(OBRAS).document(dto.obraId)
