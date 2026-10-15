@@ -60,6 +60,7 @@ fun HomeScreen(
     state: HomeUiState,
     onNavigateToObras: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
+    onNavigateToObrasPublicas: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -137,7 +138,7 @@ fun HomeScreen(
                 }
                 
                 item {
-                    BannerLocation(onClick = { /* TODO if applicable */ })
+                    BannerLocation(onClick = onNavigateToObrasPublicas)
                 }
                 
                 item {
@@ -281,13 +282,13 @@ fun BannerLocation(
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Encontr\u00e1 obras cerca tuyo",
+                    text = "Explorar Obras Públicas",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Ver obras alrededor de tu ubicaci\u00f3n",
+                    text = "Ver proyectos compartidos por otros usuarios",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )

@@ -10,6 +10,7 @@ fun HomeRoute(
     viewModel: HomeViewModel,
     onNavigateToObras: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
+    onNavigateToObrasPublicas: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -18,6 +19,7 @@ fun HomeRoute(
         state = state,
         onNavigateToObras = onNavigateToObras,
         onNavigateToObraSelection = onNavigateToObraSelection,
+        onNavigateToObrasPublicas = onNavigateToObrasPublicas,
         onOpenRelevamiento = onOpenRelevamiento
     )
 }
