@@ -28,6 +28,7 @@ fun DomainError.asMessage(): String = stringResource(
         RelevamientoError.FechaInvalida -> R.string.error_relevamiento_fecha
         RelevamientoError.NoEncontrado -> R.string.error_relevamiento_not_found
         RelevamientoError.NoAutorizado -> R.string.error_relevamiento_forbidden
+        RelevamientoError.ImagenMuyGrande -> R.string.error_relevamiento_imagen_grande
         RelevamientoError.Red -> R.string.error_network
         else -> R.string.error_unknown
     }

@@ -17,4 +17,5 @@
     <string name="error_relevamiento_fecha">Elegí la fecha de la visita</string>
     <string name="error_relevamiento_not_found">No encontramos ese relevamiento</string>
     <string name="error_relevamiento_forbidden">No podés modificar este relevamiento</string>
+    <string name="error_relevamiento_imagen_grande">La imagen supera el límite de 5 MB</string>
 </resources>

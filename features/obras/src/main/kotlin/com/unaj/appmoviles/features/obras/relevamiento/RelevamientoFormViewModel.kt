@@ -27,6 +27,14 @@ class RelevamientoFormViewModel(
 
     fun save(draft: RelevamientoDraft, photo: ByteArray?) {
         if (_uiState.value is RelevamientoFormUiState.Loading) return
+        
+        // Validación de tamaño de imagen (límite de 5 MB)
+        val maxSizeInBytes = 5 * 1024 * 1024
+        if (photo != null && photo.size > maxSizeInBytes) {
+            _uiState.value = RelevamientoFormUiState.Error(RelevamientoError.ImagenMuyGrande)
+            return
+        }
+        
         _uiState.value = RelevamientoFormUiState.Loading
         viewModelScope.launch {
             val user = observeSession().first()
