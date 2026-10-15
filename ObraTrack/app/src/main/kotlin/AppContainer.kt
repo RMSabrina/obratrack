@@ -11,6 +11,7 @@ import com.unaj.appmoviles.features.obras.detail.ObraDetailViewModel
 import com.unaj.appmoviles.features.obras.form.ObraFormViewModel
 import com.unaj.appmoviles.features.obras.list.ObrasListViewModel
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormViewModel
+import com.unaj.appmoviles.features.home.HomeViewModel
 import com.unaj.appmoviles.obratrack.core.data.repository.AuthRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.ObraRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.RelevamientoRepositoryImpl
@@ -26,6 +27,7 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.CreateObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.UpdateObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveAllRelevamientosUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.CreateRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.UpdateRelevamientoUseCase
@@ -62,6 +64,7 @@ class AppContainer {
     private val updateObraUseCase = UpdateObraUseCase(obraRepository)
     private val observeObraUseCase = ObserveObraUseCase(obraRepository)
     private val observeRelevamientosUseCase = ObserveRelevamientosUseCase(relevamientoRepository)
+    private val observeAllRelevamientosUseCase = ObserveAllRelevamientosUseCase(relevamientoRepository)
     private val createRelevamientoUseCase = CreateRelevamientoUseCase(relevamientoRepository)
     private val updateRelevamientoUseCase = UpdateRelevamientoUseCase(relevamientoRepository)
 
@@ -75,6 +78,10 @@ class AppContainer {
     }
     val obrasListViewModelFactory = viewModelFactory {
         initializer { ObrasListViewModel(observeSessionUseCase, observeObrasUseCase) }
+    }
+
+    val homeViewModelFactory = viewModelFactory {
+        initializer { HomeViewModel(observeSessionUseCase, observeObrasUseCase, observeAllRelevamientosUseCase) }
     }
 
     fun obraFormViewModelFactory(obraId: String?) = viewModelFactory {

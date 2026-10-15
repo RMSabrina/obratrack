@@ -14,11 +14,14 @@ import com.unaj.appmoviles.features.obras.form.ObraFormRoute
 import com.unaj.appmoviles.features.obras.list.ObrasListRoute
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormInitial
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormRoute
+import com.unaj.appmoviles.features.home.HomeRoute
+import com.unaj.appmoviles.features.home.ObraSelectionRoute
+import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.features.obras.toStorageValue
 
 @Composable
 fun AppShell(container: AppContainer, onLogout: () -> Unit) {
-    val backStack = rememberNavBackStack(ObrasDestination)
+    val backStack = rememberNavBackStack(HomeDestination)
     fun goBack() {
         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
     }
@@ -31,6 +34,35 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             rememberViewModelStoreNavEntryDecorator()
         ),
         entryProvider = entryProvider {
+            entry<HomeDestination> {
+                HomeRoute(
+                    viewModel = viewModel(factory = container.homeViewModelFactory),
+                    onNavigateToObras = { backStack.add(ObrasDestination) },
+                    onNavigateToObraSelection = { backStack.add(ObraSelectionDestination) },
+                    onOpenRelevamiento = { relevamiento -> 
+                        backStack.add(RelevamientoFormDestination(
+                            obraId = relevamiento.obraId, 
+                            relevamientoId = relevamiento.id,
+                            nota = relevamiento.nota,
+                            fechaMillis = relevamiento.fecha,
+                            fotoUrl = relevamiento.fotoUrl,
+                            latitud = relevamiento.ubicacion?.latitud,
+                            longitud = relevamiento.ubicacion?.longitud
+                        )) 
+                    }
+                )
+            }
+            entry<ObraSelectionDestination> {
+                ObraSelectionRoute(
+                    viewModel = viewModel(factory = container.obrasListViewModelFactory),
+                    onObraSelected = { obra -> 
+                        // Reemplazar la selecci\u00f3n en el stack por el formulario de relevamiento
+                        backStack.removeAt(backStack.lastIndex)
+                        backStack.add(RelevamientoFormDestination(obraId = obra.id))
+                    },
+                    onBack = ::goBack
+                )
+            }
             entry<ObrasDestination> {
                 ObrasListRoute(
                     viewModel = viewModel(factory = container.obrasListViewModelFactory),
