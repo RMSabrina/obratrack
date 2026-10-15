@@ -62,6 +62,9 @@ private class FakeRelevamientoRepository : RelevamientoRepository {
     var updateCalls: Int = 0
     var lastObraId: String? = null
     var lastDraft: RelevamientoDraft? = null
+    override fun observeAll(userId: String): Flow<List<Relevamiento>> {
+        TODO("Not yet implemented")
+    }
 
     override fun observe(userId: String, obraId: String): Flow<List<Relevamiento>> = emptyFlow()
 

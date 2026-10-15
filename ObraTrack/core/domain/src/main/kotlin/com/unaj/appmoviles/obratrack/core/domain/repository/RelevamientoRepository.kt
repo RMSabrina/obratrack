@@ -6,6 +6,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import kotlinx.coroutines.flow.Flow
 
 interface RelevamientoRepository {
+    fun observeAll(userId: String): Flow<List<Relevamiento>>
     fun observe(userId: String, obraId: String): Flow<List<Relevamiento>>
     suspend fun create(
         userId: String,

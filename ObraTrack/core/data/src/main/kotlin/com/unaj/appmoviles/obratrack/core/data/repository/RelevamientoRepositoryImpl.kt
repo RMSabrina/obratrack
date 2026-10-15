@@ -14,6 +14,11 @@ class RelevamientoRepositoryImpl(
     private val remoteDataSource: FirestoreRelevamientoDataSource
 ) : RelevamientoRepository {
 
+    override fun observeAll(userId: String): Flow<List<Relevamiento>> =
+        remoteDataSource.observeAll(userId).map { relevamientos ->
+            relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
+        }
+
     override fun observe(userId: String, obraId: String): Flow<List<Relevamiento>> =
         remoteDataSource.observe(userId, obraId).map { relevamientos ->
             relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }

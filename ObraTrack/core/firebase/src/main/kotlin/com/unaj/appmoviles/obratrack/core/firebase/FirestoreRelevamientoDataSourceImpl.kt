@@ -1,5 +1,6 @@
 package com.unaj.appmoviles.obratrack.core.firebase
 
+import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -17,6 +18,23 @@ class FirestoreRelevamientoDataSourceImpl(
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage
 ) : FirestoreRelevamientoDataSource {
+
+    override fun observeAll(userId: String): Flow<List<RelevamientoDto>> = callbackFlow {
+        val registration = firestore.collectionGroup(RELEVAMIENTOS)
+            .whereEqualTo(FIELD_USER_ID, userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("FirestoreDS", "Error in observeAll", error)
+                    close(error)
+                    return@addSnapshotListener
+                }
+                Log.d("FirestoreDS", "snapshot has ${snapshot?.documents?.size} docs")
+                val items = snapshot?.documents?.mapNotNull { it.toRelevamientoDtoFromGroup() }.orEmpty()
+                Log.d("FirestoreDS", "mapped ${items.size} items")
+                trySend(items)
+            }
+        awaitClose { registration.remove() }
+    }
 
     override fun observe(userId: String, obraId: String): Flow<List<RelevamientoDto>> = callbackFlow {
         val registration = relevamientos(obraId)
@@ -115,6 +133,30 @@ class FirestoreRelevamientoDataSourceImpl(
     private fun DocumentSnapshot.toRelevamientoDto(obraId: String): RelevamientoDto? {
         val ownerId = getString(FIELD_USER_ID) ?: return null
         val geo = getGeoPoint(FIELD_UBICACION)
+        return RelevamientoDto(
+            id = id,
+            obraId = obraId,
+            userId = ownerId,
+            fechaMillis = getTimestamp(FIELD_FECHA)?.toDate()?.time ?: 0L,
+            nota = getString(FIELD_NOTA).orEmpty(),
+            fotoUrl = getString(FIELD_FOTO_URL),
+            latitud = geo?.latitude,
+            longitud = geo?.longitude
+        )
+    }
+
+    private fun DocumentSnapshot.toRelevamientoDtoFromGroup(): RelevamientoDto? {
+        val ownerId = getString(FIELD_USER_ID)
+        if (ownerId == null) {
+            Log.e("FirestoreDS", "ownerId is null for doc ${id}")
+            return null
+        }
+        val geo = getGeoPoint(FIELD_UBICACION)
+        val obraId = reference.parent.parent?.id
+        if (obraId == null) {
+            Log.e("FirestoreDS", "obraId is null for doc ${id}")
+            return null
+        }
         return RelevamientoDto(
             id = id,
             obraId = obraId,
