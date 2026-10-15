@@ -19,6 +19,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "CLOUDINARY_CLOUD_NAME",
+            "\"iwsier4h\""
+        )
+        buildConfigField(
+            "String",
+            "CLOUDINARY_UPLOAD_PRESET",
+            "\"obratrack_unsigned\""
+        )
     }
 
     buildTypes {
@@ -34,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -61,7 +73,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
 
-    // El módulo app conecta todas las piezas de la arquitectura
     implementation(project(":core:domain"))
     implementation(project(":core:ui"))
     implementation(project(":core:data"))
@@ -69,4 +80,7 @@ dependencies {
     implementation(project(":features:auth")) // Para poder renderizar la pantalla de login
     implementation(project(":features:home"))
     implementation(project(":features:obras"))
+    
+    // Cloudinary para AppContainer
+    implementation(libs.cloudinary.android)
 }
