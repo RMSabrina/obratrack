@@ -21,9 +21,12 @@ import com.unaj.appmoviles.obratrack.core.data.repository.RelevamientoRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
+import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ChangePasswordUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.DeleteAccountUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.LoginUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.LogoutUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ReauthenticateUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.RegisterUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ResendVerificationUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.UpdateProfileNameUseCase
@@ -79,6 +82,9 @@ class AppContainer {
     private val logoutUseCase = LogoutUseCase(authRepository)
     private val observeSessionUseCase = ObserveSessionUseCase(authRepository)
     private val updateProfileNameUseCase = UpdateProfileNameUseCase(authRepository)
+    private val changePasswordUseCase = ChangePasswordUseCase(authRepository)
+    private val deleteAccountUseCase = DeleteAccountUseCase(authRepository)
+    private val reauthenticateUseCase = ReauthenticateUseCase(authRepository)
     private val observeObrasUseCase = ObserveObrasUseCase(obraRepository)
     private val createObraUseCase = CreateObraUseCase(obraRepository)
     private val updateObraUseCase = UpdateObraUseCase(obraRepository)
@@ -97,7 +103,15 @@ class AppContainer {
         initializer { RegisterViewModel(registerUseCase, resendVerificationUseCase) }
     }
     val profileViewModelFactory = viewModelFactory {
-        initializer { ProfileViewModel(observeSessionUseCase, updateProfileNameUseCase) }
+        initializer {
+            ProfileViewModel(
+                observeSessionUseCase,
+                updateProfileNameUseCase,
+                changePasswordUseCase,
+                deleteAccountUseCase,
+                reauthenticateUseCase
+            )
+        }
     }
     val sessionViewModelFactory = viewModelFactory {
         initializer { SessionViewModel(observeSessionUseCase, logoutUseCase) }
