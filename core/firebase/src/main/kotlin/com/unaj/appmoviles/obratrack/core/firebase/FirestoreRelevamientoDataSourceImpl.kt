@@ -15,8 +15,7 @@ import java.util.Date
 import kotlin.coroutines.cancellation.CancellationException
 
 class FirestoreRelevamientoDataSourceImpl(
-    private val firestore: FirebaseFirestore,
-    private val storage: FirebaseStorage
+    private val firestore: FirebaseFirestore
 ) : FirestoreRelevamientoDataSource {
 
     override fun observeAll(userId: String): Flow<List<RelevamientoDto>> = callbackFlow {
@@ -60,8 +59,7 @@ class FirestoreRelevamientoDataSourceImpl(
             }
 
             val relevamientoRef = relevamientos(dto.obraId).document()
-            val fotoUrl = photo?.let { uploadPhoto(dto.obraId, relevamientoRef.id, it) }
-            val stored = dto.copy(id = relevamientoRef.id, fotoUrl = fotoUrl ?: dto.fotoUrl)
+            val stored = dto.copy(id = relevamientoRef.id)
             val currentUltimaVisita = obra.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time
             val ultimaVisita = maxOf(stored.fechaMillis, currentUltimaVisita ?: stored.fechaMillis)
 
@@ -97,8 +95,7 @@ class FirestoreRelevamientoDataSourceImpl(
             if (snapshot.getString(FIELD_USER_ID) != userId) {
                 return FirebaseResult.Error(RelevamientoForbiddenException())
             }
-            val fotoUrl = photo?.let { uploadPhoto(dto.obraId, dto.id, it) } ?: dto.fotoUrl
-            val stored = dto.copy(userId = userId, fotoUrl = fotoUrl)
+            val stored = dto.copy(userId = userId)
             ref.set(stored.toMap(), SetOptions.merge()).await()
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
@@ -106,12 +103,6 @@ class FirestoreRelevamientoDataSourceImpl(
         } catch (e: Exception) {
             FirebaseResult.Error(e)
         }
-    }
-
-    private suspend fun uploadPhoto(obraId: String, relevamientoId: String, bytes: ByteArray): String {
-        val ref = storage.reference.child("relevamientos/$obraId/$relevamientoId.jpg")
-        ref.putBytes(bytes).await()
-        return ref.downloadUrl.await().toString()
     }
 
     private fun relevamientos(obraId: String) =

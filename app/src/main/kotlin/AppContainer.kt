@@ -34,6 +34,10 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.UpdateRel
 import com.unaj.appmoviles.obratrack.core.firebase.FirebaseAuthDataSourceImpl
 import com.unaj.appmoviles.obratrack.core.firebase.FirestoreObraDataSourceImpl
 import com.unaj.appmoviles.obratrack.core.firebase.FirestoreRelevamientoDataSourceImpl
+import com.unaj.appmoviles.obratrack.core.data.repository.CloudinaryImageStorageImpl
+import com.unaj.appmoviles.obratrack.BuildConfig
+import com.cloudinary.Cloudinary
+import com.cloudinary.utils.ObjectUtils
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -41,6 +45,16 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AppContainer {
+    
+    private val cloudinaryConfig = ObjectUtils.asMap(
+        "cloud_name", BuildConfig.CLOUDINARY_CLOUD_NAME
+    )
+    
+    val imageStorageRepository = CloudinaryImageStorageImpl(
+        Cloudinary(cloudinaryConfig),
+        uploadPreset = BuildConfig.CLOUDINARY_UPLOAD_PRESET
+    )
+
     val authRepository: AuthRepository =
         AuthRepositoryImpl(FirebaseAuthDataSourceImpl(FirebaseAuth.getInstance()))
 
@@ -49,10 +63,8 @@ class AppContainer {
 
     val relevamientoRepository: RelevamientoRepository =
         RelevamientoRepositoryImpl(
-            FirestoreRelevamientoDataSourceImpl(
-                FirebaseFirestore.getInstance(),
-                FirebaseStorage.getInstance()
-            )
+            FirestoreRelevamientoDataSourceImpl(FirebaseFirestore.getInstance()),
+            imageStorageRepository
         )
 
     private val loginUseCase = LoginUseCase(authRepository)

@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class RelevamientoRepositoryImpl(
-    private val remoteDataSource: FirestoreRelevamientoDataSource
+    private val remoteDataSource: FirestoreRelevamientoDataSource,
+    private val imageStorageRepository: com.unaj.appmoviles.obratrack.core.domain.repository.ImageStorageRepository
 ) : RelevamientoRepository {
 
     override fun observeAll(userId: String): Flow<List<Relevamiento>> =
@@ -29,8 +30,21 @@ class RelevamientoRepositoryImpl(
         obraId: String,
         draft: RelevamientoDraft,
         photo: ByteArray?
-    ): AppResult<Relevamiento> =
-        remoteDataSource.create(draft.toDto(userId, obraId), photo).toAppResult()
+    ): AppResult<Relevamiento> {
+        val fotoUrl = if (photo != null) {
+            val result = imageStorageRepository.uploadImage(
+                bytes = photo,
+                folder = "relevamientos/$obraId",
+                name = java.util.UUID.randomUUID().toString()
+            )
+            if (result is AppResult.Error) return AppResult.Error(result.error)
+            (result as AppResult.Success).data
+        } else {
+            draft.fotoUrl
+        }
+        
+        return remoteDataSource.create(draft.copy(fotoUrl = fotoUrl).toDto(userId, obraId), null).toAppResult()
+    }
 
     override suspend fun update(
         userId: String,
@@ -38,12 +52,25 @@ class RelevamientoRepositoryImpl(
         relevamientoId: String,
         draft: RelevamientoDraft,
         photo: ByteArray?
-    ): AppResult<Relevamiento> =
-        remoteDataSource.update(
+    ): AppResult<Relevamiento> {
+        val fotoUrl = if (photo != null) {
+            val result = imageStorageRepository.uploadImage(
+                bytes = photo,
+                folder = "relevamientos/$obraId",
+                name = relevamientoId
+            )
+            if (result is AppResult.Error) return AppResult.Error(result.error)
+            (result as AppResult.Success).data
+        } else {
+            draft.fotoUrl
+        }
+        
+        return remoteDataSource.update(
             userId,
-            draft.toDto(userId, obraId).copy(id = relevamientoId),
-            photo
+            draft.copy(fotoUrl = fotoUrl).toDto(userId, obraId).copy(id = relevamientoId),
+            null
         ).toAppResult()
+    }
 
     private fun FirebaseResult<RelevamientoDto>.toAppResult(): AppResult<Relevamiento> = when (this) {
         is FirebaseResult.Success -> AppResult.Success(data.toDomain())
