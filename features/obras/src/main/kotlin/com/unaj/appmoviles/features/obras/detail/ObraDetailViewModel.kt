@@ -37,6 +37,7 @@ class ObraDetailViewModel(
                 ) { obra, relevamientos ->
                     ObraDetailUiState(
                         isLoading = false,
+                        isEditable = obra?.userId == user.id,
                         obra = obra,
                         relevamientos = relevamientos,
                         error = if (obra == null) ObraError.NoEncontrada else null
