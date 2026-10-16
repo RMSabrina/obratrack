@@ -14,11 +14,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -148,67 +153,110 @@ fun ObraFormScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Información General", style = MaterialTheme.typography.titleMedium)
-                OutlinedTextField(
-                    value = nombre,
-                    onValueChange = { nombre = it; onInputChanged() },
-                    label = { Text("Nombre") },
-                    isError = error == ObraError.NombreVacio,
-                    supportingText = {
-                        if (error == ObraError.NombreVacio) Text(error.asMessage())
-                    },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = cliente,
-                    onValueChange = { cliente = it; onInputChanged() },
-                    label = { Text("Cliente") },
-                    isError = error == ObraError.ClienteVacio,
-                    supportingText = {
-                        if (error == ObraError.ClienteVacio) Text(error.asMessage())
-                    },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = direccion,
-                    onValueChange = { direccion = it; onInputChanged() },
-                    label = { Text("Dirección") },
-                    isError = error == ObraError.DireccionVacia,
-                    supportingText = {
-                        if (error == ObraError.DireccionVacia) Text(error.asMessage())
-                    },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text("Información General", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    OutlinedTextField(
+                        value = nombre,
+                        onValueChange = { nombre = it; onInputChanged() },
+                        label = { Text("Nombre") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Build, contentDescription = null)
+                        },
+                        isError = error == ObraError.NombreVacio,
+                        supportingText = {
+                            if (error == ObraError.NombreVacio) Text(error.asMessage())
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = cliente,
+                        onValueChange = { cliente = it; onInputChanged() },
+                        label = { Text("Cliente") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Person, contentDescription = null)
+                        },
+                        isError = error == ObraError.ClienteVacio,
+                        supportingText = {
+                            if (error == ObraError.ClienteVacio) Text(error.asMessage())
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = direccion,
+                        onValueChange = { direccion = it; onInputChanged() },
+                        label = { Text("Dirección") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Place, contentDescription = null)
+                        },
+                        isError = error == ObraError.DireccionVacia,
+                        supportingText = {
+                            if (error == ObraError.DireccionVacia) Text(error.asMessage())
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Estado", style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    EstadoObra.entries.forEach { option ->
-                        FilterChip(
-                            selected = estadoActual == option,
-                            onClick = { estado = option.toStorageValue(); onInputChanged() },
-                            label = { Text(option.label()) }
-                        )
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text("Estado", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        EstadoObra.entries.forEach { option ->
+                            val (containerColor, labelColor) = when (option) {
+                                EstadoObra.ACTIVA -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+                                EstadoObra.PAUSADA -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
+                                EstadoObra.FINALIZADA -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+                            }
+
+                            FilterChip(
+                                selected = estadoActual == option,
+                                onClick = { estado = option.toStorageValue(); onInputChanged() },
+                                label = { Text(option.label()) },
+                                modifier = Modifier.weight(1f),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = containerColor,
+                                    selectedLabelColor = labelColor
+                                )
+                            )
+                        }
                     }
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Configuración", style = MaterialTheme.typography.titleMedium)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Obra pública", style = MaterialTheme.typography.bodyLarge)
-                    Switch(
-                        checked = publica,
-                        onCheckedChange = { publica = it; onInputChanged() }
+                    Text("Configuración", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Hacer la obra pública", style = MaterialTheme.typography.bodyLarge)
+                        Switch(
+                            checked = publica,
+                            onCheckedChange = { publica = it; onInputChanged() }
+                        )
+                    }
+                    Text(
+                        text = "Una obra pública puede ser vista por otras personas, pero sólo tú puedes editarla o agregar relevamientos.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -222,7 +270,8 @@ fun ObraFormScreen(
                 Text(
                     text = error.asMessage(),
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
         }
