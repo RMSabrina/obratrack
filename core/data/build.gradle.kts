@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -38,4 +40,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 }
