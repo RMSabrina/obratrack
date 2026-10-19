@@ -6,21 +6,27 @@ import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
 import com.unaj.appmoviles.obratrack.core.firebase.ObraDto
 import com.unaj.appmoviles.obratrack.core.firebase.ObraForbiddenException
 import com.unaj.appmoviles.obratrack.core.firebase.ObraNotFoundException
 
-fun ObraDto.toDomain(): Obra = Obra(
-    id = id,
-    userId = userId,
-    nombre = nombre,
-    cliente = cliente,
-    direccion = direccion,
-    publica = publica,
-    estado = estado.toEstadoObra(),
-    fechaInicio = fechaInicioMillis,
-    ultimaVisita = ultimaVisitaMillis
-)
+fun ObraDto.toDomain(): Obra {
+    val lat = latitud
+    val lon = longitud
+    return Obra(
+        id = id,
+        userId = userId,
+        nombre = nombre,
+        cliente = cliente,
+        direccion = direccion,
+        publica = publica,
+        estado = estado.toEstadoObra(),
+        fechaInicio = fechaInicioMillis,
+        ultimaVisita = ultimaVisitaMillis,
+        ubicacion = if (lat != null && lon != null) Ubicacion(lat, lon) else null
+    )
+}
 
 fun ObraDraft.toDto(userId: String, fechaInicioMillis: Long): ObraDto = ObraDto(
     id = "",
@@ -31,7 +37,9 @@ fun ObraDraft.toDto(userId: String, fechaInicioMillis: Long): ObraDto = ObraDto(
     direccion = direccion,
     fechaInicioMillis = fechaInicioMillis,
     estado = estado.toFirestoreValue(),
-    ultimaVisitaMillis = null
+    ultimaVisitaMillis = null,
+    latitud = ubicacion?.latitud,
+    longitud = ubicacion?.longitud
 )
 
 fun Exception.toObraError(): ObraError = when (this) {

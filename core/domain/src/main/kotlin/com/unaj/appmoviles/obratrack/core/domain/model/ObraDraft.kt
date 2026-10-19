@@ -5,5 +5,6 @@ data class ObraDraft(
     val cliente: String,
     val direccion: String,
     val publica: Boolean,
-    val estado: EstadoObra
+    val estado: EstadoObra,
+    val ubicacion: Ubicacion? = null
 )

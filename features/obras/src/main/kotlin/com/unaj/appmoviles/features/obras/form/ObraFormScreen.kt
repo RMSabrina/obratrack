@@ -1,5 +1,13 @@
 package com.unaj.appmoviles.features.obras.form
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.LocationManager
+import android.os.Build
+import android.os.Looper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -7,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -15,6 +24,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.BottomAppBar
@@ -27,6 +40,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -40,6 +54,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unaj.appmoviles.features.obras.estadoObraFromStorage
@@ -48,6 +63,7 @@ import com.unaj.appmoviles.features.obras.toStorageValue
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
 data class ObraFormInitial(
@@ -56,7 +72,9 @@ data class ObraFormInitial(
     val cliente: String,
     val direccion: String,
     val estado: String,
-    val publica: Boolean
+    val publica: Boolean,
+    val latitud: Double? = null,
+    val longitud: Double? = null
 )
 
 @Composable
@@ -89,14 +107,37 @@ fun ObraFormScreen(
     onInputChanged: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var nombre by rememberSaveable { mutableStateOf(initial.nombre) }
     var cliente by rememberSaveable { mutableStateOf(initial.cliente) }
     var direccion by rememberSaveable { mutableStateOf(initial.direccion) }
     var estado by rememberSaveable { mutableStateOf(initial.estado) }
     var publica by rememberSaveable { mutableStateOf(initial.publica) }
+    var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
+    var longitud by rememberSaveable { mutableStateOf(initial.longitud) }
+    var ubicacionMensaje by rememberSaveable { mutableStateOf<String?>(null) }
+
+    val pedirUbicacion = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            ubicacionMensaje = null
+            capturarUbicacion(context) { ubicacion ->
+                if (ubicacion != null) {
+                    latitud = ubicacion.latitud
+                    longitud = ubicacion.longitud
+                } else {
+                    ubicacionMensaje = "No pudimos obtener la señal de GPS actual."
+                }
+            }
+        } else {
+            ubicacionMensaje = "Se requiere permiso de ubicación para capturar GPS."
+        }
+    }
+
+    val estadoActual = estadoObraFromStorage(estado)
     val error = (state as? ObraFormUiState.Error)?.error
     val isLoading = state is ObraFormUiState.Loading
-    val estadoActual = estadoObraFromStorage(estado)
 
     Scaffold(
         modifier = modifier,
@@ -123,7 +164,8 @@ fun ObraFormScreen(
                                 cliente = cliente,
                                 direccion = direccion,
                                 publica = publica,
-                                estado = estadoActual
+                                estado = estadoActual,
+                                ubicacion = if (latitud != null && longitud != null) Ubicacion(latitud!!, longitud!!) else null
                             )
                         )
                     },
@@ -204,6 +246,91 @@ fun ObraFormScreen(
                 }
             }
 
+            // Sección: Ubicación Geográfica (RF4 y RF5)
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text("Ubicación Geográfica (GPS)", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    if (latitud != null && longitud != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Coordenadas asignadas", style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    "Lat: $latitud, Lng: $longitud",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            IconButton(onClick = {
+                                latitud = null
+                                longitud = null
+                            }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Borrar ubicación")
+                            }
+                        }
+
+                        // Ajuste manual (RF4: editable manualmente)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = latitud?.toString() ?: "",
+                                onValueChange = {
+                                    latitud = it.toDoubleOrNull()
+                                    onInputChanged()
+                                },
+                                label = { Text("Latitud") },
+                                modifier = Modifier.weight(1f)
+                            )
+                            OutlinedTextField(
+                                value = longitud?.toString() ?: "",
+                                onValueChange = {
+                                    longitud = it.toDoubleOrNull()
+                                    onInputChanged()
+                                },
+                                label = { Text("Longitud") },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.LocationOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Sin coordenadas asignadas",
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    OutlinedButton(
+                        onClick = { pedirUbicacion.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(if (latitud != null) "Actualizar coordenadas por GPS" else "Capturar ubicación por GPS")
+                    }
+
+                    if (ubicacionMensaje != null) {
+                        Text(
+                            text = ubicacionMensaje!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+
             ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -275,5 +402,29 @@ fun ObraFormScreen(
                 )
             }
         }
+    }
+}
+
+@SuppressLint("MissingPermission")
+private fun capturarUbicacion(context: Context, onResult: (Ubicacion?) -> Unit) {
+    val manager = context.getSystemService(LocationManager::class.java)
+    val provider = when {
+        manager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+        manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+        else -> null
+    }
+    if (provider == null) {
+        onResult(null)
+        return
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        manager.getCurrentLocation(provider, null, context.mainExecutor) { location ->
+            onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
+        }
+    } else {
+        @Suppress("DEPRECATION")
+        manager.requestSingleUpdate(provider, { location ->
+            onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
+        }, Looper.getMainLooper())
     }
 }

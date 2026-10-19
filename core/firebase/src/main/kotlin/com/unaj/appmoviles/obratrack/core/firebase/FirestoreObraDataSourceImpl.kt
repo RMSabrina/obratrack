@@ -3,6 +3,7 @@ package com.unaj.appmoviles.obratrack.core.firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -106,26 +107,39 @@ class FirestoreObraDataSourceImpl(
         }
     }
 
-    private fun ObraDto.toCreateMap(): Map<String, Any> = mapOf(
-        FIELD_USER_ID to userId,
-        FIELD_NOMBRE to nombre,
-        FIELD_CLIENTE to cliente,
-        FIELD_PUBLICA to publica,
-        FIELD_DIRECCION to direccion,
-        FIELD_FECHA_INICIO to Timestamp(Date(fechaInicioMillis)),
-        FIELD_ESTADO to estado,
-    )
+    private fun ObraDto.toCreateMap(): Map<String, Any> {
+        val map = mutableMapOf<String, Any>(
+            FIELD_USER_ID to userId,
+            FIELD_NOMBRE to nombre,
+            FIELD_CLIENTE to cliente,
+            FIELD_PUBLICA to publica,
+            FIELD_DIRECCION to direccion,
+            FIELD_FECHA_INICIO to Timestamp(Date(fechaInicioMillis)),
+            FIELD_ESTADO to estado,
+        )
+        if (latitud != null && longitud != null) {
+            map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
+        }
+        return map
+    }
 
-    private fun ObraDto.toUpdateMap(): Map<String, Any> = mapOf(
-        FIELD_NOMBRE to nombre,
-        FIELD_CLIENTE to cliente,
-        FIELD_PUBLICA to publica,
-        FIELD_DIRECCION to direccion,
-        FIELD_ESTADO to estado
-    )
+    private fun ObraDto.toUpdateMap(): Map<String, Any> {
+        val map = mutableMapOf<String, Any>(
+            FIELD_NOMBRE to nombre,
+            FIELD_CLIENTE to cliente,
+            FIELD_PUBLICA to publica,
+            FIELD_DIRECCION to direccion,
+            FIELD_ESTADO to estado
+        )
+        if (latitud != null && longitud != null) {
+            map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
+        }
+        return map
+    }
 
     private fun DocumentSnapshot.toObraDto(): ObraDto? {
         val ownerId = getString(FIELD_USER_ID) ?: return null
+        val geo = getGeoPoint(FIELD_UBICACION)
         return ObraDto(
             id = id,
             userId = ownerId,
@@ -136,6 +150,8 @@ class FirestoreObraDataSourceImpl(
             fechaInicioMillis = getTimestamp(FIELD_FECHA_INICIO)?.toDate()?.time ?: 0L,
             estado = getString(FIELD_ESTADO) ?: ESTADO_ACTIVA,
             ultimaVisitaMillis = getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
+            latitud = geo?.latitude,
+            longitud = geo?.longitude
         )
     }
 
@@ -150,6 +166,7 @@ class FirestoreObraDataSourceImpl(
         const val FIELD_FECHA_INICIO = "fechaInicio"
         const val FIELD_ESTADO = "estado"
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
+        const val FIELD_UBICACION = "ubicacion"
         const val ESTADO_ACTIVA = "activa"
     }
 }

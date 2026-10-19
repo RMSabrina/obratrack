@@ -113,7 +113,9 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                                 cliente = obra.cliente,
                                 direccion = obra.direccion,
                                 estado = obra.estado.toStorageValue(),
-                                publica = obra.publica
+                                publica = obra.publica,
+                                latitud = obra.ubicacion?.latitud,
+                                longitud = obra.ubicacion?.longitud
                             )
                         )
                     },
@@ -139,7 +141,9 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                         cliente = destination.cliente,
                         direccion = destination.direccion,
                         estado = destination.estado,
-                        publica = destination.publica
+                        publica = destination.publica,
+                        latitud = destination.latitud,
+                        longitud = destination.longitud
                     ),
                     onBack = ::goBack,
                     onSaved = ::goBack

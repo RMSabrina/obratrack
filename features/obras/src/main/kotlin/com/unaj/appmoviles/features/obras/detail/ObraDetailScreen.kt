@@ -51,6 +51,7 @@ import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import com.unaj.appmoviles.obratrack.core.ui.components.EmptyState
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
+import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
 
 @Composable
@@ -139,6 +140,14 @@ fun ObraDetailScreen(
                 ) {
                     item {
                         ObraHeaderCard(obra = obra)
+                    }
+
+                    item {
+                        MapPreviewCard(
+                            latitud = obra.ubicacion?.latitud,
+                            longitud = obra.ubicacion?.longitud,
+                            title = "Ubicación de la Obra"
+                        )
                     }
 
                     item {

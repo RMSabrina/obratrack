@@ -49,6 +49,7 @@ import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
+import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 
 @Composable
 fun RelevamientoDetailRoute(
@@ -233,50 +234,11 @@ fun RelevamientoDetailScreen(
                     }
 
                     // Ubicación del Relevamiento
-                    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Text(
-                                text = "Ubicación Geográfica",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            val ubicacion = relevamiento.ubicacion
-                            if (ubicacion != null) {
-                                InfoRow(
-                                    icon = Icons.Default.LocationOn,
-                                    text = "Lat: " + ubicacion.latitud + ", Lng: " + ubicacion.longitud
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                FilledTonalButton(
-                                    onClick = {
-                                        val geoUri = Uri.parse(
-                                            "geo:" + ubicacion.latitud + "," + ubicacion.longitud + "?q=" + ubicacion.latitud + "," + ubicacion.longitud
-                                        )
-                                        context.startActivity(Intent(Intent.ACTION_VIEW, geoUri))
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.OpenInNew,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Abrir en Google Maps")
-                                }
-                            } else {
-                                Text(
-                                    text = "No se registró ubicación GPS al momento de la visita.",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
+                    MapPreviewCard(
+                        latitud = relevamiento.ubicacion?.latitud,
+                        longitud = relevamiento.ubicacion?.longitud,
+                        title = "Ubicación del Relevamiento"
+                    )
 
                     Spacer(modifier = Modifier.height(48.dp))
                 }

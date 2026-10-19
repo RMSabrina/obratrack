@@ -9,5 +9,6 @@ data class Obra(
     val publica: Boolean,
     val estado: EstadoObra,
     val fechaInicio: Long,
-    val ultimaVisita: Long?
+    val ultimaVisita: Long?,
+    val ubicacion: Ubicacion? = null
 )

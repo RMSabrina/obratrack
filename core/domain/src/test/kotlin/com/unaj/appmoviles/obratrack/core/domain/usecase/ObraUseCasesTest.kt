@@ -130,6 +130,7 @@ private class FakeObraRepository : ObraRepository {
         publica = publica,
         estado = estado,
         fechaInicio = 0L,
-        ultimaVisita = null
+        ultimaVisita = null,
+        ubicacion = ubicacion
     )
 }
