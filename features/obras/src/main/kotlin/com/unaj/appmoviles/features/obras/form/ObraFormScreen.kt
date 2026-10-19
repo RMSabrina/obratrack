@@ -45,6 +45,16 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.filled.DateRange
+import android.app.DatePickerDialog
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,7 +84,8 @@ data class ObraFormInitial(
     val estado: String,
     val publica: Boolean,
     val latitud: Double? = null,
-    val longitud: Double? = null
+    val longitud: Double? = null,
+    val proximaVisita: Long? = null
 )
 
 @Composable
@@ -115,6 +126,7 @@ fun ObraFormScreen(
     var publica by rememberSaveable { mutableStateOf(initial.publica) }
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
     var longitud by rememberSaveable { mutableStateOf(initial.longitud) }
+    var proximaVisita by rememberSaveable { mutableStateOf(initial.proximaVisita) }
     var ubicacionMensaje by rememberSaveable { mutableStateOf<String?>(null) }
 
     val pedirUbicacion = rememberLauncherForActivityResult(
@@ -165,7 +177,8 @@ fun ObraFormScreen(
                                 direccion = direccion,
                                 publica = publica,
                                 estado = estadoActual,
-                                ubicacion = if (latitud != null && longitud != null) Ubicacion(latitud!!, longitud!!) else null
+                                ubicacion = if (latitud != null && longitud != null) Ubicacion(latitud!!, longitud!!) else null,
+                                proximaVisita = proximaVisita
                             )
                         )
                     },

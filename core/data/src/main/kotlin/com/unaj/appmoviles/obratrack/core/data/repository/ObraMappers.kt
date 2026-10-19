@@ -24,7 +24,8 @@ fun ObraDto.toDomain(): Obra {
         estado = estado.toEstadoObra(),
         fechaInicio = fechaInicioMillis,
         ultimaVisita = ultimaVisitaMillis,
-        ubicacion = if (lat != null && lon != null) Ubicacion(lat, lon) else null
+        ubicacion = if (lat != null && lon != null) Ubicacion(lat, lon) else null,
+        proximaVisita = proximaVisitaMillis
     )
 }
 
@@ -39,7 +40,8 @@ fun ObraDraft.toDto(userId: String, fechaInicioMillis: Long): ObraDto = ObraDto(
     estado = estado.toFirestoreValue(),
     ultimaVisitaMillis = null,
     latitud = ubicacion?.latitud,
-    longitud = ubicacion?.longitud
+    longitud = ubicacion?.longitud,
+    proximaVisitaMillis = proximaVisita
 )
 
 fun Exception.toObraError(): ObraError = when (this) {

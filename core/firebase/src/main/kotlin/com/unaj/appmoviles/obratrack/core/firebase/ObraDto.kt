@@ -15,5 +15,6 @@ data class ObraDto(
     val estado: String,
     val ultimaVisitaMillis: Long?,
     val latitud: Double? = null,
-    val longitud: Double? = null
+    val longitud: Double? = null,
+    val proximaVisitaMillis: Long? = null
 )

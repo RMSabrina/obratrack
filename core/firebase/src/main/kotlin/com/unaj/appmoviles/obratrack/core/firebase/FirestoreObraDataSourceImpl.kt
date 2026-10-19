@@ -120,6 +120,9 @@ class FirestoreObraDataSourceImpl(
         if (latitud != null && longitud != null) {
             map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
         }
+        if (proximaVisitaMillis != null) {
+            map[FIELD_PROXIMA_VISITA] = Timestamp(Date(proximaVisitaMillis))
+        }
         return map
     }
 
@@ -133,6 +136,9 @@ class FirestoreObraDataSourceImpl(
         )
         if (latitud != null && longitud != null) {
             map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
+        }
+        if (proximaVisitaMillis != null) {
+            map[FIELD_PROXIMA_VISITA] = Timestamp(Date(proximaVisitaMillis))
         }
         return map
     }
@@ -151,7 +157,8 @@ class FirestoreObraDataSourceImpl(
             estado = getString(FIELD_ESTADO) ?: ESTADO_ACTIVA,
             ultimaVisitaMillis = getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
             latitud = geo?.latitude,
-            longitud = geo?.longitude
+            longitud = geo?.longitude,
+            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
         )
     }
 
@@ -167,6 +174,7 @@ class FirestoreObraDataSourceImpl(
         const val FIELD_ESTADO = "estado"
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
         const val FIELD_UBICACION = "ubicacion"
+        const val FIELD_PROXIMA_VISITA = "proximaVisita"
         const val ESTADO_ACTIVA = "activa"
     }
 }

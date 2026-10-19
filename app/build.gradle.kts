@@ -83,4 +83,5 @@ dependencies {
     
     // Cloudinary para AppContainer
     implementation(libs.cloudinary.android)
+    implementation(libs.androidx.work.runtime.ktx)
 }

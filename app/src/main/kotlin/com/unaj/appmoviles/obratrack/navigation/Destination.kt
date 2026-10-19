@@ -29,7 +29,8 @@ data class ObraFormDestination(
     val estado: String = "activa",
     val publica: Boolean = false,
     val latitud: Double? = null,
-    val longitud: Double? = null
+    val longitud: Double? = null,
+    val proximaVisita: Long? = null
 ) : NavKey
 
 @Serializable
