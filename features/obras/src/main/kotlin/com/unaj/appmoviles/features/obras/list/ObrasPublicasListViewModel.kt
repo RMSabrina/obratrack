@@ -4,17 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasPublicasUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
 data class ObrasPublicasListUiState(
     val obras: List<Obra> = emptyList(),
     val isLoading: Boolean = true
 )
 
-class ObrasPublicasListViewModel(
+@HiltViewModel
+class ObrasPublicasListViewModel @Inject constructor(
     observeObrasPublicasUseCase: ObserveObrasPublicasUseCase
 ) : ViewModel() {
 

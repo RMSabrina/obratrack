@@ -11,7 +11,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class RegisterViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
     private val register: RegisterUseCase,
     private val resendVerification: ResendVerificationUseCase
 ) : ViewModel() {

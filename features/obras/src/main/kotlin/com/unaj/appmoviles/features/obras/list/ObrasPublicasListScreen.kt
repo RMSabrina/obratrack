@@ -28,9 +28,11 @@ import com.unaj.appmoviles.features.obras.list.components.ObraCard
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun ObrasPublicasListRoute(
-    viewModel: ObrasPublicasListViewModel,
+    viewModel: ObrasPublicasListViewModel = hiltViewModel(),
     onOpen: (Obra) -> Unit,
     onBack: () -> Unit
 ) {

@@ -16,7 +16,11 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class HomeViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val observeSessionUseCase: ObserveSessionUseCase,
     private val observeObrasUseCase: ObserveObrasUseCase,
     private val observeAllRelevamientosUseCase: ObserveAllRelevamientosUseCase

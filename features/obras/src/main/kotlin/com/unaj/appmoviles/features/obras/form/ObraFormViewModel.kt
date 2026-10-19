@@ -14,12 +14,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class ObraFormViewModel(
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
+
+@HiltViewModel(assistedFactory = ObraFormViewModel.Factory::class)
+class ObraFormViewModel @AssistedInject constructor(
     private val observeSession: ObserveSessionUseCase,
     private val createObra: CreateObraUseCase,
     private val updateObra: UpdateObraUseCase,
-    private val obraId: String?
+    @Assisted private val obraId: String?
 ) : ViewModel() {
+
+    @dagger.assisted.AssistedFactory
+    interface Factory {
+        fun create(obraId: String?): ObraFormViewModel
+    }
 
     private val _uiState = MutableStateFlow<ObraFormUiState>(ObraFormUiState.Idle)
     val uiState: StateFlow<ObraFormUiState> = _uiState.asStateFlow()

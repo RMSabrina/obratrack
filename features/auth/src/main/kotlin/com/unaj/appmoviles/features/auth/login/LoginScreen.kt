@@ -22,9 +22,11 @@ import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun LoginRoute(
-    viewModel: LoginViewModel,
+    viewModel: LoginViewModel = hiltViewModel(),
     onNavigateToRegister: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()

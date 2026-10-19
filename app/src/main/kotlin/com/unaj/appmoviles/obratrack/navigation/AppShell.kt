@@ -92,13 +92,14 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             }
             entry<ObraPublicaDetailDestination> { destination ->
                 ObraPublicaDetailRoute(
+                    obraId = destination.obraId,
                     viewModel = viewModel(factory = container.obraPublicaDetailViewModelFactory(destination.obraId)),
                     onBack = ::goBack
                 )
             }
             entry<ObraDetailDestination> { destination ->
                 ObraDetailRoute(
-                    viewModel = viewModel(factory = container.obraDetailViewModelFactory(destination.obraId)),
+                    obraId = destination.obraId,
                     onBack = ::goBack,
                     onEditObra = { obra ->
                         backStack.add(
@@ -132,7 +133,6 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             }
             entry<ObraFormDestination> { destination ->
                 ObraFormRoute(
-                    viewModel = viewModel(factory = container.obraFormViewModelFactory(destination.obraId)),
                     initial = ObraFormInitial(
                         obraId = destination.obraId,
                         nombre = destination.nombre,
@@ -147,12 +147,6 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             }
             entry<RelevamientoFormDestination> { destination ->
                 RelevamientoFormRoute(
-                    viewModel = viewModel(
-                        factory = container.relevamientoFormViewModelFactory(
-                            destination.obraId,
-                            destination.relevamientoId
-                        )
-                    ),
                     initial = RelevamientoFormInitial(
                         obraId = destination.obraId,
                         relevamientoId = destination.relevamientoId,

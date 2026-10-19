@@ -4,9 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun ProfileRoute(
-    viewModel: ProfileViewModel,
+    viewModel: ProfileViewModel = hiltViewModel(),
     onBack: () -> Unit,
     onLogout: () -> Unit
 ) {

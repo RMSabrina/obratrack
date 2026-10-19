@@ -53,13 +53,18 @@ import com.unaj.appmoviles.obratrack.core.ui.components.EmptyState
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
 import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun ObraDetailRoute(
-    viewModel: ObraDetailViewModel,
+    obraId: String,
     onBack: () -> Unit,
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
-    onEditRelevamiento: (Relevamiento) -> Unit
+    onEditRelevamiento: (Relevamiento) -> Unit,
+    viewModel: ObraDetailViewModel = hiltViewModel(
+        creationCallback = { factory: ObraDetailViewModel.Factory -> factory.create(obraId) }
+    )
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObraDetailScreen(

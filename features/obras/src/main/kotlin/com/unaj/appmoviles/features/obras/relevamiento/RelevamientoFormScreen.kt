@@ -81,6 +81,7 @@ import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import java.io.File
 import java.util.Calendar
 import java.util.TimeZone
+import androidx.hilt.navigation.compose.hiltViewModel
 
 data class RelevamientoFormInitial(
     val obraId: String,
@@ -94,10 +95,14 @@ data class RelevamientoFormInitial(
 
 @Composable
 fun RelevamientoFormRoute(
-    viewModel: RelevamientoFormViewModel,
     initial: RelevamientoFormInitial,
     onBack: () -> Unit,
-    onSaved: () -> Unit
+    onSaved: () -> Unit,
+    viewModel: RelevamientoFormViewModel = hiltViewModel(
+        creationCallback = { factory: RelevamientoFormViewModel.Factory -> 
+            factory.create(initial.obraId, initial.relevamientoId) 
+        }
+    )
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(state) {

@@ -43,9 +43,11 @@ import com.unaj.appmoviles.features.obras.label
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun ObrasListRoute(
-    viewModel: ObrasListViewModel,
+    viewModel: ObrasListViewModel = hiltViewModel(),
     onCreate: () -> Unit,
     onOpen: (Obra) -> Unit,
     onLogout: () -> Unit,

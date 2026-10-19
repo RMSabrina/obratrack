@@ -49,6 +49,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
+import androidx.hilt.navigation.compose.hiltViewModel
 
 data class ObraFormInitial(
     val obraId: String?,
@@ -61,10 +62,12 @@ data class ObraFormInitial(
 
 @Composable
 fun ObraFormRoute(
-    viewModel: ObraFormViewModel,
     initial: ObraFormInitial,
     onBack: () -> Unit,
-    onSaved: () -> Unit
+    onSaved: () -> Unit,
+    viewModel: ObraFormViewModel = hiltViewModel(
+        creationCallback = { factory: ObraFormViewModel.Factory -> factory.create(initial.obraId) }
+    )
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(state) {

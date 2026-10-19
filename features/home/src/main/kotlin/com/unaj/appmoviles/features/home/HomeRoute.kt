@@ -5,9 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun HomeRoute(
-    viewModel: HomeViewModel,
+    viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToObras: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
     onNavigateToObrasPublicas: () -> Unit,

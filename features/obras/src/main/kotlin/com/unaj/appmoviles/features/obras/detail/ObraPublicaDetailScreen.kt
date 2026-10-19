@@ -36,10 +36,15 @@ import com.unaj.appmoviles.features.obras.label
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun ObraPublicaDetailRoute(
-    viewModel: ObraPublicaDetailViewModel,
-    onBack: () -> Unit
+    obraId: String,
+    onBack: () -> Unit,
+    viewModel: ObraPublicaDetailViewModel = hiltViewModel(
+        creationCallback = { factory: ObraPublicaDetailViewModel.Factory -> factory.create(obraId) }
+    )
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObraPublicaDetailScreen(

@@ -16,7 +16,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ProfileViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
     observeSessionUseCase: ObserveSessionUseCase,
     private val updateProfileNameUseCase: UpdateProfileNameUseCase,
     private val changePasswordUseCase: ChangePasswordUseCase,
