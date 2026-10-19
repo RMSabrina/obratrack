@@ -27,13 +27,11 @@ fun AuthNavigation(container: AppContainer) {
         entryProvider = entryProvider {
             entry<LoginDestination> {
                 LoginRoute(
-                    viewModel = viewModel(factory = container.loginViewModelFactory),
                     onNavigateToRegister = { backStack.add(RegisterDestination) }
                 )
             }
             entry<RegisterDestination> {
                 RegisterRoute(
-                    viewModel = viewModel(factory = container.registerViewModelFactory),
                     onNavigateBack = ::goBack
                 )
             }

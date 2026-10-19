@@ -14,13 +14,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class RelevamientoFormViewModel(
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
+
+@HiltViewModel(assistedFactory = RelevamientoFormViewModel.Factory::class)
+class RelevamientoFormViewModel @AssistedInject constructor(
     private val observeSession: ObserveSessionUseCase,
     private val createRelevamiento: CreateRelevamientoUseCase,
     private val updateRelevamiento: UpdateRelevamientoUseCase,
-    private val obraId: String,
-    private val relevamientoId: String?
+    @Assisted("obraId") private val obraId: String,
+    @Assisted("relevamientoId") private val relevamientoId: String?
 ) : ViewModel() {
+
+    @dagger.assisted.AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("obraId") obraId: String,
+            @Assisted("relevamientoId") relevamientoId: String?
+        ): RelevamientoFormViewModel
+    }
 
     private val _uiState = MutableStateFlow<RelevamientoFormUiState>(RelevamientoFormUiState.Idle)
     val uiState: StateFlow<RelevamientoFormUiState> = _uiState.asStateFlow()

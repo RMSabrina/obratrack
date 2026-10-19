@@ -12,7 +12,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class ObrasListViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class ObrasListViewModel @Inject constructor(
     observeSession: ObserveSessionUseCase,
     private val observeObras: ObserveObrasUseCase
 ) : ViewModel() {

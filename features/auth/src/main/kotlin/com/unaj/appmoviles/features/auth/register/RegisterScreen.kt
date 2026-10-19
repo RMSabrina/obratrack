@@ -37,8 +37,10 @@ import com.unaj.appmoviles.obratrack.core.domain.error.AuthError
 import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
-fun RegisterRoute(viewModel: RegisterViewModel, onNavigateBack: () -> Unit) {
+fun RegisterRoute(viewModel: RegisterViewModel = hiltViewModel(), onNavigateBack: () -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     RegisterScreen(
         state = state,

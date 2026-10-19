@@ -6,6 +6,9 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraPublicaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosDeObraUseCase
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,11 +22,17 @@ data class ObraPublicaDetailUiState(
     val error: Throwable? = null
 )
 
-class ObraPublicaDetailViewModel(
-    obraId: String,
+@HiltViewModel(assistedFactory = ObraPublicaDetailViewModel.Factory::class)
+class ObraPublicaDetailViewModel @AssistedInject constructor(
+    @Assisted obraId: String,
     observeObraPublicaUseCase: ObserveObraPublicaUseCase,
     observeRelevamientosUseCase: ObserveRelevamientosDeObraUseCase
 ) : ViewModel() {
+
+    @dagger.assisted.AssistedFactory
+    interface Factory {
+        fun create(obraId: String): ObraPublicaDetailViewModel
+    }
 
     private val internalError = MutableStateFlow<Throwable?>(null)
 

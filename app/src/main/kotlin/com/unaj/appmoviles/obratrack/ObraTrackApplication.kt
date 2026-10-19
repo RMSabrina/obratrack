@@ -4,7 +4,9 @@ import AppContainer
 import android.app.Application
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import com.unaj.appmoviles.obratrack.worker.RelevamientoReminderWorker
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class ObraTrackApplication : Application() {
     lateinit var container: AppContainer
         private set
