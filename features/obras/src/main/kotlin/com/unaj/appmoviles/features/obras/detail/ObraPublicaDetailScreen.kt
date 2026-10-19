@@ -60,8 +60,8 @@ fun ObraPublicaDetailRoute(
 fun ObraPublicaDetailScreen(
     state: ObraPublicaDetailUiState,
     onBack: () -> Unit,
+    onOpenRelevamiento: (Relevamiento) -> Unit = {},
     modifier: Modifier = Modifier,
-    onOpenRelevamiento: (Relevamiento) -> Unit = {}
 ) {
     val obra = state.obra
     Scaffold(

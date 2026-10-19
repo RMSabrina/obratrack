@@ -1,6 +1,5 @@
 package com.unaj.appmoviles.obratrack.navigation
 
-import AppContainer
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -13,7 +12,7 @@ import com.unaj.appmoviles.features.auth.login.LoginRoute
 import com.unaj.appmoviles.features.auth.register.RegisterRoute
 
 @Composable
-fun AuthNavigation(container: AppContainer) {
+fun AuthNavigation() {
     val backStack = rememberNavBackStack(LoginDestination)
     fun goBack() { backStack.removeAt(backStack.lastIndex) }
 

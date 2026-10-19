@@ -7,23 +7,29 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.unaj.appmoviles.obratrack.ObraTrackApplication
+import androidx.hilt.work.HiltWorker
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.concurrent.TimeUnit
 
-class RelevamientoReminderWorker(
-    appContext: Context,
-    workerParams: WorkerParameters
+@HiltWorker
+class RelevamientoReminderWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val authRepository: AuthRepository,
+    private val obraRepository: ObraRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
         NotificationHelper.createNotificationChannels(applicationContext)
 
-        val app = applicationContext as? ObraTrackApplication ?: return Result.success()
-        val sessionUser = app.container.authRepository.session.firstOrNull() ?: return Result.success()
-        val obras: List<Obra> = app.container.obraRepository.observe(sessionUser.id).firstOrNull().orEmpty()
+        val sessionUser = authRepository.session.firstOrNull() ?: return Result.success()
+        val obras: List<Obra> = obraRepository.observe(sessionUser.id).firstOrNull().orEmpty()
 
         val now = System.currentTimeMillis()
         val oneDayMillis = 24L * 60 * 60 * 1000

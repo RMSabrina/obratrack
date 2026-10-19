@@ -16,14 +16,28 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
-class RelevamientoDetailViewModel(
-    private val obraId: String,
-    private val relevamientoId: String,
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
+
+@HiltViewModel(assistedFactory = RelevamientoDetailViewModel.Factory::class)
+class RelevamientoDetailViewModel @AssistedInject constructor(
+    @Assisted("obraId") private val obraId: String,
+    @Assisted("relevamientoId") private val relevamientoId: String,
     observeSession: ObserveSessionUseCase,
     private val observeObra: ObserveObraUseCase,
     private val observeObraPublica: ObserveObraPublicaUseCase,
     private val observeRelevamientosDeObra: ObserveRelevamientosDeObraUseCase
 ) : ViewModel() {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("obraId") obraId: String,
+            @Assisted("relevamientoId") relevamientoId: String
+        ): RelevamientoDetailViewModel
+    }
 
     private val _uiState = MutableStateFlow(RelevamientoDetailUiState())
     val uiState: StateFlow<RelevamientoDetailUiState> = _uiState.asStateFlow()

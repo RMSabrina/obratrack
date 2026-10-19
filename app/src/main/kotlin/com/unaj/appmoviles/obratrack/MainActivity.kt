@@ -14,11 +14,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val container = (application as ObraTrackApplication).container
-
         setContent {
             ObraTrackTheme {
-                AppRoot(container)
+                AppRoot()
             }
         }
     }

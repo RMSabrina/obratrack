@@ -1,6 +1,5 @@
 package com.unaj.appmoviles.obratrack.navigation
 
-import AppContainer
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -33,7 +32,7 @@ import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import com.unaj.appmoviles.obratrack.worker.RelevamientoReminderWorker
 
 @Composable
-fun AppShell(container: AppContainer, onLogout: () -> Unit) {
+fun AppShell(onLogout: () -> Unit) {
     val backStack = rememberNavBackStack(HomeDestination)
     val appContext = LocalContext.current
 
@@ -58,7 +57,6 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
         entryProvider = entryProvider {
             entry<HomeDestination> {
                 HomeRoute(
-                    viewModel = viewModel(factory = container.homeViewModelFactory),
                     onNavigateToObras = { backStack.add(ObrasDestination) },
                     onNavigateToObraSelection = { backStack.add(ObraSelectionDestination) },
                     onNavigateToObrasPublicas = { backStack.add(ObrasPublicasDestination) },
@@ -88,7 +86,6 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             }
             entry<ObraSelectionDestination> {
                 ObraSelectionRoute(
-                    viewModel = viewModel(factory = container.obrasListViewModelFactory),
                     onObraSelected = { obra ->
                         backStack.removeAt(backStack.lastIndex)
                         backStack.add(RelevamientoFormDestination(obraId = obra.id))
@@ -98,14 +95,12 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             }
             entry<ProfileDestination> {
                 ProfileRoute(
-                    viewModel = viewModel(factory = container.profileViewModelFactory),
                     onBack = ::goBack,
                     onLogout = onLogout
                 )
             }
             entry<ObrasDestination> {
                 ObrasListRoute(
-                    viewModel = viewModel(factory = container.obrasListViewModelFactory),
                     onCreate = { backStack.add(ObraFormDestination()) },
                     onOpen = { obra -> backStack.add(ObraDetailDestination(obra.id)) },
                     onLogout = onLogout
@@ -113,7 +108,6 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             }
             entry<ObrasPublicasDestination> {
                 ObrasPublicasListRoute(
-                    viewModel = viewModel(factory = container.obrasPublicasListViewModelFactory),
                     onOpen = { obra -> backStack.add(ObraPublicaDetailDestination(obra.id)) },
                     onBack = ::goBack
                 )
@@ -121,7 +115,6 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             entry<ObraPublicaDetailDestination> { destination ->
                 ObraPublicaDetailRoute(
                     obraId = destination.obraId,
-                    viewModel = viewModel(factory = container.obraPublicaDetailViewModelFactory(destination.obraId)),
                     onBack = ::goBack,
                     onOpenRelevamiento = { relevamiento ->
                         backStack.add(
@@ -184,12 +177,8 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             }
             entry<RelevamientoDetailDestination> { destination ->
                 RelevamientoDetailRoute(
-                    viewModel = viewModel(
-                        factory = container.relevamientoDetailViewModelFactory(
-                            destination.obraId,
-                            destination.relevamientoId
-                        )
-                    ),
+                    obraId = destination.obraId,
+                    relevamientoId = destination.relevamientoId,
                     onBack = ::goBack,
                     onEditRelevamiento = { relevamiento ->
                         backStack.add(

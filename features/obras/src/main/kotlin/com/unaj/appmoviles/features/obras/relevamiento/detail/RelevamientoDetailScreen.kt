@@ -43,6 +43,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
@@ -53,10 +54,14 @@ import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 
 @Composable
 fun RelevamientoDetailRoute(
-    viewModel: RelevamientoDetailViewModel,
+    obraId: String,
+    relevamientoId: String,
     onBack: () -> Unit,
     onEditRelevamiento: (Relevamiento) -> Unit
 ) {
+    val viewModel = hiltViewModel<RelevamientoDetailViewModel, RelevamientoDetailViewModel.Factory>(
+        creationCallback = { factory -> factory.create(obraId, relevamientoId) }
+    )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     RelevamientoDetailScreen(
         state = state,

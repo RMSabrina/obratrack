@@ -31,11 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -45,6 +40,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
@@ -56,10 +52,7 @@ import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import com.unaj.appmoviles.obratrack.core.ui.components.EmptyState
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
-import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
-
-import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun ObraDetailRoute(
@@ -67,11 +60,10 @@ fun ObraDetailRoute(
     onBack: () -> Unit,
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
-    onEditRelevamiento: (Relevamiento) -> Unit,
+    onOpenRelevamiento: (Relevamiento) -> Unit,
     viewModel: ObraDetailViewModel = hiltViewModel(
         creationCallback = { factory: ObraDetailViewModel.Factory -> factory.create(obraId) }
     )
-
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObraDetailScreen(
@@ -79,7 +71,7 @@ fun ObraDetailRoute(
         onBack = onBack,
         onEditObra = onEditObra,
         onCreateRelevamiento = onCreateRelevamiento,
-        onEditRelevamiento = onEditRelevamiento
+        onOpenRelevamiento = onOpenRelevamiento
     )
 }
 
@@ -90,7 +82,7 @@ fun ObraDetailScreen(
     onBack: () -> Unit,
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
-    onEditRelevamiento: (Relevamiento) -> Unit,
+    onOpenRelevamiento: (Relevamiento) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val obra = state.obra
@@ -154,14 +146,6 @@ fun ObraDetailScreen(
                     }
 
                     item {
-                        MapPreviewCard(
-                            latitud = obra.ubicacion?.latitud,
-                            longitud = obra.ubicacion?.longitud,
-                            title = "Ubicación de la Obra"
-                        )
-                    }
-
-                    item {
                         Text(
                             text = "Relevamientos",
                             style = MaterialTheme.typography.titleMedium,
@@ -185,7 +169,7 @@ fun ObraDetailScreen(
                             RelevamientoCard(
                                 relevamiento = relevamiento,
                                 isEditable = state.isEditable,
-                                onClick = { onEditRelevamiento(relevamiento) }
+                                onClick = { onOpenRelevamiento(relevamiento) }
                             )
                         }
                     }
