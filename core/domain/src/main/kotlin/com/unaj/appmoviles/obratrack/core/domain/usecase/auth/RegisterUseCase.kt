@@ -5,8 +5,9 @@ import com.unaj.appmoviles.obratrack.core.domain.error.AuthError
 import com.unaj.appmoviles.obratrack.core.domain.model.Credentials
 import com.unaj.appmoviles.obratrack.core.domain.model.User
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
+import javax.inject.Inject
 
-class RegisterUseCase(
+class RegisterUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
     suspend operator fun invoke(name: String, credentials: Credentials): AppResult<User> {

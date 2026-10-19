@@ -4,8 +4,9 @@ import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
+import javax.inject.Inject
 
-class CreateRelevamientoUseCase(
+class CreateRelevamientoUseCase @Inject constructor(
     private val relevamientoRepository: RelevamientoRepository
 ) {
     suspend operator fun invoke(
