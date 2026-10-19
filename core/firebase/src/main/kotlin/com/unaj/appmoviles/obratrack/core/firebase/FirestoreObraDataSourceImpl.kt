@@ -9,8 +9,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import kotlin.coroutines.cancellation.CancellationException
+import javax.inject.Inject
 
-class FirestoreObraDataSourceImpl(
+class FirestoreObraDataSourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : FirestoreObraDataSource {
 

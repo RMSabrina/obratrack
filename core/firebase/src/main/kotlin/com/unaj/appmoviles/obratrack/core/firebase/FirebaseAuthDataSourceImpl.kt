@@ -15,8 +15,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.cancellation.CancellationException
+import javax.inject.Inject
 
-class FirebaseAuthDataSourceImpl(
+class FirebaseAuthDataSourceImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) : FirebaseAuthDataSource {
 

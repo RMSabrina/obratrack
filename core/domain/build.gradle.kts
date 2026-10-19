@@ -14,5 +14,6 @@ kotlin {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation(libs.javax.inject)
     testImplementation(libs.junit)
 }
