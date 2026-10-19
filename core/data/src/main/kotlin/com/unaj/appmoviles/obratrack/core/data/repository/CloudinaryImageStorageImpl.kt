@@ -7,15 +7,19 @@ import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.repository.ImageStorageRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.unaj.appmoviles.obratrack.core.data.di.CloudinaryUploadPreset
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Error genérico para subida de imágenes.
  */
 data object ImageUploadError : DomainError
 
-class CloudinaryImageStorageImpl(
+@Singleton
+class CloudinaryImageStorageImpl @Inject constructor(
     private val cloudinary: Cloudinary,
-    private val uploadPreset: String
+    @CloudinaryUploadPreset private val uploadPreset: String
 ) : ImageStorageRepository {
 
     override suspend fun uploadImage(bytes: ByteArray, folder: String, name: String): AppResult<String> {

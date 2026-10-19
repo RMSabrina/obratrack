@@ -9,8 +9,11 @@ import com.unaj.appmoviles.obratrack.core.firebase.FirestoreRelevamientoDataSour
 import com.unaj.appmoviles.obratrack.core.firebase.RelevamientoDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class RelevamientoRepositoryImpl(
+@Singleton
+class RelevamientoRepositoryImpl @Inject constructor(
     private val remoteDataSource: FirestoreRelevamientoDataSource,
     private val imageStorageRepository: com.unaj.appmoviles.obratrack.core.domain.repository.ImageStorageRepository
 ) : RelevamientoRepository {

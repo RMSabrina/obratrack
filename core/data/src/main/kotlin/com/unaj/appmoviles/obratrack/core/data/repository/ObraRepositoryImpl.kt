@@ -9,8 +9,11 @@ import com.unaj.appmoviles.obratrack.core.firebase.FirestoreObraDataSource
 import com.unaj.appmoviles.obratrack.core.firebase.ObraDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ObraRepositoryImpl(
+@Singleton
+class ObraRepositoryImpl @Inject constructor(
     private val remoteDataSource: FirestoreObraDataSource
 ) : ObraRepository {
 

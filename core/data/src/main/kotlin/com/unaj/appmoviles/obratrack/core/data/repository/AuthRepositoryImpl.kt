@@ -7,8 +7,11 @@ import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.firebase.FirebaseAuthDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthRepositoryImpl(
+@Singleton
+class AuthRepositoryImpl @Inject constructor(
     private val remoteDataSource: FirebaseAuthDataSource
 ) : AuthRepository {
 
