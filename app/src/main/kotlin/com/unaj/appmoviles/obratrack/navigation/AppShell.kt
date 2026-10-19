@@ -103,7 +103,8 @@ fun AppShell(onLogout: () -> Unit) {
                 ObrasListRoute(
                     onCreate = { backStack.add(ObraFormDestination()) },
                     onOpen = { obra -> backStack.add(ObraDetailDestination(obra.id)) },
-                    onLogout = onLogout
+                    onLogout = onLogout,
+                    onBack = ::goBack
                 )
             }
             entry<ObrasPublicasDestination> {

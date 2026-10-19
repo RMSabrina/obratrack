@@ -42,7 +42,7 @@ fun ObraCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -54,13 +54,13 @@ fun ObraCard(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFE0E0E0)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.HomeWork,
                     contentDescription = null,
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(40.dp)
                 )
             }
@@ -72,21 +72,21 @@ fun ObraCard(
                     text = obra.nombre,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = obra.cliente,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 // Status Badge
                 val (textColor, bgColor) = when (obra.estado) {
-                    EstadoObra.ACTIVA -> MaterialTheme.colorScheme.primary to Color(0xFFE8F5E9)
-                    EstadoObra.PAUSADA -> Color(0xFFE65100) to Color(0xFFFFF3E0)
-                    EstadoObra.FINALIZADA -> Color(0xFF424242) to Color(0xFFF5F5F5)
+                    EstadoObra.ACTIVA -> MaterialTheme.colorScheme.onPrimaryContainer to MaterialTheme.colorScheme.primaryContainer
+                    EstadoObra.PAUSADA -> MaterialTheme.colorScheme.onTertiaryContainer to MaterialTheme.colorScheme.tertiaryContainer
+                    EstadoObra.FINALIZADA -> MaterialTheme.colorScheme.onSurfaceVariant to MaterialTheme.colorScheme.surfaceVariant
                 }
                 
                 StatusBadge(

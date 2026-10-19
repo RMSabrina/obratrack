@@ -88,7 +88,7 @@ fun ObrasListScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Color(0xFFFBFDFB),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { 
@@ -199,7 +199,7 @@ fun ObrasListScreen(
                     Text(
                         text = "No se encontraron obras para la búsqueda.",
                         modifier = Modifier.padding(24.dp),
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 else -> {
