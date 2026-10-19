@@ -39,12 +39,14 @@ import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 @Composable
 fun ObraPublicaDetailRoute(
     viewModel: ObraPublicaDetailViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenRelevamiento: (Relevamiento) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObraPublicaDetailScreen(
         state = state,
-        onBack = onBack
+        onBack = onBack,
+        onOpenRelevamiento = onOpenRelevamiento
     )
 }
 
@@ -53,6 +55,7 @@ fun ObraPublicaDetailRoute(
 fun ObraPublicaDetailScreen(
     state: ObraPublicaDetailUiState,
     onBack: () -> Unit,
+    onOpenRelevamiento: (Relevamiento) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val obra = state.obra
@@ -104,7 +107,7 @@ fun ObraPublicaDetailScreen(
                         item { Text("Todavía no hay relevamientos.") }
                     } else {
                         items(state.relevamientos, key = { it.id }) { relevamiento ->
-                            RelevamientoPublicoCard(relevamiento = relevamiento)
+                            RelevamientoPublicoCard(relevamiento = relevamiento, onClick = { onOpenRelevamiento(relevamiento) })
                         }
                     }
                 }
@@ -114,9 +117,9 @@ fun ObraPublicaDetailScreen(
 }
 
 @Composable
-private fun RelevamientoPublicoCard(relevamiento: Relevamiento) {
+private fun RelevamientoPublicoCard(relevamiento: Relevamiento, onClick: () -> Unit = {}) {
     val context = LocalContext.current
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(
             Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)

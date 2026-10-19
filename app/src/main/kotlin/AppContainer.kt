@@ -1,3 +1,4 @@
+import com.unaj.appmoviles.features.obras.relevamiento.detail.RelevamientoDetailViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -153,6 +154,19 @@ class AppContainer {
         initializer {
             ObraPublicaDetailViewModel(
                 obraId,
+                observeObraPublicaUseCase,
+                observeRelevamientosDeObraUseCase
+            )
+        }
+    }
+
+    fun relevamientoDetailViewModelFactory(obraId: String, relevamientoId: String) = viewModelFactory {
+        initializer {
+            RelevamientoDetailViewModel(
+                obraId,
+                relevamientoId,
+                observeSessionUseCase,
+                observeObraUseCase,
                 observeObraPublicaUseCase,
                 observeRelevamientosDeObraUseCase
             )

@@ -59,7 +59,7 @@ fun ObraDetailRoute(
     onBack: () -> Unit,
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
-    onEditRelevamiento: (Relevamiento) -> Unit
+    onOpenRelevamiento: (Relevamiento) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObraDetailScreen(
@@ -67,7 +67,7 @@ fun ObraDetailRoute(
         onBack = onBack,
         onEditObra = onEditObra,
         onCreateRelevamiento = onCreateRelevamiento,
-        onEditRelevamiento = onEditRelevamiento
+        onOpenRelevamiento = onOpenRelevamiento
     )
 }
 
@@ -78,7 +78,7 @@ fun ObraDetailScreen(
     onBack: () -> Unit,
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
-    onEditRelevamiento: (Relevamiento) -> Unit,
+    onOpenRelevamiento: (Relevamiento) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val obra = state.obra
@@ -165,7 +165,7 @@ fun ObraDetailScreen(
                             RelevamientoCard(
                                 relevamiento = relevamiento,
                                 isEditable = state.isEditable,
-                                onClick = { onEditRelevamiento(relevamiento) }
+                                onClick = { onOpenRelevamiento(relevamiento) }
                             )
                         }
                     }

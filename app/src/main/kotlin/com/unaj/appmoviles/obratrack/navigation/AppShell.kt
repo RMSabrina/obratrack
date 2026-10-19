@@ -17,6 +17,7 @@ import com.unaj.appmoviles.features.obras.list.ObrasPublicasListRoute
 import com.unaj.appmoviles.features.obras.detail.ObraPublicaDetailRoute
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormInitial
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormRoute
+import com.unaj.appmoviles.features.obras.relevamiento.detail.RelevamientoDetailRoute
 import com.unaj.appmoviles.features.home.HomeRoute
 import com.unaj.appmoviles.features.home.ObraSelectionRoute
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
@@ -45,15 +46,12 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                     onNavigateToObrasPublicas = { backStack.add(ObrasPublicasDestination) },
                     onNavigateToProfile = { backStack.add(ProfileDestination) },
                     onOpenRelevamiento = { relevamiento -> 
-                        backStack.add(RelevamientoFormDestination(
-                            obraId = relevamiento.obraId, 
-                            relevamientoId = relevamiento.id,
-                            nota = relevamiento.nota,
-                            fechaMillis = relevamiento.fecha,
-                            fotoUrl = relevamiento.fotoUrl,
-                            latitud = relevamiento.ubicacion?.latitud,
-                            longitud = relevamiento.ubicacion?.longitud
-                        )) 
+                        backStack.add(
+                            RelevamientoDetailDestination(
+                                obraId = relevamiento.obraId, 
+                                relevamientoId = relevamiento.id
+                            )
+                        ) 
                     }
                 )
             }
@@ -61,7 +59,6 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                 ObraSelectionRoute(
                     viewModel = viewModel(factory = container.obrasListViewModelFactory),
                     onObraSelected = { obra -> 
-                        // Reemplazar la selecci\u00f3n en el stack por el formulario de relevamiento
                         backStack.removeAt(backStack.lastIndex)
                         backStack.add(RelevamientoFormDestination(obraId = obra.id))
                     },
@@ -93,7 +90,15 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
             entry<ObraPublicaDetailDestination> { destination ->
                 ObraPublicaDetailRoute(
                     viewModel = viewModel(factory = container.obraPublicaDetailViewModelFactory(destination.obraId)),
-                    onBack = ::goBack
+                    onBack = ::goBack,
+                    onOpenRelevamiento = { relevamiento ->
+                        backStack.add(
+                            RelevamientoDetailDestination(
+                                obraId = destination.obraId,
+                                relevamientoId = relevamiento.id
+                            )
+                        )
+                    }
                 )
             }
             entry<ObraDetailDestination> { destination ->
@@ -115,16 +120,11 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                     onCreateRelevamiento = {
                         backStack.add(RelevamientoFormDestination(obraId = destination.obraId))
                     },
-                    onEditRelevamiento = { relevamiento ->
+                    onOpenRelevamiento = { relevamiento ->
                         backStack.add(
-                            RelevamientoFormDestination(
+                            RelevamientoDetailDestination(
                                 obraId = destination.obraId,
-                                relevamientoId = relevamiento.id,
-                                nota = relevamiento.nota,
-                                fechaMillis = relevamiento.fecha,
-                                fotoUrl = relevamiento.fotoUrl,
-                                latitud = relevamiento.ubicacion?.latitud,
-                                longitud = relevamiento.ubicacion?.longitud
+                                relevamientoId = relevamiento.id
                             )
                         )
                     }
@@ -143,6 +143,30 @@ fun AppShell(container: AppContainer, onLogout: () -> Unit) {
                     ),
                     onBack = ::goBack,
                     onSaved = ::goBack
+                )
+            }
+            entry<RelevamientoDetailDestination> { destination ->
+                RelevamientoDetailRoute(
+                    viewModel = viewModel(
+                        factory = container.relevamientoDetailViewModelFactory(
+                            destination.obraId,
+                            destination.relevamientoId
+                        )
+                    ),
+                    onBack = ::goBack,
+                    onEditRelevamiento = { relevamiento ->
+                        backStack.add(
+                            RelevamientoFormDestination(
+                                obraId = destination.obraId,
+                                relevamientoId = relevamiento.id,
+                                nota = relevamiento.nota,
+                                fechaMillis = relevamiento.fecha,
+                                fotoUrl = relevamiento.fotoUrl,
+                                latitud = relevamiento.ubicacion?.latitud,
+                                longitud = relevamiento.ubicacion?.longitud
+                            )
+                        )
+                    }
                 )
             }
             entry<RelevamientoFormDestination> { destination ->

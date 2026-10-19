@@ -39,6 +39,12 @@ data class ObraDetailDestination(
 data object ObrasPublicasDestination : NavKey
 
 @Serializable
+data class RelevamientoDetailDestination(
+    val obraId: String,
+    val relevamientoId: String
+) : NavKey
+
+@Serializable
 data class ObraPublicaDetailDestination(
     val obraId: String
 ) : NavKey
