@@ -68,7 +68,7 @@ object NotificationHelper {
         showNotification(
             context = context,
             notificationId = 1001,
-            title = "🔔 ObraTrack — Recordatorio de Visita",
+            title = "🔔 Recordatorio de Visita",
             message = "Tenés una visita técnica programada para hoy en 'Edificio Mitre'. Tocá para inspeccionar los relevamientos pendientes."
         )
     }
