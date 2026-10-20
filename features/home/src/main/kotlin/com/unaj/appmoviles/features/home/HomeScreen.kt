@@ -36,6 +36,13 @@ import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Business
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Send
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -139,7 +146,7 @@ fun HomeScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.NotificationsActive,
+                                    imageVector = Icons.Outlined.Notifications,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onPrimary
                                 )
@@ -166,7 +173,7 @@ fun HomeScreen(
                                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Send,
+                                        imageVector = Icons.Outlined.Send,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp)
                                     )
@@ -304,7 +311,7 @@ fun ActionCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
-                        imageVector = Icons.Default.ChevronRight,
+                        imageVector = Icons.Outlined.ChevronRight,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
@@ -340,7 +347,7 @@ fun BannerLocation(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.LocationOn,
+                    imageVector = Icons.Outlined.LocationOn,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(24.dp)
@@ -364,7 +371,7 @@ fun BannerLocation(
             }
             
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = Icons.Outlined.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -384,7 +391,7 @@ fun HomeBottomNavigation(
         NavigationBarItem(
             selected = true,
             onClick = { },
-            icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+            icon = { Icon(Icons.Outlined.Home, contentDescription = "Inicio") },
             label = { Text("Inicio", fontWeight = FontWeight.Bold) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -397,7 +404,7 @@ fun HomeBottomNavigation(
         NavigationBarItem(
             selected = false,
             onClick = onNavigateToObras,
-            icon = { Icon(Icons.Default.Dashboard, contentDescription = "Obras") },
+            icon = { Icon(Icons.Outlined.Business, contentDescription = "Obras") },
             label = { Text("Obras") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -408,20 +415,8 @@ fun HomeBottomNavigation(
         )
         NavigationBarItem(
             selected = false,
-            onClick = { /* TODO */ },
-            icon = { Icon(Icons.Default.CameraAlt, contentDescription = "Relevamientos") },
-            label = { Text("Relevamientos") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
             onClick = onNavigateToProfile,
-            icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+            icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil") },
             label = { Text("Perfil") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
