@@ -3,6 +3,7 @@ package com.unaj.appmoviles.obratrack.core.data.repository
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
+import kotlinx.coroutines.TimeoutCancellationException
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
@@ -45,6 +46,7 @@ fun ObraDraft.toDto(userId: String, fechaInicioMillis: Long): ObraDto = ObraDto(
 )
 
 fun Exception.toObraError(): ObraError = when (this) {
+    is TimeoutCancellationException -> ObraError.Timeout
     is ObraNotFoundException -> ObraError.NoEncontrada
     is ObraForbiddenException -> ObraError.NoAutorizada
     is FirebaseNetworkException -> ObraError.Red

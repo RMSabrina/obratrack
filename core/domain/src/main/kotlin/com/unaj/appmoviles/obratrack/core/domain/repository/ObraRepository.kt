@@ -12,4 +12,7 @@ interface ObraRepository {
     fun observePublica(obraId: String): Flow<Obra?>
     suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra>
     suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra>
+    suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean>
+    suspend fun delete(obraId: String): AppResult<Unit>
+    suspend fun deleteAllSuscriptoresByObra(obraId: String): AppResult<Unit>
 }

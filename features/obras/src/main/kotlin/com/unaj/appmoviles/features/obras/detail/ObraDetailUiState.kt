@@ -9,5 +9,8 @@ data class ObraDetailUiState(
     val isEditable: Boolean = false,
     val obra: Obra? = null,
     val relevamientos: List<Relevamiento> = emptyList(),
-    val error: DomainError? = null
+    val error: DomainError? = null,
+    val isDeleting: Boolean = false,
+    val isDeleted: Boolean = false,
+    val deleteError: DomainError? = null
 )

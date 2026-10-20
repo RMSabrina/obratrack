@@ -9,6 +9,8 @@
     <string name="error_recent_login_required">Por seguridad, confirmá tu contraseña actual para continuar</string>
     <string name="error_email_not_verified">Por favor, revisá tu correo y verificá tu cuenta antes de ingresar.</string>
     <string name="error_unknown">Ocurrió un error inesperado</string>
+    <string name="error_timeout">No pudimos confirmar la eliminación, revisá tu conexión y reintentá</string>
+    <string name="error_fallo_parcial">No se pudo eliminar completamente, reintentá</string>
     <string name="error_obra_nombre">Ingresá el nombre de la obra</string>
     <string name="error_obra_cliente">Ingresá el cliente</string>
     <string name="error_obra_direccion">Ingresá la dirección</string>

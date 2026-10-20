@@ -2,9 +2,12 @@ package com.unaj.appmoviles.features.obras.relevamiento.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
+import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraPublicaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.DeleteRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosDeObraUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 import dagger.assisted.Assisted
@@ -28,7 +32,8 @@ class RelevamientoDetailViewModel @AssistedInject constructor(
     observeSession: ObserveSessionUseCase,
     private val observeObra: ObserveObraUseCase,
     private val observeObraPublica: ObserveObraPublicaUseCase,
-    private val observeRelevamientosDeObra: ObserveRelevamientosDeObraUseCase
+    private val observeRelevamientosDeObra: ObserveRelevamientosDeObraUseCase,
+    private val deleteRelevamientoUseCase: DeleteRelevamientoUseCase
 ) : ViewModel() {
 
     @AssistedFactory
@@ -59,22 +64,60 @@ class RelevamientoDetailViewModel @AssistedInject constructor(
                     observeRelevamientosDeObra(obraId)
                 ) { obra, relevamientos ->
                     val relevamiento = relevamientos.find { it.id == relevamientoId }
-                    RelevamientoDetailUiState(
-                        isLoading = false,
-                        isEditable = obra != null && user != null && obra.userId == user.id,
-                        obra = obra,
-                        relevamiento = relevamiento,
-                        error = if (relevamiento == null) "No encontramos este relevamiento" else null
-                    )
+                    val current = _uiState.value
+                    if (current.isDeleting) {
+                        if (relevamiento == null && current.deleteError == RelevamientoError.Timeout) {
+                            current.copy(isDeleted = true)
+                        } else {
+                            current
+                        }
+                    } else {
+                        RelevamientoDetailUiState(
+                            isLoading = false,
+                            isEditable = obra != null && user != null && obra.userId == user.id,
+                            obra = obra,
+                            relevamiento = relevamiento,
+                            error = if (relevamiento == null) RelevamientoError.NoEncontrado else null,
+                            isDeleting = current.isDeleting,
+                            isDeleted = current.isDeleted,
+                            deleteError = current.deleteError
+                        )
+                    }
                 }.catch {
-                    _uiState.value = RelevamientoDetailUiState(
-                        isLoading = false,
-                        error = "Ocurrió un error al cargar el relevamiento"
-                    )
+                    if (!_uiState.value.isDeleting) {
+                        _uiState.update { it.copy(isLoading = false, error = RelevamientoError.Desconocido) }
+                    }
                 }.collect {
                     _uiState.value = it
                 }
             }
         }
+    }
+
+    fun deleteRelevamiento() {
+        if (_uiState.value.isDeleting) return
+        _uiState.update { it.copy(isDeleting = true, deleteError = null) }
+        viewModelScope.launch {
+            when (val res = deleteRelevamientoUseCase(obraId, relevamientoId)) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isDeleting = true, isDeleted = true) }
+                }
+                is AppResult.Error -> {
+                    if (res.error == RelevamientoError.Timeout) {
+                        if (_uiState.value.relevamiento == null) {
+                            _uiState.update { it.copy(isDeleting = true, isDeleted = true) }
+                        } else {
+                            _uiState.update { it.copy(isDeleting = false, deleteError = RelevamientoError.Timeout) }
+                        }
+                    } else {
+                        _uiState.update { it.copy(isDeleting = false, deleteError = res.error) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun onDeleteErrorDismissed() {
+        _uiState.update { it.copy(deleteError = null) }
     }
 }

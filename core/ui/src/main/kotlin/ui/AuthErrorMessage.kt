@@ -25,12 +25,15 @@ fun DomainError.asMessage(): String = stringResource(
         ObraError.NoEncontrada -> R.string.error_obra_not_found
         ObraError.NoAutorizada -> R.string.error_obra_forbidden
         ObraError.Red -> R.string.error_network
+        ObraError.Timeout -> R.string.error_timeout
+        ObraError.FalloParcial -> R.string.error_fallo_parcial
         RelevamientoError.NotaVacia -> R.string.error_relevamiento_nota
         RelevamientoError.FechaInvalida -> R.string.error_relevamiento_fecha
         RelevamientoError.NoEncontrado -> R.string.error_relevamiento_not_found
         RelevamientoError.NoAutorizado -> R.string.error_relevamiento_forbidden
         RelevamientoError.ImagenMuyGrande -> R.string.error_relevamiento_imagen_grande
         RelevamientoError.Red -> R.string.error_network
+        RelevamientoError.Timeout -> R.string.error_timeout
         else -> R.string.error_unknown
     }
 )

@@ -7,5 +7,7 @@ sealed interface ObraError : DomainError {
     data object NoEncontrada : ObraError
     data object NoAutorizada : ObraError
     data object Red : ObraError
+    data object Timeout : ObraError
+    data object FalloParcial : ObraError
     data object Desconocido : ObraError
 }

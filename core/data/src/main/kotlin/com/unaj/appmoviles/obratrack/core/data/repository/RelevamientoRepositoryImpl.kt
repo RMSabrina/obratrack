@@ -80,6 +80,20 @@ class RelevamientoRepositoryImpl @Inject constructor(
         ).toAppResult()
     }
 
+    override suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit> {
+        return when (val res = remoteDataSource.delete(obraId, relevamientoId)) {
+            is FirebaseResult.Success -> AppResult.Success(Unit)
+            is FirebaseResult.Error -> AppResult.Error(res.exception.toRelevamientoError())
+        }
+    }
+
+    override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> {
+        return when (val res = remoteDataSource.deleteAllByObra(obraId)) {
+            is FirebaseResult.Success -> AppResult.Success(Unit)
+            is FirebaseResult.Error -> AppResult.Error(res.exception.toRelevamientoError())
+        }
+    }
+
     private fun FirebaseResult<RelevamientoDto>.toAppResult(): AppResult<Relevamiento> = when (this) {
         is FirebaseResult.Success -> AppResult.Success(data.toDomain())
         is FirebaseResult.Error -> AppResult.Error(exception.toRelevamientoError())

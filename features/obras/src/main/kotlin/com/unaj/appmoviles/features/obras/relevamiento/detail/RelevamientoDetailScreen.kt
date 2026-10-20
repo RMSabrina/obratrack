@@ -2,6 +2,7 @@ package com.unaj.appmoviles.features.obras.relevamiento.detail
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,63 +13,67 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
-
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
-import androidx.compose.ui.res.stringResource
-import com.unaj.appmoviles.obras.R
 
 @Composable
 fun RelevamientoDetailRoute(
     obraId: String,
     relevamientoId: String,
     onBack: () -> Unit,
+    onDeleteSuccess: () -> Unit,
     onEditRelevamiento: (Relevamiento) -> Unit
 ) {
     val viewModel = hiltViewModel<RelevamientoDetailViewModel, RelevamientoDetailViewModel.Factory>(
@@ -84,12 +89,15 @@ fun RelevamientoDetailRoute(
     RelevamientoDetailScreen(
         state = state,
         onBack = onBack,
+        onDeleteSuccess = onDeleteSuccess,
+        onDeleteRelevamiento = viewModel::deleteRelevamiento,
+        onDeleteErrorDismissed = viewModel::onDeleteErrorDismissed,
         onEditRelevamiento = onEditRelevamiento,
         snackbarHostState = snackbarHostState,
         onShareClick = {
             val relevamiento = state.relevamiento
             val obra = state.obra
-            if (relevamiento != null) {
+            if (relevamiento != null && !state.isDeleting) {
                 coroutineScope.launch(Dispatchers.IO) {
                     val uri = RelevamientoPdfExporter.exportRelevamientoToPdf(context, relevamiento, obra)
                     if (uri != null) {
@@ -114,13 +122,59 @@ fun RelevamientoDetailRoute(
 fun RelevamientoDetailScreen(
     state: RelevamientoDetailUiState,
     onBack: () -> Unit,
+    onDeleteSuccess: () -> Unit,
+    onDeleteRelevamiento: () -> Unit,
+    onDeleteErrorDismissed: () -> Unit,
     onEditRelevamiento: (Relevamiento) -> Unit,
     snackbarHostState: SnackbarHostState,
     onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val relevamiento = state.relevamiento
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+
+    BackHandler(enabled = state.isDeleting) {}
+
+    LaunchedEffect(state.isDeleted) {
+        if (state.isDeleted) {
+            onDeleteSuccess()
+        }
+    }
+
+    val deleteErrorMessage = state.deleteError?.asMessage()
+    LaunchedEffect(deleteErrorMessage) {
+        if (deleteErrorMessage != null) {
+            snackbarHostState.showSnackbar(deleteErrorMessage)
+            onDeleteErrorDismissed()
+        }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { if (!state.isDeleting) showDeleteDialog = false },
+            title = { Text("Eliminar Relevamiento") },
+            text = { Text("¿Eliminar este relevamiento? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    enabled = !state.isDeleting,
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteRelevamiento()
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !state.isDeleting,
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Scaffold(
         modifier = modifier,
@@ -129,18 +183,37 @@ fun RelevamientoDetailScreen(
             TopAppBar(
                 title = { Text("Detalle de Relevamiento") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = { if (!state.isDeleting) onBack() },
+                        enabled = !state.isDeleting
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 actions = {
                     if (relevamiento != null) {
-                        IconButton(onClick = onShareClick) {
+                        IconButton(
+                            onClick = { if (!state.isDeleting) onShareClick() },
+                            enabled = !state.isDeleting
+                        ) {
                             Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.compartir))
                         }
                     }
                     if (state.isEditable && relevamiento != null) {
-                        IconButton(onClick = { onEditRelevamiento(relevamiento) }) {
+                        IconButton(
+                            onClick = { if (!state.isDeleting) showDeleteDialog = true },
+                            enabled = !state.isDeleting
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar relevamiento",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        IconButton(
+                            onClick = { if (!state.isDeleting) onEditRelevamiento(relevamiento) },
+                            enabled = !state.isDeleting
+                        ) {
                             Icon(Icons.Default.Edit, contentDescription = "Editar relevamiento")
                         }
                     }
@@ -148,7 +221,7 @@ fun RelevamientoDetailScreen(
             )
         },
         floatingActionButton = {
-            if (state.isEditable && relevamiento != null) {
+            if (state.isEditable && relevamiento != null && !state.isDeleting) {
                 ExtendedFloatingActionButton(
                     onClick = { onEditRelevamiento(relevamiento) },
                     icon = { Icon(Icons.Default.Edit, contentDescription = null) },
@@ -168,7 +241,7 @@ fun RelevamientoDetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = state.error ?: "No pudimos encontrar este relevamiento",
+                        text = state.error?.asMessage() ?: "No pudimos encontrar este relevamiento",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyLarge
                     )

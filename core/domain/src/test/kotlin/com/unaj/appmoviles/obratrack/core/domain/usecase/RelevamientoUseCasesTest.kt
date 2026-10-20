@@ -103,4 +103,7 @@ private class FakeRelevamientoRepository : RelevamientoRepository {
             )
         )
     }
+
+    override suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit> = AppResult.Success(Unit)
+    override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> = AppResult.Success(Unit)
 }

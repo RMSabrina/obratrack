@@ -43,6 +43,27 @@ class ObraRepositoryImpl @Inject constructor(
         return remoteDataSource.update(userId, obraId, dto).toAppResult()
     }
 
+    override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> {
+        return when (val res = remoteDataSource.existsAndOwnedByCurrentUser(obraId)) {
+            is FirebaseResult.Success -> AppResult.Success(res.data)
+            is FirebaseResult.Error -> AppResult.Error(res.exception.toObraError())
+        }
+    }
+
+    override suspend fun delete(obraId: String): AppResult<Unit> {
+        return when (val res = remoteDataSource.delete(obraId)) {
+            is FirebaseResult.Success -> AppResult.Success(Unit)
+            is FirebaseResult.Error -> AppResult.Error(res.exception.toObraError())
+        }
+    }
+
+    override suspend fun deleteAllSuscriptoresByObra(obraId: String): AppResult<Unit> {
+        return when (val res = remoteDataSource.deleteAllSuscriptoresByObra(obraId)) {
+            is FirebaseResult.Success -> AppResult.Success(Unit)
+            is FirebaseResult.Error -> AppResult.Error(res.exception.toObraError())
+        }
+    }
+
     private fun FirebaseResult<ObraDto>.toAppResult(): AppResult<Obra> = when (this) {
         is FirebaseResult.Success -> AppResult.Success(data.toDomain())
         is FirebaseResult.Error -> AppResult.Error(exception.toObraError())

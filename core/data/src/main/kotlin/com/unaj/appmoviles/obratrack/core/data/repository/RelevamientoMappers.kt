@@ -3,6 +3,7 @@ package com.unaj.appmoviles.obratrack.core.data.repository
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
+import kotlinx.coroutines.TimeoutCancellationException
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
@@ -40,6 +41,7 @@ fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = R
 )
 
 fun Exception.toRelevamientoError(): RelevamientoError = when (this) {
+    is TimeoutCancellationException -> RelevamientoError.Timeout
     is RelevamientoNotFoundException, is ObraNotFoundException -> RelevamientoError.NoEncontrado
     is RelevamientoForbiddenException, is ObraForbiddenException -> RelevamientoError.NoAutorizado
     is FirebaseNetworkException -> RelevamientoError.Red

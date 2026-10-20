@@ -7,5 +7,6 @@ sealed interface RelevamientoError : DomainError {
     data object NoAutorizado : RelevamientoError
     data object ImagenMuyGrande : RelevamientoError
     data object Red : RelevamientoError
+    data object Timeout : RelevamientoError
     data object Desconocido : RelevamientoError
 }

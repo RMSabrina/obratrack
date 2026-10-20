@@ -1,9 +1,12 @@
 package com.unaj.appmoviles.obratrack.core.firebase
 
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -13,7 +16,8 @@ import kotlin.coroutines.cancellation.CancellationException
 import javax.inject.Inject
 
 class FirestoreObraDataSourceImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
 ) : FirestoreObraDataSource {
 
     override fun observe(userId: String): Flow<List<ObraDto>> = callbackFlow {
@@ -163,9 +167,62 @@ class FirestoreObraDataSourceImpl @Inject constructor(
         )
     }
 
+    override suspend fun existsAndOwnedByCurrentUser(obraId: String): FirebaseResult<Boolean> {
+        return try {
+            val uid = auth.uid ?: return FirebaseResult.Error(ObraForbiddenException())
+            val querySnapshot = firestore.collection(COLLECTION)
+                .whereEqualTo(FieldPath.documentId(), obraId)
+                .whereEqualTo(FIELD_USER_ID, uid)
+                .get(Source.SERVER)
+                .await()
+            FirebaseResult.Success(!querySnapshot.isEmpty)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
+    }
+
+    override suspend fun delete(obraId: String): FirebaseResult<Unit> {
+        return try {
+            if (auth.uid == null) return FirebaseResult.Error(ObraForbiddenException())
+            firestore.collection(COLLECTION).document(obraId).delete().await()
+            FirebaseResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
+    }
+
+    override suspend fun deleteAllSuscriptoresByObra(obraId: String): FirebaseResult<Unit> {
+        return try {
+            if (auth.uid == null) return FirebaseResult.Error(ObraForbiddenException())
+            val snapshot = firestore.collection(COLLECTION)
+                .document(obraId)
+                .collection(COLLECTION_SUSCRIPTORES)
+                .get(Source.SERVER)
+                .await()
+            val docs = snapshot.documents
+            if (docs.isNotEmpty()) {
+                docs.chunked(BATCH_SIZE).forEach { chunk ->
+                    val batch = firestore.batch()
+                    chunk.forEach { doc -> batch.delete(doc.reference) }
+                    batch.commit().await()
+                }
+            }
+            FirebaseResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
+    }
 
     private companion object {
+        const val BATCH_SIZE = 500
         const val COLLECTION = "obras"
+        const val COLLECTION_SUSCRIPTORES = "suscriptores"
         const val FIELD_USER_ID = "userId"
         const val FIELD_NOMBRE = "nombre"
         const val FIELD_CLIENTE = "cliente"

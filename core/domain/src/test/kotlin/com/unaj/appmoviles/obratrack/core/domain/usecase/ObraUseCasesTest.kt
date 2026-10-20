@@ -121,6 +121,10 @@ private class FakeObraRepository : ObraRepository {
         return AppResult.Success(draft.toObra(id = obraId))
     }
 
+    override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> = AppResult.Success(true)
+    override suspend fun delete(obraId: String): AppResult<Unit> = AppResult.Success(Unit)
+    override suspend fun deleteAllSuscriptoresByObra(obraId: String): AppResult<Unit> = AppResult.Success(Unit)
+
     private fun ObraDraft.toObra(id: String) = Obra(
         id = id,
         userId = lastUserId.orEmpty(),

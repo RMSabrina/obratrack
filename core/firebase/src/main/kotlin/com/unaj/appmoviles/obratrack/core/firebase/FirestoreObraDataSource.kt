@@ -9,6 +9,9 @@ interface FirestoreObraDataSource {
     fun observePublica(obraId: String): Flow<ObraDto?>
     suspend fun create(dto: ObraDto): FirebaseResult<ObraDto>
     suspend fun update(userId: String, obraId: String, dto: ObraDto): FirebaseResult<ObraDto>
+    suspend fun existsAndOwnedByCurrentUser(obraId: String): FirebaseResult<Boolean>
+    suspend fun delete(obraId: String): FirebaseResult<Unit>
+    suspend fun deleteAllSuscriptoresByObra(obraId: String): FirebaseResult<Unit>
 }
 
 class ObraNotFoundException : Exception("Obra no encontrada")

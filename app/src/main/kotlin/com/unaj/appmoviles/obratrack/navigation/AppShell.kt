@@ -131,6 +131,11 @@ fun AppShell(onLogout: () -> Unit) {
                 ObraDetailRoute(
                     obraId = destination.obraId,
                     onBack = ::goBack,
+                    onDeleteSuccess = {
+                        while (backStack.size > 1 && backStack.last() !is ObrasDestination && backStack.last() !is HomeDestination) {
+                            backStack.removeAt(backStack.lastIndex)
+                        }
+                    },
                     onEditObra = { obra ->
                         backStack.add(
                             ObraFormDestination(
@@ -181,6 +186,7 @@ fun AppShell(onLogout: () -> Unit) {
                     obraId = destination.obraId,
                     relevamientoId = destination.relevamientoId,
                     onBack = ::goBack,
+                    onDeleteSuccess = ::goBack,
                     onEditRelevamiento = { relevamiento ->
                         backStack.add(
                             RelevamientoFormDestination(

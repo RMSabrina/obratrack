@@ -22,4 +22,6 @@ interface RelevamientoRepository {
         draft: RelevamientoDraft,
         photo: ByteArray? = null
     ): AppResult<Relevamiento>
+    suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit>
+    suspend fun deleteAllByObra(obraId: String): AppResult<Unit>
 }

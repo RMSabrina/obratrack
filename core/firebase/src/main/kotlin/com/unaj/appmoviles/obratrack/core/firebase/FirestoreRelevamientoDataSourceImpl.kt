@@ -2,10 +2,12 @@ package com.unaj.appmoviles.obratrack.core.firebase
 
 import android.util.Log
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.Source
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +18,8 @@ import kotlin.coroutines.cancellation.CancellationException
 import javax.inject.Inject
 
 class FirestoreRelevamientoDataSourceImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
 ) : FirestoreRelevamientoDataSource {
 
     override fun observeAll(userId: String): Flow<List<RelevamientoDto>> = callbackFlow {
@@ -183,7 +186,40 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
         )
     }
 
+    override suspend fun delete(obraId: String, relevamientoId: String): FirebaseResult<Unit> {
+        return try {
+            if (auth.uid == null) return FirebaseResult.Error(RelevamientoForbiddenException())
+            relevamientos(obraId).document(relevamientoId).delete().await()
+            FirebaseResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
+    }
+
+    override suspend fun deleteAllByObra(obraId: String): FirebaseResult<Unit> {
+        return try {
+            if (auth.uid == null) return FirebaseResult.Error(RelevamientoForbiddenException())
+            val snapshot = relevamientos(obraId).get(Source.SERVER).await()
+            val docs = snapshot.documents
+            if (docs.isNotEmpty()) {
+                docs.chunked(BATCH_SIZE).forEach { chunk ->
+                    val batch = firestore.batch()
+                    chunk.forEach { doc -> batch.delete(doc.reference) }
+                    batch.commit().await()
+                }
+            }
+            FirebaseResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
+    }
+
     private companion object {
+        const val BATCH_SIZE = 500
         const val OBRAS = "obras"
         const val RELEVAMIENTOS = "relevamientos"
         const val FIELD_USER_ID = "userId"

@@ -2,6 +2,7 @@ package com.unaj.appmoviles.features.obras.detail
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,14 +18,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -32,11 +35,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -60,6 +70,7 @@ import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
 fun ObraDetailRoute(
     obraId: String,
     onBack: () -> Unit,
+    onDeleteSuccess: () -> Unit,
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
@@ -71,6 +82,9 @@ fun ObraDetailRoute(
     ObraDetailScreen(
         state = state,
         onBack = onBack,
+        onDeleteSuccess = onDeleteSuccess,
+        onDeleteObra = viewModel::deleteObra,
+        onDeleteErrorDismissed = viewModel::onDeleteErrorDismissed,
         onEditObra = onEditObra,
         onCreateRelevamiento = onCreateRelevamiento,
         onOpenRelevamiento = onOpenRelevamiento
@@ -82,19 +96,72 @@ fun ObraDetailRoute(
 fun ObraDetailScreen(
     state: ObraDetailUiState,
     onBack: () -> Unit,
+    onDeleteSuccess: () -> Unit,
+    onDeleteObra: () -> Unit,
+    onDeleteErrorDismissed: () -> Unit,
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val obra = state.obra
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    BackHandler(enabled = state.isDeleting) {}
+
+    LaunchedEffect(state.isDeleted) {
+        if (state.isDeleted) {
+            onDeleteSuccess()
+        }
+    }
+
+    val deleteErrorMessage = state.deleteError?.asMessage()
+    LaunchedEffect(deleteErrorMessage) {
+        if (deleteErrorMessage != null) {
+            snackbarHostState.showSnackbar(deleteErrorMessage)
+            onDeleteErrorDismissed()
+        }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { if (!state.isDeleting) showDeleteDialog = false },
+            title = { Text("Eliminar Obra") },
+            text = { Text("¿Eliminar Obra y todos sus relevamientos y suscriptores? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    enabled = !state.isDeleting,
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteObra()
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !state.isDeleting,
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Detalle de obra") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = { if (!state.isDeleting) onBack() },
+                        enabled = !state.isDeleting
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver"
@@ -103,7 +170,20 @@ fun ObraDetailScreen(
                 },
                 actions = {
                     if (obra != null && state.isEditable) {
-                        IconButton(onClick = { onEditObra(obra) }) {
+                        IconButton(
+                            onClick = { if (!state.isDeleting) showDeleteDialog = true },
+                            enabled = !state.isDeleting
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar obra",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        IconButton(
+                            onClick = { if (!state.isDeleting) onEditObra(obra) },
+                            enabled = !state.isDeleting
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Editar obra"
@@ -114,7 +194,7 @@ fun ObraDetailScreen(
             )
         },
         floatingActionButton = {
-            if (obra != null && state.isEditable) {
+            if (obra != null && state.isEditable && !state.isDeleting) {
                 FloatingActionButton(onClick = onCreateRelevamiento) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -162,16 +242,16 @@ fun ObraDetailScreen(
                                 icon = Icons.Default.Info,
                                 title = "Todavía no hay relevamientos",
                                 description = "Esta obra no cuenta con relevamientos cargados.",
-                                actionLabel = if (state.isEditable) "Agregar el primero" else null,
-                                onActionClick = if (state.isEditable) onCreateRelevamiento else null
+                                actionLabel = if (state.isEditable && !state.isDeleting) "Agregar el primero" else null,
+                                onActionClick = if (state.isEditable && !state.isDeleting) onCreateRelevamiento else null
                             )
                         }
                     } else {
                         items(state.relevamientos, key = { it.id }) { relevamiento ->
                             RelevamientoCard(
                                 relevamiento = relevamiento,
-                                isEditable = state.isEditable,
-                                onClick = { onOpenRelevamiento(relevamiento) }
+                                isEditable = state.isEditable && !state.isDeleting,
+                                onClick = { if (!state.isDeleting) onOpenRelevamiento(relevamiento) }
                             )
                         }
                     }
