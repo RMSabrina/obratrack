@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
@@ -238,6 +240,20 @@ private fun ObraHeaderCard(obra: Obra, modifier: Modifier = Modifier) {
                 text = fechas,
                 contentDescription = "Fechas"
             )
+
+            obra.proximaVisita?.let { proxima ->
+                val isPast = proxima < System.currentTimeMillis()
+                val proximaTexto = if (isPast) {
+                    "Próxima visita: " + formatFecha(proxima) + " (Atrasada)"
+                } else {
+                    "Próxima visita: " + formatFecha(proxima)
+                }
+                InfoRow(
+                    icon = if (isPast) Icons.Default.Warning else Icons.Default.Alarm,
+                    text = proximaTexto,
+                    contentDescription = "Próxima visita"
+                )
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ import dagger.assisted.AssistedInject
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
+import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.concurrent.TimeUnit
@@ -32,7 +33,8 @@ class RelevamientoReminderWorker @AssistedInject constructor(
         val obras: List<Obra> = obraRepository.observe(sessionUser.id).firstOrNull().orEmpty()
 
         val now = System.currentTimeMillis()
-        val oneDayMillis = 24L * 60 * 60 * 1000
+        val oneDayMillis = 24L * 60 * 60 * 1000L
+        val sevenDaysMillis = 7L * 24L * 60 * 60 * 1000L
 
         var notifiedCount = 0
         for (obra in obras) {
@@ -40,15 +42,34 @@ class RelevamientoReminderWorker @AssistedInject constructor(
             if (proxima != null) {
                 val diff = proxima - now
                 if (diff < oneDayMillis) {
-                    val title = if (diff < 0) "⚠️ Visita atrasada: ${obra.nombre}" else "📅 Visita técnica hoy: ${obra.nombre}"
+                    val title = if (diff < 0) "⚠️ Visita atrasada: " else "🔔 Visita técnica hoy: "
                     val msg = if (diff < 0) {
-                        "La visita planificada para ${obra.cliente} está pendiente de relevamiento."
+                        "La visita planificada para  está pendiente de relevamiento."
                     } else {
-                        "Tenés inspección técnica programada para las próximas horas en ${obra.direccion}."
+                        "Tenés inspección técnica programada para las próximas horas en ."
                     }
                     NotificationHelper.showNotification(
                         applicationContext,
                         obra.id.hashCode(),
+                        title,
+                        msg
+                    )
+                    notifiedCount++
+                    continue
+                }
+            }
+
+            // Alerta por inactividad de obra activa (RF7: obra activa con más de X días sin relevamiento)
+            if (obra.estado == EstadoObra.ACTIVA) {
+                val ultima = obra.ultimaVisita ?: obra.fechaInicio
+                val diffSinVisita = now - ultima
+                if (diffSinVisita >= sevenDaysMillis) {
+                    val diasSinVisita = diffSinVisita / oneDayMillis
+                    val title = "⚠️ Obra sin relevamientos: "
+                    val msg = "La obra para '' lleva  días sin visitas registradas."
+                    NotificationHelper.showNotification(
+                        applicationContext,
+                        obra.id.hashCode() + 1,
                         title,
                         msg
                     )

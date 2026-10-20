@@ -23,7 +23,8 @@ fun RelevamientoDto.toDomain(): Relevamiento = Relevamiento(
         val lat = latitud
         val lng = longitud
         if (lat != null && lng != null) Ubicacion(lat, lng) else null
-    }
+    },
+    proximaVisita = proximaVisitaMillis
 )
 
 fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = RelevamientoDto(
@@ -34,7 +35,8 @@ fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = R
     nota = nota,
     fotoUrl = fotoUrl,
     latitud = ubicacion?.latitud,
-    longitud = ubicacion?.longitud
+    longitud = ubicacion?.longitud,
+    proximaVisitaMillis = proximaVisita
 )
 
 fun Exception.toRelevamientoError(): RelevamientoError = when (this) {

@@ -60,5 +60,6 @@ data class RelevamientoFormDestination(
     val fechaMillis: Long = 0L,
     val fotoUrl: String? = null,
     val latitud: Double? = null,
-    val longitud: Double? = null
+    val longitud: Double? = null,
+    val proximaVisita: Long? = null
 ) : NavKey

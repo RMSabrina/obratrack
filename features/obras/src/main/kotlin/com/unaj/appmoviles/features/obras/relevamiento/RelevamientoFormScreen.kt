@@ -32,6 +32,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Clear
@@ -100,7 +103,8 @@ data class RelevamientoFormInitial(
     val fechaMillis: Long,
     val fotoUrl: String? = null,
     val latitud: Double? = null,
-    val longitud: Double? = null
+    val longitud: Double? = null,
+    val proximaVisita: Long? = null
 )
 
 @Composable
@@ -142,6 +146,8 @@ fun RelevamientoFormScreen(
         mutableLongStateOf(if (initial.fechaMillis > 0L) initial.fechaMillis else startOfTodayUtc())
     }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var proximaVisita by rememberSaveable { mutableStateOf(initial.proximaVisita) }
+    var showProximaVisitaPicker by rememberSaveable { mutableStateOf(false) }
     var fotoLocal by rememberSaveable { mutableStateOf<String?>(null) }
     var fotoRemota by rememberSaveable { mutableStateOf(initial.fotoUrl) }
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
@@ -213,6 +219,27 @@ fun RelevamientoFormScreen(
         }
     }
 
+    if (showProximaVisitaPicker) {
+        val pickerState = rememberDatePickerState(
+            initialSelectedDateMillis = proximaVisita ?: (System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000)
+        )
+        DatePickerDialog(
+            onDismissRequest = { showProximaVisitaPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { proximaVisita = it }
+                    showProximaVisitaPicker = false
+                    onInputChanged()
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showProximaVisitaPicker = false }) { Text("Cancelar") }
+            }
+        ) {
+            DatePicker(state = pickerState)
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -239,7 +266,7 @@ fun RelevamientoFormScreen(
                         val lng = longitud
                         val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
                         onSave(
-                            RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion),
+                            RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
                             bytes
                         )
                     },
@@ -462,6 +489,83 @@ fun RelevamientoFormScreen(
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall
                             )
+                        }
+                    }
+                }
+            }
+
+            // Sección: Planificación de Próxima Visita (Recordatorio)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Próxima Visita (Recordatorio)",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (proximaVisita != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Programada para: " + formatFecha(proximaVisita!!),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            IconButton(
+                                onClick = {
+                                    proximaVisita = null
+                                    onInputChanged()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Quitar fecha",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                        OutlinedButton(
+                            onClick = { showProximaVisitaPicker = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.EditCalendar, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Cambiar fecha de próxima visita")
+                        }
+                    } else {
+                        Text(
+                            text = "Opcional: define cuándo debería ser el próximo relevamiento para recibir un recordatorio automático en el dispositivo.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedButton(
+                            onClick = { showProximaVisitaPicker = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.AddAlert, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Programar próxima visita")
                         }
                     }
                 }

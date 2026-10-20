@@ -190,7 +190,8 @@ fun AppShell(onLogout: () -> Unit) {
                                 fechaMillis = relevamiento.fecha,
                                 fotoUrl = relevamiento.fotoUrl,
                                 latitud = relevamiento.ubicacion?.latitud,
-                                longitud = relevamiento.ubicacion?.longitud
+                                longitud = relevamiento.ubicacion?.longitud,
+                                proximaVisita = relevamiento.proximaVisita
                             )
                         )
                     }
@@ -205,7 +206,8 @@ fun AppShell(onLogout: () -> Unit) {
                         fechaMillis = destination.fechaMillis,
                         fotoUrl = destination.fotoUrl,
                         latitud = destination.latitud,
-                        longitud = destination.longitud
+                        longitud = destination.longitud,
+                        proximaVisita = destination.proximaVisita
                     ),
                     onBack = ::goBack,
                     onSaved = ::goBack

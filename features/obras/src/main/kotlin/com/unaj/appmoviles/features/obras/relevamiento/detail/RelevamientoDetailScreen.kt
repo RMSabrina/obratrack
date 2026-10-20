@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.LocationOn
@@ -275,6 +276,12 @@ fun RelevamientoDetailScreen(
                                 icon = Icons.Default.DateRange,
                                 text = "Fecha de visita: " + formatFecha(relevamiento.fecha)
                             )
+                            relevamiento.proximaVisita?.let { proxima ->
+                                InfoRow(
+                                    icon = Icons.Default.AddAlert,
+                                    text = "Próxima visita planificada: " + formatFecha(proxima)
+                                )
+                            }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = if (relevamiento.nota.isBlank()) "Sin notas registradas." else relevamiento.nota,

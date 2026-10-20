@@ -137,6 +137,10 @@ object RelevamientoPdfExporter {
             val fechaRelevamiento = formatFecha(relevamiento.fecha)
             drawTableRow("Fecha de Relevamiento", fechaRelevamiento)
 
+            relevamiento.proximaVisita?.let { proxima ->
+                drawTableRow("Próxima Visita Programada", formatFecha(proxima))
+            }
+
             // Outer table border
             canvas.drawLine(padding, tableTop, padding + contentWidth, tableTop, linePaint)
 

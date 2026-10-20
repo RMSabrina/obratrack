@@ -48,6 +48,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.ui.text.font.FontWeight
+import com.unaj.appmoviles.features.obras.formatFecha
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.FilterChip
@@ -141,6 +150,7 @@ fun ObraFormScreen(
     var longitud by rememberSaveable { mutableStateOf(initial.longitud) }
     var showMapPicker by rememberSaveable { mutableStateOf(false) }
     var proximaVisita by rememberSaveable { mutableStateOf(initial.proximaVisita) }
+    var showDatePickerProxima by rememberSaveable { mutableStateOf(false) }
     var ubicacionMensaje by rememberSaveable { mutableStateOf<String?>(null) }
     var isCapturingLocation by remember { mutableStateOf(false) }
     var cancellationTokenSource by remember { mutableStateOf<CancellationTokenSource?>(null) }
@@ -176,6 +186,29 @@ fun ObraFormScreen(
     val estadoActual = estadoObraFromStorage(estado)
     val error = (state as? ObraFormUiState.Error)?.error
     val isLoading = state is ObraFormUiState.Loading
+
+    if (showDatePickerProxima) {
+        val pickerState = rememberDatePickerState(
+            initialSelectedDateMillis = proximaVisita ?: (System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000)
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePickerProxima = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let {
+                        proximaVisita = it
+                        onInputChanged()
+                    }
+                    showDatePickerProxima = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePickerProxima = false }) { Text("Cancelar") }
+            }
+        ) {
+            DatePicker(state = pickerState)
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -371,6 +404,78 @@ fun ObraFormScreen(
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )
+                    }
+                }
+            }
+
+            // Sección: Planificación de Visita Técnica y Recordatorio (RF7)
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Próxima Visita Técnica",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (proximaVisita != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Fecha programada: " + formatFecha(proximaVisita!!),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            IconButton(
+                                onClick = {
+                                    proximaVisita = null
+                                    onInputChanged()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Quitar recordatorio",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                        OutlinedButton(
+                            onClick = { showDatePickerProxima = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.EditCalendar, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Cambiar fecha")
+                        }
+                    } else {
+                        Text(
+                            text = "Puedes programar una fecha estimada para el próximo relevamiento. La app te enviará una notificación cuando llegue el día.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedButton(
+                            onClick = { showDatePickerProxima = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.AddAlert, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Programar fecha de visita")
+                        }
                     }
                 }
             }

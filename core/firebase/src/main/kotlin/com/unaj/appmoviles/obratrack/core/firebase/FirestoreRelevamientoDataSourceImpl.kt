@@ -80,6 +80,9 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             firestore.batch().apply {
                 set(relevamientoRef, stored.toMap())
                 update(obraRef, FIELD_ULTIMA_VISITA, Timestamp(Date(ultimaVisita)))
+                if (stored.proximaVisitaMillis != null) {
+                    update(obraRef, FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis)))
+                }
             }.commit().await()
 
             FirebaseResult.Success(stored)
@@ -111,6 +114,9 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             }
             val stored = dto.copy(userId = userId)
             ref.set(stored.toMap(), SetOptions.merge()).await()
+            if (stored.proximaVisitaMillis != null) {
+                obraRef.update(FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis))).await()
+            }
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
             throw e
@@ -132,6 +138,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
         if (latitud != null && longitud != null) {
             map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
         }
+        proximaVisitaMillis?.let { map[FIELD_PROXIMA_VISITA] = Timestamp(Date(it)) }
         return map
     }
 
@@ -146,7 +153,8 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             nota = getString(FIELD_NOTA).orEmpty(),
             fotoUrl = getString(FIELD_FOTO_URL),
             latitud = geo?.latitude,
-            longitud = geo?.longitude
+            longitud = geo?.longitude,
+            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
         )
     }
 
@@ -170,7 +178,8 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             nota = getString(FIELD_NOTA).orEmpty(),
             fotoUrl = getString(FIELD_FOTO_URL),
             latitud = geo?.latitude,
-            longitud = geo?.longitude
+            longitud = geo?.longitude,
+            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
         )
     }
 
@@ -183,5 +192,6 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
         const val FIELD_FOTO_URL = "fotoUrl"
         const val FIELD_UBICACION = "ubicacion"
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
+        const val FIELD_PROXIMA_VISITA = "proximaVisita"
     }
 }

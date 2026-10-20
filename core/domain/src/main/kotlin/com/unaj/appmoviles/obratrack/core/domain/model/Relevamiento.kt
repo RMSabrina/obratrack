@@ -7,5 +7,6 @@ data class Relevamiento(
     val fecha: Long,
     val nota: String,
     val fotoUrl: String? = null,
-    val ubicacion: Ubicacion? = null
+    val ubicacion: Ubicacion? = null,
+    val proximaVisita: Long? = null
 )
