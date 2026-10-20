@@ -30,7 +30,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.CopyrightOverlay
+import org.osmdroid.views.overlay.Marker
+import androidx.compose.ui.viewinterop.AndroidView
+import java.io.File
 
 @Composable
 fun MapPreviewCard(
@@ -65,19 +72,45 @@ fun MapPreviewCard(
             }
 
             if (latitud != null && longitud != null) {
-                // Mapa estático visual de OpenStreetMap con marcador
-                val staticMapUrl = "https://staticmap.openstreetmap.de/staticmap.php?center=${latitud},${longitud}&zoom=15&size=600x300&markers=${latitud},${longitud},ol-marker"
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp)
                         .clip(RoundedCornerShape(12.dp))
                 ) {
-                    AsyncImage(
-                        model = staticMapUrl,
-                        contentDescription = "Mapa de la ubicación",
-                        contentScale = ContentScale.Crop,
+                    AndroidView(
+                        factory = { ctx ->
+                            Configuration.getInstance().apply {
+                                userAgentValue = "ObraTrack/1.0"
+                                osmdroidBasePath = File(ctx.cacheDir, "osmdroid")
+                                osmdroidTileCache = File(ctx.cacheDir, "osmdroid/tiles")
+                            }
+                            MapView(ctx).apply {
+                                setTileSource(TileSourceFactory.MAPNIK)
+                                setMultiTouchControls(false)
+                                setBuiltInZoomControls(false)
+                                isTilesScaledToDpi = true
+                                controller.setZoom(15.0)
+
+                                // Disable touch events (static map feel)
+                                setOnTouchListener { _, _ -> true }
+
+                                val copyrightOverlay = CopyrightOverlay(ctx)
+                                overlays.add(copyrightOverlay)
+                            }
+                        },
+                        update = { map ->
+                            val geoPoint = GeoPoint(latitud, longitud)
+                            map.controller.setCenter(geoPoint)
+                            
+                            map.overlays.removeAll { it is Marker }
+                            val marker = Marker(map)
+                            marker.position = geoPoint
+                            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                            map.overlays.add(marker)
+                            
+                            map.invalidate()
+                        },
                         modifier = Modifier.fillMaxWidth().height(180.dp)
                     )
                 }

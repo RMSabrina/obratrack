@@ -34,6 +34,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.coil.compose)
+    implementation(libs.osmdroid.android)
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
