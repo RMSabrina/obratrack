@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compartir">Compartir</string>
+    <string name="compartir_relevamiento_via">Compartir relevamiento vía&#8230;</string>
+    <string name="error_exportacion_pdf">No se pudo generar el documento PDF</string>
+    <string name="generando_documento">Generando documento...</string>
+</resources>

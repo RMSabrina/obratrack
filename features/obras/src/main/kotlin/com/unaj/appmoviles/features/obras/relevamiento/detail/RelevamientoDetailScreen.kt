@@ -52,6 +52,17 @@ import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.obras.R
+
 @Composable
 fun RelevamientoDetailRoute(
     obraId: String,
@@ -63,10 +74,37 @@ fun RelevamientoDetailRoute(
         creationCallback = { factory -> factory.create(obraId, relevamientoId) }
     )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMsg = stringResource(R.string.error_exportacion_pdf)
+    val shareMsg = stringResource(R.string.compartir_relevamiento_via)
+
     RelevamientoDetailScreen(
         state = state,
         onBack = onBack,
-        onEditRelevamiento = onEditRelevamiento
+        onEditRelevamiento = onEditRelevamiento,
+        snackbarHostState = snackbarHostState,
+        onShareClick = {
+            val relevamiento = state.relevamiento
+            val obra = state.obra
+            if (relevamiento != null) {
+                coroutineScope.launch(Dispatchers.IO) {
+                    val uri = RelevamientoPdfExporter.exportRelevamientoToPdf(context, relevamiento, obra)
+                    if (uri != null) {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "application/pdf"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        val chooser = Intent.createChooser(intent, shareMsg)
+                        context.startActivity(chooser)
+                    } else {
+                        snackbarHostState.showSnackbar(errorMsg)
+                    }
+                }
+            }
+        }
     )
 }
 
@@ -76,6 +114,8 @@ fun RelevamientoDetailScreen(
     state: RelevamientoDetailUiState,
     onBack: () -> Unit,
     onEditRelevamiento: (Relevamiento) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -83,6 +123,7 @@ fun RelevamientoDetailScreen(
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Detalle de Relevamiento") },
@@ -92,6 +133,11 @@ fun RelevamientoDetailScreen(
                     }
                 },
                 actions = {
+                    if (relevamiento != null) {
+                        IconButton(onClick = onShareClick) {
+                            Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.compartir))
+                        }
+                    }
                     if (state.isEditable && relevamiento != null) {
                         IconButton(onClick = { onEditRelevamiento(relevamiento) }) {
                             Icon(Icons.Default.Edit, contentDescription = "Editar relevamiento")
