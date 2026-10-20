@@ -1,7 +1,9 @@
 package com.unaj.appmoviles.obratrack.core.ui.components
 
 import android.content.Intent
+import android.location.Geocoder
 import android.net.Uri
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.LocationOff
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -24,7 +27,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +45,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.unaj.appmoviles.obratrack.core.ui.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -46,6 +55,7 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.CopyrightOverlay
 import org.osmdroid.views.overlay.Marker
 import java.io.File
+import java.util.Locale
 
 @Composable
 fun MapPreviewCard(
@@ -57,6 +67,54 @@ fun MapPreviewCard(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    var addressText by remember(latitud, longitud) { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(latitud, longitud) {
+        if ((latitud != null) && (longitud != null)) {
+            withContext(Dispatchers.IO) {
+                try {
+                    val geocoder = Geocoder(context, Locale.getDefault())
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        geocoder.getFromLocation(latitud, longitud, 1) { addresses ->
+                            val first = addresses.firstOrNull()
+                            val formatted = first?.let { addr ->
+                                val line = addr.getAddressLine(0)
+                                if (!line.isNullOrBlank()) {
+                                    line
+                                } else {
+                                    listOfNotNull(addr.thoroughfare, addr.subThoroughfare, addr.locality, addr.adminArea)
+                                        .filter { it.isNotBlank() }
+                                        .joinToString(", ")
+                                }
+                            }
+                            if (!formatted.isNullOrBlank()) {
+                                addressText = formatted
+                            }
+                        }
+                    } else {
+                        @Suppress("DEPRECATION")
+                        val addresses = geocoder.getFromLocation(latitud, longitud, 1)
+                        val first = addresses?.firstOrNull()
+                        val formatted = first?.let { addr ->
+                            val line = addr.getAddressLine(0)
+                            if (!line.isNullOrBlank()) {
+                                line
+                            } else {
+                                listOfNotNull(addr.thoroughfare, addr.subThoroughfare, addr.locality, addr.adminArea)
+                                    .filter { it.isNotBlank() }
+                                    .joinToString(", ")
+                            }
+                        }
+                        if (!formatted.isNullOrBlank()) {
+                            addressText = formatted
+                        }
+                    }
+                } catch (_: Exception) {
+                    addressText = null
+                }
+            }
+        }
+    }
 
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(
@@ -68,7 +126,7 @@ fun MapPreviewCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.LocationOn,
+                    imageVector = Icons.Default.Map,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -148,8 +206,8 @@ fun MapPreviewCard(
                 }
 
                 InfoRow(
-                    icon = Icons.Default.LocationOn,
-                    text = stringResource(R.string.ui_map_coordinates_format, latitud, longitud)
+                    icon = Icons.Default.Place,
+                    text = addressText ?: stringResource(R.string.ui_map_coordinates_format, latitud, longitud)
                 )
 
                 FilledTonalButton(
