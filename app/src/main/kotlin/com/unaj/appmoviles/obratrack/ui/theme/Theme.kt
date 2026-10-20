@@ -11,23 +11,51 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = GreenPrimaryDark,
-    secondary = GreenSecondaryDark,
-    tertiary = GreenTertiaryDark
+    primary = PetroleumPrimaryDark,
+    onPrimary = PetroleumOnPrimaryDark,
+    primaryContainer = PetroleumPrimaryContainerDark,
+    onPrimaryContainer = PetroleumOnPrimaryContainerDark,
+    secondary = BlueSecondaryDark,
+    onSecondary = BlueOnSecondaryDark,
+    secondaryContainer = BlueSecondaryContainerDark,
+    onSecondaryContainer = BlueOnSecondaryContainerDark,
+    tertiary = TechGrayTertiaryDark,
+    onTertiary = TechGrayOnTertiaryDark,
+    tertiaryContainer = TechGrayTertiaryContainerDark,
+    onTertiaryContainer = TechGrayOnTertiaryContainerDark,
+    background = BackgroundDark,
+    onBackground = OnBackgroundDark,
+    surface = SurfaceDark,
+    onSurface = OnSurfaceDark,
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceVariantDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = GreenPrimary,
-    secondary = GreenSecondary,
-    tertiary = GreenTertiary,
+    primary = PetroleumPrimary,
+    onPrimary = PetroleumOnPrimary,
+    primaryContainer = PetroleumPrimaryContainer,
+    onPrimaryContainer = PetroleumOnPrimaryContainer,
+    secondary = BlueSecondary,
+    onSecondary = BlueOnSecondary,
+    secondaryContainer = BlueSecondaryContainer,
+    onSecondaryContainer = BlueOnSecondaryContainer,
+    tertiary = TechGrayTertiary,
+    onTertiary = TechGrayOnTertiary,
+    tertiaryContainer = TechGrayTertiaryContainer,
+    onTertiaryContainer = TechGrayOnTertiaryContainer,
     background = BackgroundLight,
-    surface = SurfaceLight
+    onBackground = OnBackgroundLight,
+    surface = SurfaceLight,
+    onSurface = OnSurfaceLight,
+    surfaceVariant = SurfaceVariantLight,
+    onSurfaceVariant = OnSurfaceVariantLight
 )
 
 @Composable
 fun ObraTrackTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is disabled by default to keep the green branding
+    // Dynamic color is disabled by default to keep the branding consistent
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
