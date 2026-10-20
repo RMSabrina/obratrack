@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="40dp"
+    android:viewportWidth="32"
+    android:viewportHeight="40">
+    <!-- Red Pin Shadow/Body pointing down at bottom center (16, 40) -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M16,0 C9.373,0 4,5.373 4,12 C4,21 16,40 16,40 C16,40 28,21 28,12 C28,5.373 22.627,0 16,0 Z" />
+    <!-- White Inner Circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,7 C13.239,7 11,9.239 11,12 C11,14.761 13.239,17 16,17 C18.761,17 21,14.761 21,12 C21,9.239 18.761,7 16,7 Z" />
+</vector>

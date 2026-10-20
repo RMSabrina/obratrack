@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
@@ -80,6 +81,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
+import com.unaj.appmoviles.obratrack.core.ui.components.MapPickerDialog
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 import androidx.compose.material3.CircularProgressIndicator
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
@@ -137,6 +139,7 @@ fun ObraFormScreen(
     var publica by rememberSaveable { mutableStateOf(initial.publica) }
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
     var longitud by rememberSaveable { mutableStateOf(initial.longitud) }
+    var showMapPicker by rememberSaveable { mutableStateOf(false) }
     var proximaVisita by rememberSaveable { mutableStateOf(initial.proximaVisita) }
     var ubicacionMensaje by rememberSaveable { mutableStateOf<String?>(null) }
     var isCapturingLocation by remember { mutableStateOf(false) }
@@ -295,30 +298,6 @@ fun ObraFormScreen(
                             longitud = longitud,
                             modifier = Modifier.fillMaxWidth(),
                             bottomActions = {
-                                // Ajuste manual (RF4: editable manualmente)
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                                    OutlinedTextField(
-                                        value = latitud?.toString() ?: "",
-                                        onValueChange = {
-                                            latitud = it.toDoubleOrNull()
-                                            onInputChanged()
-                                        },
-                                        label = { Text("Latitud") },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    OutlinedTextField(
-                                        value = longitud?.toString() ?: "",
-                                        onValueChange = {
-                                            longitud = it.toDoubleOrNull()
-                                            onInputChanged()
-                                        },
-                                        label = { Text("Longitud") },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
                                 OutlinedButton(
                                     onClick = { 
                                         latitud = null
@@ -341,20 +320,49 @@ fun ObraFormScreen(
                         )
                     }
 
-                    OutlinedButton(
-                        onClick = { pedirUbicacion.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
-                        enabled = !isCapturingLocation,
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        if (isCapturingLocation) {
-                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                            Spacer(Modifier.width(8.dp))
-                            Text(context.getString(R.string.obras_capturando_ubicacion))
-                        } else {
-                            Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text(if (latitud != null) context.getString(R.string.obras_actualizar_ubicacion) else context.getString(R.string.obras_capturar_ubicacion))
+                        OutlinedButton(
+                            onClick = { pedirUbicacion.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                            enabled = !isCapturingLocation,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            if (isCapturingLocation) {
+                                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                Spacer(Modifier.width(8.dp))
+                                Text(context.getString(R.string.obras_capturando_ubicacion))
+                            } else {
+                                Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text(if (latitud != null) context.getString(R.string.obras_actualizar_ubicacion) else context.getString(R.string.obras_capturar_ubicacion))
+                            }
                         }
+
+                        OutlinedButton(
+                            onClick = { showMapPicker = true },
+                            enabled = !isCapturingLocation,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(context.getString(R.string.obras_ajustar_en_mapa))
+                        }
+                    }
+
+                    if (showMapPicker) {
+                        MapPickerDialog(
+                            initialLatitud = latitud,
+                            initialLongitud = longitud,
+                            onDismissRequest = { showMapPicker = false },
+                            onLocationSelected = { selectedLat, selectedLng ->
+                                latitud = selectedLat
+                                longitud = selectedLng
+                                showMapPicker = false
+                                onInputChanged()
+                            }
+                        )
                     }
 
                     if (ubicacionMensaje != null) {

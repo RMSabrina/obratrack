@@ -19,4 +19,15 @@
     <string name="error_relevamiento_not_found">No encontramos ese relevamiento</string>
     <string name="error_relevamiento_forbidden">No podés modificar este relevamiento</string>
     <string name="error_relevamiento_imagen_grande">La imagen supera el límite de 5 MB</string>
+
+    <!-- UI Map Strings -->
+    <string name="ui_map_title_default">Ubicación Geográfica</string>
+    <string name="ui_map_coordinates_format">Coordenadas: Lat %1$.5f, Lng %2$.5f</string>
+    <string name="ui_map_open_in_google_maps">Abrir en Google Maps</string>
+    <string name="ui_map_no_location">Sin ubicación geográfica registrada.</string>
+    <string name="ui_map_error_loading_help">Si el mapa no carga, verificá tu conexión a internet.</string>
+    <string name="ui_map_picker_title">Seleccionar ubicación</string>
+    <string name="ui_map_picker_confirm">Confirmar ubicación</string>
+    <string name="ui_map_picker_cancel">Cancelar</string>
+    <string name="ui_map_picker_instructions">Toca en el mapa para colocar el pin</string>
 </resources>

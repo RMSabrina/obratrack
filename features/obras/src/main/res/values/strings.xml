@@ -11,4 +11,5 @@
     <string name="obras_capturar_ubicacion">Capturar ubicación por GPS</string>
     <string name="obras_error_permiso_ubicacion">Se requiere permiso de ubicación para capturar GPS.</string>
     <string name="obras_error_ubicacion_no_disponible">No pudimos obtener la señal de GPS actual.</string>
+    <string name="obras_ajustar_en_mapa">Ajustar en el mapa</string>
 </resources>
