@@ -48,6 +48,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.coil.compose)
+    
+    implementation(libs.play.services.location)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

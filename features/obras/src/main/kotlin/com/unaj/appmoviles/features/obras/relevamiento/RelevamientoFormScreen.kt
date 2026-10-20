@@ -3,7 +3,11 @@ package com.unaj.appmoviles.features.obras.relevamiento
 import android.annotation.SuppressLint
 import android.Manifest
 import android.content.Context
-import android.location.LocationManager
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.location.CurrentLocationRequest
+import com.google.android.gms.tasks.CancellationTokenSource
+import androidx.compose.runtime.DisposableEffect
 import android.net.Uri
 import android.os.Build
 import android.os.Looper
@@ -62,6 +66,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,8 +80,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
+import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
+import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
+import androidx.compose.material3.CircularProgressIndicator
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import java.io.File
 import java.util.Calendar
@@ -137,6 +145,14 @@ fun RelevamientoFormScreen(
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
     var longitud by rememberSaveable { mutableStateOf(initial.longitud) }
     var ubicacionMensaje by rememberSaveable { mutableStateOf<String?>(null) }
+    var isCapturingLocation by remember { mutableStateOf(false) }
+    var cancellationTokenSource by remember { mutableStateOf<CancellationTokenSource?>(null) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            cancellationTokenSource?.cancel()
+        }
+    }
     
     val context = LocalContext.current
     val tomarFoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
@@ -154,17 +170,21 @@ fun RelevamientoFormScreen(
     }
     val pedirUbicacion = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
-            capturarUbicacion(context) { ubicacion ->
+            ubicacionMensaje = null
+            isCapturingLocation = true
+            cancellationTokenSource = capturarUbicacion(context) { ubicacion ->
+                isCapturingLocation = false
+                cancellationTokenSource = null
                 if (ubicacion == null) {
-                    ubicacionMensaje = "No se pudo obtener la ubicación"
+                    ubicacionMensaje = context.getString(R.string.obras_error_ubicacion_no_disponible)
                 } else {
                     latitud = ubicacion.latitud
                     longitud = ubicacion.longitud
-                    ubicacionMensaje = null
                 }
             }
         } else {
-            ubicacionMensaje = "Se necesita permiso de ubicación"
+            isCapturingLocation = false
+            ubicacionMensaje = context.getString(R.string.obras_error_permiso_ubicacion)
         }
     }
     
@@ -360,49 +380,71 @@ fun RelevamientoFormScreen(
                             .padding(16.dp)
                     ) {
                         if (latitud != null && longitud != null) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text("Ubicación guardada", style = MaterialTheme.typography.bodyLarge)
-                                    Text(
-                                        "$latitud, $longitud",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                            MapPreviewCard(
+                                latitud = latitud,
+                                longitud = longitud,
+                                modifier = Modifier.fillMaxWidth(),
+                                bottomActions = {
+                                    // Ajuste manual
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                                        OutlinedTextField(
+                                            value = latitud?.toString() ?: "",
+                                            onValueChange = {
+                                                latitud = it.toDoubleOrNull()
+                                                onInputChanged()
+                                            },
+                                            label = { Text("Latitud") },
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        OutlinedTextField(
+                                            value = longitud?.toString() ?: "",
+                                            onValueChange = {
+                                                longitud = it.toDoubleOrNull()
+                                                onInputChanged()
+                                            },
+                                            label = { Text("Longitud") },
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    OutlinedButton(
+                                        onClick = {
+                                            latitud = null
+                                            longitud = null
+                                        },
+                                        enabled = !isCapturingLocation,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Icon(Icons.Default.Clear, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(context.getString(R.string.obras_borrar_ubicacion))
+                                    }
                                 }
-                                IconButton(onClick = {
-                                    latitud = null
-                                    longitud = null
-                                }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Borrar ubicación")
-                                }
-                            }
+                            )
                         } else {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+                            MapPreviewCard(
+                                latitud = null,
+                                longitud = null,
                                 modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(Icons.Default.LocationOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    "Sin ubicación",
-                                    modifier = Modifier.weight(1f),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                            )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         OutlinedButton(
                             onClick = { pedirUbicacion.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                            enabled = !isCapturingLocation,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text(if (latitud != null) "Actualizar ubicación" else "Capturar ubicación")
+                            if (isCapturingLocation) {
+                                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                Spacer(Modifier.width(8.dp))
+                                Text(context.getString(R.string.obras_capturando_ubicacion))
+                            } else {
+                                Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text(if (latitud != null) context.getString(R.string.obras_actualizar_ubicacion) else context.getString(R.string.obras_capturar_ubicacion))
+                            }
                         }
                         if (ubicacionMensaje != null) {
                             Spacer(modifier = Modifier.height(8.dp))
@@ -459,25 +501,35 @@ private fun startOfTodayUtc(): Long {
 }
 
 @SuppressLint("MissingPermission")
-private fun capturarUbicacion(context: Context, onResult: (Ubicacion?) -> Unit) {
-    val manager = context.getSystemService(LocationManager::class.java)
-    val provider = when {
-        manager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
-        manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
-        else -> null
-    }
-    if (provider == null) {
-        onResult(null)
-        return
-    }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        manager.getCurrentLocation(provider, null, context.mainExecutor) { location ->
-            onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
+private fun capturarUbicacion(context: Context, onResult: (Ubicacion?) -> Unit): CancellationTokenSource {
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    val cancellationTokenSource = CancellationTokenSource()
+
+    fusedLocationClient.lastLocation.addOnSuccessListener { lastLocation ->
+        if (lastLocation != null && (System.currentTimeMillis() - lastLocation.time) < 120_000) {
+            onResult(Ubicacion(lastLocation.latitude, lastLocation.longitude))
+            return@addOnSuccessListener
         }
-    } else {
-        @Suppress("DEPRECATION")
-        manager.requestSingleUpdate(provider, { location ->
-            onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
-        }, Looper.getMainLooper())
+
+        val request = CurrentLocationRequest.Builder()
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .setMaxUpdateAgeMillis(60_000)
+            .setDurationMillis(15_000)
+            .build()
+
+        fusedLocationClient.getCurrentLocation(request, cancellationTokenSource.token)
+            .addOnSuccessListener { location ->
+                onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+            .addOnCanceledListener {
+                onResult(null)
+            }
+    }.addOnFailureListener {
+        onResult(null)
     }
+
+    return cancellationTokenSource
 }

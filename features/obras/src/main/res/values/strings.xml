@@ -4,4 +4,11 @@
     <string name="compartir_relevamiento_via">Compartir relevamiento vía&#8230;</string>
     <string name="error_exportacion_pdf">No se pudo generar el documento PDF</string>
     <string name="generando_documento">Generando documento...</string>
+
+    <string name="obras_capturando_ubicacion">Obteniendo señal GPS...</string>
+    <string name="obras_borrar_ubicacion">Borrar ubicación</string>
+    <string name="obras_actualizar_ubicacion">Actualizar coordenadas por GPS</string>
+    <string name="obras_capturar_ubicacion">Capturar ubicación por GPS</string>
+    <string name="obras_error_permiso_ubicacion">Se requiere permiso de ubicación para capturar GPS.</string>
+    <string name="obras_error_ubicacion_no_disponible">No pudimos obtener la señal de GPS actual.</string>
 </resources>

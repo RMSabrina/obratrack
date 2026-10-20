@@ -37,7 +37,8 @@ fun MapPreviewCard(
     latitud: Double?,
     longitud: Double?,
     title: String = "Ubicación Geográfica",
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    bottomActions: (@Composable () -> Unit)? = null
 ) {
     val context = LocalContext.current
 
@@ -118,6 +119,11 @@ fun MapPreviewCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+
+            if (bottomActions != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                bottomActions()
             }
         }
     }
