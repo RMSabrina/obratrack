@@ -26,6 +26,11 @@ class AuthRepositoryImpl @Inject constructor(
         return mapped
     }
 
+    override suspend fun loginWithGoogle(idToken: String): AppResult<User> {
+        val result = remoteDataSource.loginWithGoogle(idToken)
+        return result.toAppResult { it.toDomain() }
+    }
+
     override suspend fun register(name: String, credentials: Credentials): AppResult<User> {
         val result = remoteDataSource.register(name, credentials.email, credentials.password)
         return result.toAppResult { it.toDomain() }

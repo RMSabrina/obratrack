@@ -13,18 +13,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.unaj.appmoviles.auth.R
 import com.unaj.appmoviles.features.auth.components.AuthTextField
+import com.unaj.appmoviles.features.auth.google.GoogleSignInHelper
+import com.unaj.appmoviles.features.auth.google.GoogleSignInResult
 import com.unaj.appmoviles.obratrack.core.domain.error.AuthError
 import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
-
-
-import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginRoute(
@@ -32,9 +36,21 @@ fun LoginRoute(
     onNavigateToRegister: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
     LoginScreen(
         state = state,
         onLoginClick = viewModel::onLoginClick,
+        onGoogleClick = {
+            coroutineScope.launch {
+                when (val result = GoogleSignInHelper.signIn(context)) {
+                    is GoogleSignInResult.Success -> viewModel.onGoogleLoginClick(result.idToken)
+                    is GoogleSignInResult.Error -> viewModel.onGoogleLoginError(result.error)
+                    GoogleSignInResult.Cancelled -> Unit
+                }
+            }
+        },
         onInputChanged = viewModel::onErrorShown,
         onRegisterClick = onNavigateToRegister
     )
@@ -44,6 +60,7 @@ fun LoginRoute(
 fun LoginScreen(
     state: LoginUiState,
     onLoginClick: (email: String, password: String) -> Unit,
+    onGoogleClick: () -> Unit,
     onInputChanged: () -> Unit,
     onRegisterClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -124,6 +141,25 @@ fun LoginScreen(
             if (isLoading) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
             else Text("Iniciar sesión", fontWeight = FontWeight.Bold)
         }
+
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = onGoogleClick,
+            enabled = !isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_google),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text("Continuar con Google", fontWeight = FontWeight.Bold)
+        }
         
         Spacer(Modifier.height(16.dp))
         
@@ -137,5 +173,5 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 private fun LoginScreenPreview() = MaterialTheme {
-    LoginScreen(LoginUiState.Error(AuthError.InvalidCredentials), { _, _ -> }, {}, {})
+    LoginScreen(LoginUiState.Error(AuthError.InvalidCredentials), { _, _ -> }, {}, {}, {})
 }

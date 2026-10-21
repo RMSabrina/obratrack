@@ -12,4 +12,8 @@ sealed interface AuthError : DomainError {
 
     data object EmailAlreadyVerified : AuthError
     data object EmailNotVerified : AuthError
+
+    data object GoogleConfigurationError : AuthError
+    data object GoogleSignInFailed : AuthError
+    data object GoogleNoAccounts : AuthError
 }

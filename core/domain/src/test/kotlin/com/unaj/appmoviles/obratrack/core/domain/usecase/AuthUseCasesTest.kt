@@ -78,6 +78,9 @@ private class FakeAuthRepository : AuthRepository {
     override suspend fun login(credentials: Credentials): AppResult<User> =
         AppResult.Success(User("id", credentials.email, "User"))
 
+    override suspend fun loginWithGoogle(idToken: String): AppResult<User> =
+        AppResult.Success(User("google-id", "google@test.com", "Google User"))
+
     override suspend fun register(name: String, credentials: Credentials): AppResult<User> =
         AppResult.Success(User("id", credentials.email, name))
 

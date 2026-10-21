@@ -11,6 +11,9 @@
     <string name="error_unknown">Ocurrió un error inesperado</string>
     <string name="error_timeout">No pudimos confirmar la eliminación, revisá tu conexión y reintentá</string>
     <string name="error_fallo_parcial">No se pudo eliminar completamente, reintentá</string>
+    <string name="error_google_config">Error de configuración de Google Sign-In</string>
+    <string name="error_google_failed">No se pudo iniciar sesión con Google</string>
+    <string name="error_google_no_accounts">No hay cuentas de Google disponibles en el dispositivo</string>
     <string name="error_obra_nombre">Ingresá el nombre de la obra</string>
     <string name="error_obra_cliente">Ingresá el cliente</string>
     <string name="error_obra_direccion">Ingresá la dirección</string>

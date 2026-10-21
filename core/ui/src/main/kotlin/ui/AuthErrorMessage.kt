@@ -19,6 +19,9 @@ fun DomainError.asMessage(): String = stringResource(
         AuthError.NetworkError -> R.string.error_network
         AuthError.RequiresRecentLogin -> R.string.error_recent_login_required
         AuthError.EmailNotVerified -> R.string.error_email_not_verified
+        AuthError.GoogleConfigurationError -> R.string.error_google_config
+        AuthError.GoogleSignInFailed -> R.string.error_google_failed
+        AuthError.GoogleNoAccounts -> R.string.error_google_no_accounts
         ObraError.NombreVacio -> R.string.error_obra_nombre
         ObraError.ClienteVacio -> R.string.error_obra_cliente
         ObraError.DireccionVacia -> R.string.error_obra_direccion

@@ -5,6 +5,7 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.awaitClose
@@ -35,7 +36,8 @@ class FirebaseAuthDataSourceImpl @Inject constructor(
         refreshTrigger
     ) { _, _ ->
         val user = firebaseAuth.currentUser
-        if (user != null && user.isEmailVerified) user.toDto() else null
+        val isGoogleUser = user?.providerData?.any { it.providerId == GoogleAuthProvider.PROVIDER_ID } == true
+        if (user != null && (user.isEmailVerified || isGoogleUser)) user.toDto() else null
     }
 
     override suspend fun login(email: String, pass: String): FirebaseResult<UserDto> {
@@ -47,6 +49,20 @@ class FirebaseAuthDataSourceImpl @Inject constructor(
                 firebaseAuth.signOut()
                 return FirebaseResult.Error(Exception("EMAIL_NOT_VERIFIED"))
             }
+            FirebaseResult.Success(user.toDto())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
+    }
+
+    override suspend fun loginWithGoogle(idToken: String): FirebaseResult<UserDto> {
+        return try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            val user = firebaseAuth.signInWithCredential(credential).await().user
+                ?: return FirebaseResult.Error(Exception("Usuario nulo tras login con Google"))
+
             FirebaseResult.Success(user.toDto())
         } catch (e: CancellationException) {
             throw e
