@@ -128,7 +128,7 @@ fun ObraDetailScreen(
         AlertDialog(
             onDismissRequest = { if (!state.isDeleting) showDeleteDialog = false },
             title = { Text("Eliminar Obra") },
-            text = { Text("¿Eliminar Obra y todos sus relevamientos y suscriptores? Esta acción no se puede deshacer.") },
+            text = { Text("¿Eliminar Obra y todos sus relevamientos, tareas y suscriptores? Esta acción no se puede deshacer.") },
             confirmButton = {
                 TextButton(
                     enabled = !state.isDeleting,

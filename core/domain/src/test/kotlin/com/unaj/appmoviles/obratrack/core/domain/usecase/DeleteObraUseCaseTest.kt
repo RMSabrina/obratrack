@@ -3,12 +3,16 @@ package com.unaj.appmoviles.obratrack.core.domain.usecase
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
+import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
+import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.DeleteObraUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -23,12 +27,14 @@ class DeleteObraUseCaseTest {
     fun delete_existsReturnsFalse_returnsSuccessWithoutCascade() = runBlocking {
         val obraRepo = FakeObraRepo(existsResult = AppResult.Success(false))
         val relevamientoRepo = FakeRelevamientoRepo()
-        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo)
+        val tareaRepo = FakeTareaRepo()
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
 
         val result = useCase("obra-1")
 
         assertTrue(result is AppResult.Success)
         assertEquals(1, obraRepo.existsCalls)
+        assertEquals(0, tareaRepo.deleteAllCalls)
         assertEquals(0, relevamientoRepo.deleteAllCalls)
         assertEquals(0, obraRepo.deleteAllSuscriptoresCalls)
         assertEquals(0, obraRepo.deleteCalls)
@@ -44,12 +50,14 @@ class DeleteObraUseCaseTest {
             }
         }
         val relevamientoRepo = FakeRelevamientoRepo(deleteAllResult = AppResult.Error(RelevamientoError.NoAutorizado))
-        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo)
+        val tareaRepo = FakeTareaRepo()
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
 
         val result = useCase("obra-1")
 
         assertTrue(result is AppResult.Success)
         assertEquals(2, existsCount)
+        assertEquals(1, tareaRepo.deleteAllCalls)
         assertEquals(1, relevamientoRepo.deleteAllCalls)
         assertEquals(0, obraRepo.deleteAllSuscriptoresCalls)
         assertEquals(0, obraRepo.deleteCalls)
@@ -59,13 +67,15 @@ class DeleteObraUseCaseTest {
     fun delete_cascadePermissionDenied_andExistsReturnsTrue_returnsFalloParcial() = runBlocking {
         val obraRepo = FakeObraRepo(existsResult = AppResult.Success(true))
         val relevamientoRepo = FakeRelevamientoRepo(deleteAllResult = AppResult.Error(RelevamientoError.NoAutorizado))
-        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo)
+        val tareaRepo = FakeTareaRepo()
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
 
         val result = useCase("obra-1")
 
         assertTrue(result is AppResult.Error)
         assertEquals(ObraError.FalloParcial, (result as AppResult.Error).error)
         assertEquals(2, obraRepo.existsCalls)
+        assertEquals(1, tareaRepo.deleteAllCalls)
         assertEquals(1, relevamientoRepo.deleteAllCalls)
         assertEquals(0, obraRepo.deleteAllSuscriptoresCalls)
         assertEquals(0, obraRepo.deleteCalls)
@@ -75,13 +85,74 @@ class DeleteObraUseCaseTest {
     fun delete_existenceCheckFails_propagatesError() = runBlocking {
         val obraRepo = FakeObraRepo(existsResult = AppResult.Error(ObraError.Red))
         val relevamientoRepo = FakeRelevamientoRepo()
-        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo)
+        val tareaRepo = FakeTareaRepo()
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
 
         val result = useCase("obra-1")
 
         assertTrue(result is AppResult.Error)
         assertEquals(ObraError.Red, (result as AppResult.Error).error)
         assertEquals(1, obraRepo.existsCalls)
+        assertEquals(0, tareaRepo.deleteAllCalls)
+        assertEquals(0, relevamientoRepo.deleteAllCalls)
+        assertEquals(0, obraRepo.deleteAllSuscriptoresCalls)
+        assertEquals(0, obraRepo.deleteCalls)
+    }
+
+    @Test
+    fun delete_tareasFails_restDoesNotRun() = runBlocking {
+        val obraRepo = FakeObraRepo(existsResult = AppResult.Success(true))
+        val relevamientoRepo = FakeRelevamientoRepo()
+        val tareaRepo = FakeTareaRepo(deleteAllResult = AppResult.Error(TareaError.Red))
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
+
+        val result = useCase("obra-1")
+
+        assertTrue(result is AppResult.Error)
+        assertEquals(ObraError.FalloParcial, (result as AppResult.Error).error)
+        assertEquals(1, obraRepo.existsCalls)
+        assertEquals(1, tareaRepo.deleteAllCalls)
+        assertEquals(0, relevamientoRepo.deleteAllCalls)
+        assertEquals(0, obraRepo.deleteAllSuscriptoresCalls)
+        assertEquals(0, obraRepo.deleteCalls)
+    }
+
+    @Test
+    fun delete_tareasPermissionDenied_andExistsReturnsFalse_returnsSuccess() = runBlocking {
+        var existsCount = 0
+        val obraRepo = object : FakeObraRepo() {
+            override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> {
+                existsCount++
+                return if (existsCount == 1) AppResult.Success(true) else AppResult.Success(false)
+            }
+        }
+        val relevamientoRepo = FakeRelevamientoRepo()
+        val tareaRepo = FakeTareaRepo(deleteAllResult = AppResult.Error(TareaError.NoAutorizada))
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
+
+        val result = useCase("obra-1")
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(2, existsCount)
+        assertEquals(1, tareaRepo.deleteAllCalls)
+        assertEquals(0, relevamientoRepo.deleteAllCalls)
+        assertEquals(0, obraRepo.deleteAllSuscriptoresCalls)
+        assertEquals(0, obraRepo.deleteCalls)
+    }
+
+    @Test
+    fun delete_tareasPermissionDenied_andExistsReturnsTrue_returnsFalloParcial() = runBlocking {
+        val obraRepo = FakeObraRepo(existsResult = AppResult.Success(true))
+        val relevamientoRepo = FakeRelevamientoRepo()
+        val tareaRepo = FakeTareaRepo(deleteAllResult = AppResult.Error(TareaError.NoAutorizada))
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
+
+        val result = useCase("obra-1")
+
+        assertTrue(result is AppResult.Error)
+        assertEquals(ObraError.FalloParcial, (result as AppResult.Error).error)
+        assertEquals(2, obraRepo.existsCalls)
+        assertEquals(1, tareaRepo.deleteAllCalls)
         assertEquals(0, relevamientoRepo.deleteAllCalls)
         assertEquals(0, obraRepo.deleteAllSuscriptoresCalls)
         assertEquals(0, obraRepo.deleteCalls)
@@ -91,12 +162,14 @@ class DeleteObraUseCaseTest {
     fun delete_step1Fails_steps2And3DoNotRun() = runBlocking {
         val obraRepo = FakeObraRepo(existsResult = AppResult.Success(true))
         val relevamientoRepo = FakeRelevamientoRepo(deleteAllResult = AppResult.Error(RelevamientoError.Red))
-        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo)
+        val tareaRepo = FakeTareaRepo()
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
 
         val result = useCase("obra-1")
 
         assertTrue(result is AppResult.Error)
         assertEquals(ObraError.FalloParcial, (result as AppResult.Error).error)
+        assertEquals(1, tareaRepo.deleteAllCalls)
         assertEquals(1, relevamientoRepo.deleteAllCalls)
         assertEquals(0, obraRepo.deleteAllSuscriptoresCalls)
         assertEquals(0, obraRepo.deleteCalls)
@@ -109,12 +182,14 @@ class DeleteObraUseCaseTest {
             deleteAllSuscriptoresResult = AppResult.Error(ObraError.Red)
         )
         val relevamientoRepo = FakeRelevamientoRepo(deleteAllResult = AppResult.Success(Unit))
-        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo)
+        val tareaRepo = FakeTareaRepo()
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
 
         val result = useCase("obra-1")
 
         assertTrue(result is AppResult.Error)
         assertEquals(ObraError.FalloParcial, (result as AppResult.Error).error)
+        assertEquals(1, tareaRepo.deleteAllCalls)
         assertEquals(1, relevamientoRepo.deleteAllCalls)
         assertEquals(1, obraRepo.deleteAllSuscriptoresCalls)
         assertEquals(0, obraRepo.deleteCalls)
@@ -124,11 +199,13 @@ class DeleteObraUseCaseTest {
     fun delete_allStepsSucceed_returnsSuccess() = runBlocking {
         val obraRepo = FakeObraRepo(existsResult = AppResult.Success(true))
         val relevamientoRepo = FakeRelevamientoRepo(deleteAllResult = AppResult.Success(Unit))
-        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo)
+        val tareaRepo = FakeTareaRepo()
+        val useCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo)
 
         val result = useCase("obra-1")
 
         assertTrue(result is AppResult.Success)
+        assertEquals(1, tareaRepo.deleteAllCalls)
         assertEquals(1, relevamientoRepo.deleteAllCalls)
         assertEquals(1, obraRepo.deleteAllSuscriptoresCalls)
         assertEquals(1, obraRepo.deleteCalls)
@@ -184,6 +261,23 @@ open class FakeRelevamientoRepo(
         deleteCalls++
         return deleteResult
     }
+
+    override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> {
+        deleteAllCalls++
+        return deleteAllResult
+    }
+}
+
+open class FakeTareaRepo(
+    var deleteAllResult: AppResult<Unit> = AppResult.Success(Unit)
+) : TareaRepository {
+    var deleteAllCalls = 0
+
+    override fun observeByObra(obraId: String): Flow<List<Tarea>> = emptyFlow()
+    override fun observeOne(obraId: String, tareaId: String): Flow<Tarea?> = emptyFlow()
+    override suspend fun create(userId: String, obraId: String, draft: TareaDraft): AppResult<Tarea> = error("Not needed")
+    override suspend fun update(userId: String, obraId: String, tareaId: String, draft: TareaDraft): AppResult<Tarea> = error("Not needed")
+    override suspend fun delete(obraId: String, tareaId: String): AppResult<Unit> = error("Not needed")
 
     override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> {
         deleteAllCalls++

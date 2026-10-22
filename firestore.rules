@@ -104,6 +104,29 @@ service cloud.firestore {
         allow delete: if isAuthenticated() &&
                          obraData().userId == request.auth.uid;
       }
+
+      // ---------- Subcolección: TAREAS ----------
+      // Privadas del dueño de la obra, aunque la obra sea pública.
+      match /tareas/{tareaId} {
+
+        // LECTURA: solo el dueño de la obra
+        allow read: if isAuthenticated() &&
+                       obraData().userId == request.auth.uid;
+
+        // CREACIÓN: solo el dueño, con su propio userId
+        allow create: if isAuthenticated() &&
+                         obraData().userId == request.auth.uid &&
+                         request.resource.data.userId == request.auth.uid;
+
+        // ACTUALIZACIÓN: solo el dueño, sin cambiar el userId a otro
+        allow update: if isAuthenticated() &&
+                         obraData().userId == request.auth.uid &&
+                         request.resource.data.userId == request.auth.uid;
+
+        // ELIMINACIÓN: solo el dueño
+        allow delete: if isAuthenticated() &&
+                         obraData().userId == request.auth.uid;
+      }
     }
 
     // ============================================
