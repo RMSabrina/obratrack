@@ -4,10 +4,12 @@ import com.unaj.appmoviles.obratrack.core.data.repository.AuthRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.CloudinaryImageStorageImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.ObraRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.RelevamientoRepositoryImpl
+import com.unaj.appmoviles.obratrack.core.data.repository.TareaRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ImageStorageRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -31,6 +33,11 @@ abstract class DataModule {
     abstract fun bindRelevamientoRepository(
         impl: RelevamientoRepositoryImpl
     ): RelevamientoRepository
+
+    @Binds
+    abstract fun bindTareaRepository(
+        impl: TareaRepositoryImpl
+    ): TareaRepository
 
     @Binds
     abstract fun bindImageStorageRepository(

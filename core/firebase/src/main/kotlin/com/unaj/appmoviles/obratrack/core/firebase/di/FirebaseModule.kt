@@ -8,6 +8,8 @@ import com.unaj.appmoviles.obratrack.core.firebase.FirestoreObraDataSource
 import com.unaj.appmoviles.obratrack.core.firebase.FirestoreObraDataSourceImpl
 import com.unaj.appmoviles.obratrack.core.firebase.FirestoreRelevamientoDataSource
 import com.unaj.appmoviles.obratrack.core.firebase.FirestoreRelevamientoDataSourceImpl
+import com.unaj.appmoviles.obratrack.core.firebase.FirestoreTareaDataSource
+import com.unaj.appmoviles.obratrack.core.firebase.FirestoreTareaDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -46,4 +48,9 @@ abstract class FirebaseBindsModule {
     abstract fun bindFirestoreRelevamientoDataSource(
         impl: FirestoreRelevamientoDataSourceImpl
     ): FirestoreRelevamientoDataSource
+
+    @Binds
+    abstract fun bindFirestoreTareaDataSource(
+        impl: FirestoreTareaDataSourceImpl
+    ): FirestoreTareaDataSource
 }

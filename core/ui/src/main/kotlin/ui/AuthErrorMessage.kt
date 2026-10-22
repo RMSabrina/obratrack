@@ -6,6 +6,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.AuthError
 import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
+import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
 import com.unaj.appmoviles.obratrack.core.ui.R
 
 @Composable
@@ -37,6 +38,13 @@ fun DomainError.asMessage(): String = stringResource(
         RelevamientoError.ImagenMuyGrande -> R.string.error_relevamiento_imagen_grande
         RelevamientoError.Red -> R.string.error_network
         RelevamientoError.Timeout -> R.string.error_timeout
+        TareaError.TituloVacio -> R.string.error_tarea_titulo
+        TareaError.FechasIncompletas -> R.string.error_tarea_fechas_incompletas
+        TareaError.FechaFinAnterior -> R.string.error_tarea_fecha_fin_anterior
+        TareaError.NoEncontrada -> R.string.error_tarea_not_found
+        TareaError.NoAutorizada -> R.string.error_tarea_forbidden
+        TareaError.Red -> R.string.error_network
+        TareaError.Timeout -> R.string.error_tarea_timeout
         else -> R.string.error_unknown
     }
 )
