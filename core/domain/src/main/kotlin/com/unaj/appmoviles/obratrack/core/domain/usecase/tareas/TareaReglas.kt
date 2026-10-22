@@ -1,6 +1,7 @@
 package com.unaj.appmoviles.obratrack.core.domain.usecase.tareas
 
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
+import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import java.time.LocalDate
 
@@ -21,3 +22,13 @@ fun List<Tarea>.ordenadas(): List<Tarea> = sortedWith(
     compareBy<Tarea, LocalDate?>(nullsLast()) { it.fechaInicio }
         .thenBy(String.CASE_INSENSITIVE_ORDER) { it.titulo }
 )
+
+/** Resumen para el detalle de obra: las atrasadas también cuentan como pendientes. */
+fun List<Tarea>.resumen(hoy: LocalDate): ResumenTareas {
+    val completadas = count { it.estado == EstadoTarea.COMPLETADA }
+    return ResumenTareas(
+        completadas = completadas,
+        pendientes = size - completadas,
+        atrasadas = count { it.estaAtrasada(hoy) }
+    )
+}

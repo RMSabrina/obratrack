@@ -4,30 +4,45 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
+import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
+import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.DeleteObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareasUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.resumen
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Clock
+import java.time.LocalDate
 
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel(assistedFactory = ObraDetailViewModel.Factory::class)
 class ObraDetailViewModel @AssistedInject constructor(
     @Assisted private val obraId: String,
     observeSession: ObserveSessionUseCase,
     private val observeObra: ObserveObraUseCase,
     private val observeRelevamientos: ObserveRelevamientosUseCase,
-    private val deleteObraUseCase: DeleteObraUseCase
+    private val observeTareas: ObserveTareasUseCase,
+    private val deleteObraUseCase: DeleteObraUseCase,
+    private val clock: Clock
 ) : ViewModel() {
 
     @dagger.assisted.AssistedFactory
@@ -47,8 +62,9 @@ class ObraDetailViewModel @AssistedInject constructor(
                 }
                 combine(
                     observeObra(user.id, obraId),
-                    observeRelevamientos(user.id, obraId)
-                ) { obra, relevamientos ->
+                    observeRelevamientos(user.id, obraId),
+                    observeResumenTareas(user.id)
+                ) { obra, relevamientos, resumenTareas ->
                     val current = _uiState.value
                     if (current.isDeleting) {
                         if (obra == null && current.deleteError == ObraError.Timeout) {
@@ -62,6 +78,7 @@ class ObraDetailViewModel @AssistedInject constructor(
                             isEditable = obra?.userId == user.id,
                             obra = obra,
                             relevamientos = relevamientos,
+                            resumenTareas = resumenTareas,
                             error = if (obra == null) ObraError.NoEncontrada else null,
                             isDeleting = current.isDeleting,
                             isDeleted = current.isDeleted,
@@ -78,6 +95,24 @@ class ObraDetailViewModel @AssistedInject constructor(
             }
         }
     }
+
+    /**
+     * Las tareas son privadas: solo se observan si el usuario es dueño (si no, Firestore
+     * rechaza la lectura). Un error de tareas oculta el resumen sin afectar al resto.
+     */
+    private fun observeResumenTareas(userId: String): Flow<ResumenTareas?> =
+        observeObra(userId, obraId)
+            .map { obra -> obra?.userId == userId }
+            .distinctUntilChanged()
+            .flatMapLatest { esDueno ->
+                if (!esDueno) {
+                    flowOf(null)
+                } else {
+                    observeTareas(obraId)
+                        .map<List<Tarea>, ResumenTareas?> { tareas -> tareas.resumen(LocalDate.now(clock)) }
+                        .catch { emit(null) }
+                }
+            }
 
     fun deleteObra() {
         if (_uiState.value.isDeleting) return

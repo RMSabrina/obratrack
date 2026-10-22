@@ -6,11 +6,14 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Credentials
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.User
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -62,6 +65,31 @@ class FakeObraRepository(obra: Obra?) : ObraRepository {
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> = TODO()
     override suspend fun delete(obraId: String): AppResult<Unit> = TODO()
     override suspend fun deleteAllSuscriptoresByObra(obraId: String): AppResult<Unit> = TODO()
+}
+
+class FakeRelevamientoRepository(relevamientos: List<Relevamiento> = emptyList()) : RelevamientoRepository {
+    val relevamientos = MutableStateFlow(relevamientos)
+
+    override fun observe(userId: String, obraId: String): Flow<List<Relevamiento>> =
+        relevamientos.map { lista -> lista.filter { it.obraId == obraId } }
+
+    override fun observeAll(userId: String): Flow<List<Relevamiento>> = TODO()
+    override fun observeByObra(obraId: String): Flow<List<Relevamiento>> = TODO()
+    override suspend fun create(
+        userId: String,
+        obraId: String,
+        draft: RelevamientoDraft,
+        photo: ByteArray?
+    ): AppResult<Relevamiento> = TODO()
+    override suspend fun update(
+        userId: String,
+        obraId: String,
+        relevamientoId: String,
+        draft: RelevamientoDraft,
+        photo: ByteArray?
+    ): AppResult<Relevamiento> = TODO()
+    override suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit> = TODO()
+    override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> = TODO()
 }
 
 class FakeTareaRepository(tareas: List<Tarea> = emptyList()) : TareaRepository {

@@ -50,6 +50,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -65,6 +66,7 @@ import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
+import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import com.unaj.appmoviles.obratrack.core.ui.components.EmptyState
@@ -232,31 +234,29 @@ fun ObraDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
+                        SectionTitle(stringResource(R.string.obra_seccion_resumen))
+                    }
+
+                    item {
                         ObraHeaderCard(obra = obra)
                     }
 
-                    // Las tareas son privadas del dueño: el acceso no se muestra a otros usuarios.
+                    // Las tareas son privadas del dueño: la sección no se muestra a otros usuarios.
                     if (state.isEditable) {
                         item {
-                            OutlinedButton(
-                                onClick = onOpenTareas,
+                            SectionTitle(stringResource(R.string.obras_tareas))
+                        }
+                        item {
+                            TareasResumenCard(
+                                resumen = state.resumenTareas,
                                 enabled = !state.isDeleting,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(Icons.Default.Checklist, contentDescription = null)
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.obras_tareas))
-                            }
+                                onOpenTareas = onOpenTareas
+                            )
                         }
                     }
 
                     item {
-                        Text(
-                            text = "Relevamientos",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                        )
+                        SectionTitle(stringResource(R.string.obra_seccion_relevamientos))
                     }
 
                     if (state.relevamientos.isEmpty() && state.error == null) {
@@ -281,6 +281,94 @@ fun ObraDetailScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        modifier = modifier.padding(top = 8.dp, bottom = 4.dp)
+    )
+}
+
+@Composable
+private fun TareasResumenCard(
+    resumen: ResumenTareas?,
+    enabled: Boolean,
+    onOpenTareas: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            when {
+                // Sin resumen (error al leer las tareas) solo se muestra el acceso.
+                resumen == null -> Unit
+                resumen.completadas + resumen.pendientes == 0 -> Text(
+                    text = stringResource(R.string.obra_tareas_sin_tareas),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                else -> Row(modifier = Modifier.fillMaxWidth()) {
+                    ContadorTareas(
+                        valor = resumen.completadas,
+                        etiqueta = stringResource(R.string.obra_tareas_completadas),
+                        modifier = Modifier.weight(1f)
+                    )
+                    ContadorTareas(
+                        valor = resumen.pendientes,
+                        etiqueta = stringResource(R.string.obra_tareas_pendientes),
+                        modifier = Modifier.weight(1f)
+                    )
+                    ContadorTareas(
+                        valor = resumen.atrasadas,
+                        etiqueta = stringResource(R.string.obra_tareas_atrasadas),
+                        destacado = resumen.atrasadas > 0,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            OutlinedButton(
+                onClick = onOpenTareas,
+                enabled = enabled,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Checklist, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.obra_tareas_ver))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ContadorTareas(
+    valor: Int,
+    etiqueta: String,
+    modifier: Modifier = Modifier,
+    destacado: Boolean = false
+) {
+    val color = if (destacado) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = valor.toString(),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+        Text(
+            text = etiqueta,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (destacado) color else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

@@ -74,4 +74,13 @@
     <string name="tarea_eliminar">Eliminar tarea</string>
     <string name="tarea_eliminar_confirmacion">¿Eliminar esta tarea? Esta acción no se puede deshacer.</string>
     <string name="eliminar">Eliminar</string>
+
+    <!-- Detalle de obra: secciones -->
+    <string name="obra_seccion_resumen">Resumen</string>
+    <string name="obra_seccion_relevamientos">Relevamientos</string>
+    <string name="obra_tareas_completadas">Completadas</string>
+    <string name="obra_tareas_pendientes">Pendientes</string>
+    <string name="obra_tareas_atrasadas">Atrasadas</string>
+    <string name="obra_tareas_sin_tareas">Todavía no hay tareas cargadas.</string>
+    <string name="obra_tareas_ver">Ver tareas</string>
 </resources>
