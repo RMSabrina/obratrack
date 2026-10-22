@@ -63,3 +63,21 @@ data class RelevamientoFormDestination(
     val longitud: Double? = null,
     val proximaVisita: Long? = null
 ) : NavKey
+
+@Serializable
+data class TareasListDestination(
+    val obraId: String
+) : NavKey
+
+/** Sin tareaId crea una tarea; con tareaId la edita (el ViewModel la carga por id). */
+@Serializable
+data class TareaFormDestination(
+    val obraId: String,
+    val tareaId: String? = null
+) : NavKey
+
+@Serializable
+data class TareaDetailDestination(
+    val obraId: String,
+    val tareaId: String
+) : NavKey

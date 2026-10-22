@@ -8,6 +8,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.time.Clock
 import javax.inject.Singleton
 
 @Module
@@ -28,4 +29,8 @@ object AppModule {
     fun provideCloudinaryUploadPreset(): String {
         return BuildConfig.CLOUDINARY_UPLOAD_PRESET
     }
+
+    /** Reloj del sistema en la zona del dispositivo; en los tests se reemplaza por Clock.fixed. */
+    @Provides
+    fun provideClock(): Clock = Clock.systemDefaultZone()
 }

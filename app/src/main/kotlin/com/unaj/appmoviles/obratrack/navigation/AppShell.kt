@@ -24,6 +24,9 @@ import com.unaj.appmoviles.features.obras.detail.ObraPublicaDetailRoute
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormInitial
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormRoute
 import com.unaj.appmoviles.features.obras.relevamiento.detail.RelevamientoDetailRoute
+import com.unaj.appmoviles.features.obras.tareas.detail.TareaDetailRoute
+import com.unaj.appmoviles.features.obras.tareas.form.TareaFormRoute
+import com.unaj.appmoviles.features.obras.tareas.list.TareasListRoute
 import com.unaj.appmoviles.features.home.HomeRoute
 import com.unaj.appmoviles.features.home.ObraSelectionRoute
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
@@ -161,6 +164,49 @@ fun AppShell(onLogout: () -> Unit) {
                                 relevamientoId = relevamiento.id
                             )
                         )
+                    },
+                    onOpenTareas = {
+                        backStack.add(TareasListDestination(obraId = destination.obraId))
+                    }
+                )
+            }
+            entry<TareasListDestination> { destination ->
+                TareasListRoute(
+                    obraId = destination.obraId,
+                    onBack = ::goBack,
+                    onCreateTarea = {
+                        backStack.add(TareaFormDestination(obraId = destination.obraId))
+                    },
+                    onOpenTarea = { tarea ->
+                        backStack.add(
+                            TareaDetailDestination(obraId = destination.obraId, tareaId = tarea.id)
+                        )
+                    }
+                )
+            }
+            entry<TareaDetailDestination> { destination ->
+                TareaDetailRoute(
+                    obraId = destination.obraId,
+                    tareaId = destination.tareaId,
+                    onBack = ::goBack,
+                    onDeleteSuccess = ::goBack,
+                    onEditTarea = {
+                        backStack.add(
+                            TareaFormDestination(obraId = destination.obraId, tareaId = destination.tareaId)
+                        )
+                    }
+                )
+            }
+            entry<TareaFormDestination> { destination ->
+                TareaFormRoute(
+                    obraId = destination.obraId,
+                    tareaId = destination.tareaId,
+                    onBack = ::goBack,
+                    // Al guardar se vuelve al listado, aunque la edición se haya abierto desde el detalle.
+                    onSaved = {
+                        while (backStack.size > 1 && backStack.last() !is TareasListDestination) {
+                            backStack.removeAt(backStack.lastIndex)
+                        }
                     }
                 )
             }

@@ -12,4 +12,66 @@
     <string name="obras_error_permiso_ubicacion">Se requiere permiso de ubicación para capturar GPS.</string>
     <string name="obras_error_ubicacion_no_disponible">No pudimos obtener la señal de GPS actual.</string>
     <string name="obras_ajustar_en_mapa">Ajustar en el mapa</string>
+
+    <!-- Tareas: categorías -->
+    <string name="tarea_categoria_cimientos_y_excavacion">Cimientos y excavación</string>
+    <string name="tarea_categoria_estructura">Estructura</string>
+    <string name="tarea_categoria_albanileria">Albañilería</string>
+    <string name="tarea_categoria_techos">Techos</string>
+    <string name="tarea_categoria_electricidad">Electricidad</string>
+    <string name="tarea_categoria_plomeria">Plomería</string>
+    <string name="tarea_categoria_gas">Gas</string>
+    <string name="tarea_categoria_climatizacion">Climatización</string>
+    <string name="tarea_categoria_carpinteria">Carpintería</string>
+    <string name="tarea_categoria_herreria">Herrería</string>
+    <string name="tarea_categoria_pisos_y_revestimientos">Pisos y revestimientos</string>
+    <string name="tarea_categoria_pintura">Pintura</string>
+    <string name="tarea_categoria_aberturas">Aberturas</string>
+    <string name="tarea_categoria_impermeabilizacion">Impermeabilización</string>
+    <string name="tarea_categoria_limpieza">Limpieza</string>
+    <string name="tarea_categoria_otros">Otros</string>
+
+    <!-- Tareas: estados -->
+    <string name="tarea_estado_pendiente">Pendiente</string>
+    <string name="tarea_estado_en_curso">En curso</string>
+    <string name="tarea_estado_completada">Completada</string>
+    <string name="tarea_atrasada">Atrasada</string>
+
+    <!-- Tareas: listado -->
+    <string name="obras_tareas">Tareas</string>
+    <string name="tareas_titulo">Tareas de la obra</string>
+    <string name="tareas_vacio_titulo">Todavía no hay tareas</string>
+    <string name="tareas_vacio_descripcion">Planificá el trabajo de la obra cargando sus tareas.</string>
+    <string name="tareas_agregar_primera">Agregar la primera</string>
+    <string name="tareas_agregar">Agregar tarea</string>
+    <string name="tareas_sin_fechas">Sin planificar</string>
+    <string name="tareas_rango_fechas">%1$s – %2$s</string>
+    <string name="volver">Volver</string>
+
+    <!-- Tareas: formulario -->
+    <string name="tarea_nueva">Nueva tarea</string>
+    <string name="tarea_editar">Editar tarea</string>
+    <string name="tarea_campo_titulo">Título</string>
+    <string name="tarea_campo_descripcion">Descripción (opcional)</string>
+    <string name="tarea_campo_categoria">Categoría</string>
+    <string name="tarea_campo_estado">Estado</string>
+    <string name="tarea_campo_fechas">Fechas (opcionales)</string>
+    <string name="tarea_campo_fecha_inicio">Inicio</string>
+    <string name="tarea_campo_fecha_fin">Fin</string>
+    <string name="tarea_fechas_ayuda">Si cargás fechas, completá inicio y fin. Sin fechas, la tarea queda sin planificar.</string>
+    <string name="tarea_quitar_fechas">Quitar fechas</string>
+    <string name="tarea_elegir_fecha">Elegir fecha</string>
+    <string name="tarea_guardar">Guardar tarea</string>
+    <string name="tarea_guardando">Guardando…</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="cancelar">Cancelar</string>
+
+    <!-- Tareas: detalle -->
+    <string name="tarea_detalle_titulo">Detalle de tarea</string>
+    <string name="tarea_descripcion">Descripción</string>
+    <string name="tarea_sin_descripcion">Sin descripción</string>
+    <string name="tarea_marcar_completada">Marcar como completada</string>
+    <string name="tarea_eliminar">Eliminar tarea</string>
+    <string name="tarea_eliminar_confirmacion">¿Eliminar esta tarea? Esta acción no se puede deshacer.</string>
+    <string name="eliminar">Eliminar</string>
 </resources>

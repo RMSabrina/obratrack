@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -34,6 +36,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -50,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.label
+import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
@@ -74,6 +79,7 @@ fun ObraDetailRoute(
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
+    onOpenTareas: () -> Unit,
     viewModel: ObraDetailViewModel = hiltViewModel(
         creationCallback = { factory: ObraDetailViewModel.Factory -> factory.create(obraId) }
     )
@@ -87,7 +93,8 @@ fun ObraDetailRoute(
         onDeleteErrorDismissed = viewModel::onDeleteErrorDismissed,
         onEditObra = onEditObra,
         onCreateRelevamiento = onCreateRelevamiento,
-        onOpenRelevamiento = onOpenRelevamiento
+        onOpenRelevamiento = onOpenRelevamiento,
+        onOpenTareas = onOpenTareas
     )
 }
 
@@ -102,6 +109,7 @@ fun ObraDetailScreen(
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
+    onOpenTareas: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val obra = state.obra
@@ -225,6 +233,21 @@ fun ObraDetailScreen(
                 ) {
                     item {
                         ObraHeaderCard(obra = obra)
+                    }
+
+                    // Las tareas son privadas del dueño: el acceso no se muestra a otros usuarios.
+                    if (state.isEditable) {
+                        item {
+                            OutlinedButton(
+                                onClick = onOpenTareas,
+                                enabled = !state.isDeleting,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Default.Checklist, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.obras_tareas))
+                            }
+                        }
                     }
 
                     item {
