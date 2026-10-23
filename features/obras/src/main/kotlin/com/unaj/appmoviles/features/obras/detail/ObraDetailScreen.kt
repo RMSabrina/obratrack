@@ -47,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -312,7 +313,7 @@ private fun ObraHeaderCard(obra: Obra, modifier: Modifier = Modifier) {
                 append("Inicio: ${formatFecha(obra.fechaInicio)}")
                 val visita = obra.ultimaVisita
                 if (visita != null) {
-                    append(" · Última visita: ${formatFecha(visita)}")
+                    append(" • Última visita: ${formatFecha(visita)}")
                 }
             }
             InfoRow(
@@ -370,11 +371,30 @@ private fun RelevamientoCard(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = formatFecha(relevamiento.fecha),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = formatFecha(relevamiento.fecha),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    StatusBadge(
+                        text = relevamiento.tipo,
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        textColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+
+                if (relevamiento.checklist.isNotEmpty()) {
+                    Text(
+                        text = "Conformidad: ${relevamiento.checklist.size} puntos verificados",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
                 
                 if (relevamiento.nota.isNotBlank()) {
                     Text(

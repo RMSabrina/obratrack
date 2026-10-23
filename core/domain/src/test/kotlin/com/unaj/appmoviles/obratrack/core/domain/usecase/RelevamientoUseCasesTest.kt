@@ -4,6 +4,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.TipoRelevamiento
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.CreateRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.UpdateRelevamientoUseCase
@@ -45,6 +46,20 @@ class RelevamientoUseCasesTest {
     }
 
     @Test
+    fun create_normalizaTipoVacio_aAvanceDeObra_yConservaChecklist() = runBlocking {
+        val repository = FakeRelevamientoRepository()
+        val result = CreateRelevamientoUseCase(repository)(
+            "uid",
+            "obra-1",
+            draft(nota = "Avance de obra", tipo = "   ", checklist = listOf("Uso obligatorio de EPP"))
+        )
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(TipoRelevamiento.AVANCE, repository.lastDraft?.tipo)
+        assertEquals(listOf("Uso obligatorio de EPP"), repository.lastDraft?.checklist)
+    }
+
+    @Test
     fun update_rechazaNotaVacia_yNoLlamaAlRepositorio() = runBlocking {
         val repository = FakeRelevamientoRepository()
         val result = UpdateRelevamientoUseCase(repository)("uid", "obra-1", "rel-1", draft(nota = ""))
@@ -53,8 +68,12 @@ class RelevamientoUseCasesTest {
         assertEquals(0, repository.updateCalls)
     }
 
-    private fun draft(fecha: Long = 1_700_000_000_000L, nota: String = "Nota") =
-        RelevamientoDraft(fecha = fecha, nota = nota)
+    private fun draft(
+        fecha: Long = 1_700_000_000_000L,
+        nota: String = "Nota",
+        tipo: String = TipoRelevamiento.AVANCE,
+        checklist: List<String> = emptyList()
+    ) = RelevamientoDraft(fecha = fecha, nota = nota, tipo = tipo, checklist = checklist)
 }
 
 private class FakeRelevamientoRepository : RelevamientoRepository {
@@ -80,7 +99,15 @@ private class FakeRelevamientoRepository : RelevamientoRepository {
         lastObraId = obraId
         lastDraft = draft
         return AppResult.Success(
-            Relevamiento(id = "nuevo", obraId = obraId, userId = userId, fecha = draft.fecha, nota = draft.nota)
+            Relevamiento(
+                id = "nuevo",
+                obraId = obraId,
+                userId = userId,
+                fecha = draft.fecha,
+                nota = draft.nota,
+                tipo = draft.tipo,
+                checklist = draft.checklist
+            )
         )
     }
 
@@ -99,7 +126,9 @@ private class FakeRelevamientoRepository : RelevamientoRepository {
                 obraId = obraId,
                 userId = userId,
                 fecha = draft.fecha,
-                nota = draft.nota
+                nota = draft.nota,
+                tipo = draft.tipo,
+                checklist = draft.checklist
             )
         )
     }

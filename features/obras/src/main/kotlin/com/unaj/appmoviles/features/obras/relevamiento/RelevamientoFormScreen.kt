@@ -19,6 +19,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,14 +36,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAlert
-import androidx.compose.material.icons.filled.EditCalendar
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
@@ -55,6 +59,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,6 +67,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -79,6 +85,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -87,10 +94,10 @@ import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.TipoRelevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPickerDialog
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
-import androidx.compose.material3.CircularProgressIndicator
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import java.io.File
 import java.util.Calendar
@@ -105,7 +112,9 @@ data class RelevamientoFormInitial(
     val fotoUrl: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
-    val proximaVisita: Long? = null
+    val proximaVisita: Long? = null,
+    val tipo: String = TipoRelevamiento.AVANCE,
+    val checklist: List<String> = emptyList()
 )
 
 @Composable
@@ -132,7 +141,7 @@ fun RelevamientoFormRoute(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RelevamientoFormScreen(
     initial: RelevamientoFormInitial,
@@ -146,6 +155,8 @@ fun RelevamientoFormScreen(
     var fecha by rememberSaveable {
         mutableLongStateOf(if (initial.fechaMillis > 0L) initial.fechaMillis else startOfTodayUtc())
     }
+    var tipo by rememberSaveable { mutableStateOf(initial.tipo.ifBlank { TipoRelevamiento.AVANCE }) }
+    var selectedChecklist by rememberSaveable { mutableStateOf(initial.checklist.toSet()) }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var proximaVisita by rememberSaveable { mutableStateOf(initial.proximaVisita) }
     var showProximaVisitaPicker by rememberSaveable { mutableStateOf(false) }
@@ -197,7 +208,7 @@ fun RelevamientoFormScreen(
             ubicacionMensaje = context.getString(R.string.obras_error_permiso_ubicacion)
         }
     }
-    
+
     val error = (state as? RelevamientoFormUiState.Error)?.error
     val isLoading = state is RelevamientoFormUiState.Loading
 
@@ -267,7 +278,15 @@ fun RelevamientoFormScreen(
                         val lng = longitud
                         val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
                         onSave(
-                            RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
+                            RelevamientoDraft(
+                                fecha = fecha,
+                                nota = nota,
+                                fotoUrl = fotoRemota,
+                                ubicacion = ubicacion,
+                                proximaVisita = proximaVisita,
+                                tipo = tipo,
+                                checklist = selectedChecklist.toList()
+                            ),
                             bytes
                         )
                     },
@@ -329,6 +348,137 @@ fun RelevamientoFormScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
+                }
+            }
+
+            // Sección: Tipo de Relevamiento / Auditoría
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Column {
+                            Text(
+                                text = "Tipo de Inspección",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Define el objetivo del relevamiento",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        TipoRelevamiento.TODOS.forEach { item ->
+                            val selected = tipo == item
+                            FilterChip(
+                                selected = selected,
+                                onClick = {
+                                    tipo = item
+                                    onInputChanged()
+                                },
+                                label = { Text(item) },
+                                leadingIcon = if (selected) {
+                                    { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                                } else null
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Sección: Checklist de Conformidad en Terreno
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FactCheck,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Column {
+                            Text(
+                                text = "Checklist de Conformidad",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Controles verificados conformes en sitio",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    TipoRelevamiento.CHECKLIST_DEFAULT.forEach { item ->
+                        val checked = selectedChecklist.contains(item)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    selectedChecklist = if (checked) {
+                                        selectedChecklist - item
+                                    } else {
+                                        selectedChecklist + item
+                                    }
+                                    onInputChanged()
+                                }
+                                .padding(vertical = 4.dp, horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = item,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 12.dp)
+                            )
+                            Switch(
+                                checked = checked,
+                                onCheckedChange = { isChecked ->
+                                    selectedChecklist = if (isChecked) {
+                                        selectedChecklist + item
+                                    } else {
+                                        selectedChecklist - item
+                                    }
+                                    onInputChanged()
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -401,7 +551,7 @@ fun RelevamientoFormScreen(
 
             // Sección: Ubicación
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Ubicación", style = MaterialTheme.typography.titleMedium)
+                Text("Ubicación del Relevamiento", style = MaterialTheme.typography.titleMedium)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -415,47 +565,52 @@ fun RelevamientoFormScreen(
                             MapPreviewCard(
                                 latitud = latitud,
                                 longitud = longitud,
-                                modifier = Modifier.fillMaxWidth(),
-                                bottomActions = {
-                                    OutlinedButton(
-                                        onClick = {
-                                            latitud = null
-                                            longitud = null
-                                        },
-                                        enabled = !isCapturingLocation,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Icon(Icons.Default.Clear, contentDescription = null, modifier = Modifier.size(18.dp))
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(context.getString(R.string.obras_borrar_ubicacion))
-                                    }
-                                }
+                                title = "Ubicación registrada"
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
                         } else {
-                            MapPreviewCard(
-                                latitud = null,
-                                longitud = null,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOff,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "Sin ubicación registrada",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            OutlinedButton(
-                                onClick = { pedirUbicacion.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                            Button(
+                                onClick = {
+                                    val permiso = Manifest.permission.ACCESS_FINE_LOCATION
+                                    pedirUbicacion.launch(permiso)
+                                },
                                 enabled = !isCapturingLocation,
                                 modifier = Modifier.weight(1f)
                             ) {
                                 if (isCapturingLocation) {
-                                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                    CircularProgressIndicator(
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(18.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
                                     Spacer(Modifier.width(8.dp))
-                                    Text(context.getString(R.string.obras_capturando_ubicacion))
+                                    Text("Obteniendo...")
                                 } else {
                                     Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text(if (latitud != null) context.getString(R.string.obras_actualizar_ubicacion) else context.getString(R.string.obras_capturar_ubicacion))
+                                    Text("Obtener GPS")
                                 }
                             }
 

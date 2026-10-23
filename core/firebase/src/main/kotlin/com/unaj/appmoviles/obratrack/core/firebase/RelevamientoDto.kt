@@ -1,7 +1,7 @@
 package com.unaj.appmoviles.obratrack.core.firebase
 
 /**
- * Documento de la subcolecciA3n obras/{obraId}/relevamientos.
+ * Documento de la subcolección obras/{obraId}/relevamientos.
  * La fecha viaja en milisegundos; el data source la convierte a Timestamp.
  */
 data class RelevamientoDto(
@@ -13,5 +13,7 @@ data class RelevamientoDto(
     val fotoUrl: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
-    val proximaVisitaMillis: Long? = null
+    val proximaVisitaMillis: Long? = null,
+    val tipo: String? = null,
+    val checklist: List<String>? = null
 )

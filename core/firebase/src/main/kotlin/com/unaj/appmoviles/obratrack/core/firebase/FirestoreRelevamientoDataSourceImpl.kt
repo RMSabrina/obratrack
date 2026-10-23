@@ -142,6 +142,10 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
         }
         proximaVisitaMillis?.let { map[FIELD_PROXIMA_VISITA] = Timestamp(Date(it)) }
+        tipo?.let { map[FIELD_TIPO] = it }
+        if (!checklist.isNullOrEmpty()) {
+            map[FIELD_CHECKLIST] = checklist
+        }
         return map
     }
 
@@ -157,7 +161,9 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             fotoUrl = getString(FIELD_FOTO_URL),
             latitud = geo?.latitude,
             longitud = geo?.longitude,
-            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
+            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time,
+            tipo = getString(FIELD_TIPO),
+            checklist = (get(FIELD_CHECKLIST) as? List<*>)?.filterIsInstance<String>()
         )
     }
 
@@ -182,7 +188,9 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             fotoUrl = getString(FIELD_FOTO_URL),
             latitud = geo?.latitude,
             longitud = geo?.longitude,
-            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
+            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time,
+            tipo = getString(FIELD_TIPO),
+            checklist = (get(FIELD_CHECKLIST) as? List<*>)?.filterIsInstance<String>()
         )
     }
 
@@ -229,5 +237,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
         const val FIELD_UBICACION = "ubicacion"
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
         const val FIELD_PROXIMA_VISITA = "proximaVisita"
+        const val FIELD_TIPO = "tipo"
+        const val FIELD_CHECKLIST = "checklist"
     }
 }

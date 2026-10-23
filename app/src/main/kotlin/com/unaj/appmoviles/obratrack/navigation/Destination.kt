@@ -61,5 +61,7 @@ data class RelevamientoFormDestination(
     val fotoUrl: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
-    val proximaVisita: Long? = null
+    val proximaVisita: Long? = null,
+    val tipo: String = "Avance de Obra",
+    val checklist: List<String> = emptyList()
 ) : NavKey

@@ -6,6 +6,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import kotlinx.coroutines.TimeoutCancellationException
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.TipoRelevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
 import com.unaj.appmoviles.obratrack.core.firebase.ObraForbiddenException
 import com.unaj.appmoviles.obratrack.core.firebase.ObraNotFoundException
@@ -25,7 +26,9 @@ fun RelevamientoDto.toDomain(): Relevamiento = Relevamiento(
         val lng = longitud
         if (lat != null && lng != null) Ubicacion(lat, lng) else null
     },
-    proximaVisita = proximaVisitaMillis
+    proximaVisita = proximaVisitaMillis,
+    tipo = tipo?.ifBlank { null } ?: TipoRelevamiento.AVANCE,
+    checklist = checklist.orEmpty()
 )
 
 fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = RelevamientoDto(
@@ -37,7 +40,9 @@ fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = R
     fotoUrl = fotoUrl,
     latitud = ubicacion?.latitud,
     longitud = ubicacion?.longitud,
-    proximaVisitaMillis = proximaVisita
+    proximaVisitaMillis = proximaVisita,
+    tipo = tipo,
+    checklist = checklist
 )
 
 fun Exception.toRelevamientoError(): RelevamientoError = when (this) {
