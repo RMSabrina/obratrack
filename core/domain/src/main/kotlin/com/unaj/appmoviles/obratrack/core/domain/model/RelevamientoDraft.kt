@@ -5,5 +5,7 @@ data class RelevamientoDraft(
     val nota: String,
     val fotoUrl: String? = null,
     val ubicacion: Ubicacion? = null,
-    val proximaVisita: Long? = null
+    val proximaVisita: Long? = null,
+    val tipo: String = TipoRelevamiento.AVANCE,
+    val checklist: List<String> = emptyList()
 )

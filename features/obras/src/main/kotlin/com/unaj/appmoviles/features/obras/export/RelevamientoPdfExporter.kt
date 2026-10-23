@@ -130,6 +130,7 @@ object RelevamientoPdfExporter {
             // Populate Table
             drawTableRow("Obra", obra?.nombre ?: "Sin asignar")
             drawTableRow("Cliente", obra?.cliente ?: "Desconocido")
+            drawTableRow("Tipo de Inspección", relevamiento.tipo)
             
             val fechaInicioObra = obra?.fechaInicio?.let { formatFecha(it) } ?: "N/A"
             drawTableRow("Fecha de Inicio", fechaInicioObra)
@@ -144,7 +145,25 @@ object RelevamientoPdfExporter {
             // Outer table border
             canvas.drawLine(padding, tableTop, padding + contentWidth, tableTop, linePaint)
 
-            currentY += 40f
+            currentY += 30f
+
+            // --- CHECKLIST DE CONFORMIDAD ---
+            if (relevamiento.checklist.isNotEmpty()) {
+                canvas.drawText("Puntos de Control / Conformidad Técnica:", padding, currentY, subtitlePaint)
+                currentY += 22f
+
+                val checkPaint = TextPaint().apply {
+                    color = Color.parseColor("#1B5E20")
+                    textSize = 13f
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                }
+
+                for (item in relevamiento.checklist) {
+                    canvas.drawText("[x] $item", padding + 10f, currentY, checkPaint)
+                    currentY += 20f
+                }
+                currentY += 15f
+            }
 
             // --- NOTES ---
             canvas.drawText("Notas / Descripción del relevamiento:", padding, currentY, subtitlePaint)
