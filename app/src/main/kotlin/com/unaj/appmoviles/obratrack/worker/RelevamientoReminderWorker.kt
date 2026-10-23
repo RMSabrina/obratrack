@@ -42,11 +42,11 @@ class RelevamientoReminderWorker @AssistedInject constructor(
             if (proxima != null) {
                 val diff = proxima - now
                 if (diff < oneDayMillis) {
-                    val title = if (diff < 0) "⚠️ Visita atrasada: " else "🔔 Visita técnica hoy: "
+                    val title = if (diff < 0) "⚠️ Visita atrasada: ${obra.nombre}" else "📅 Visita técnica hoy: ${obra.nombre}"
                     val msg = if (diff < 0) {
-                        "La visita planificada para  está pendiente de relevamiento."
+                        "La visita planificada para '${obra.nombre}' está pendiente de relevamiento."
                     } else {
-                        "Tenés inspección técnica programada para las próximas horas en ."
+                        "Tenés inspección técnica programada para las próximas horas en '${obra.nombre}'."
                     }
                     NotificationHelper.showNotification(
                         applicationContext,
@@ -65,8 +65,8 @@ class RelevamientoReminderWorker @AssistedInject constructor(
                 val diffSinVisita = now - ultima
                 if (diffSinVisita >= sevenDaysMillis) {
                     val diasSinVisita = diffSinVisita / oneDayMillis
-                    val title = "⚠️ Obra sin relevamientos: "
-                    val msg = "La obra para '' lleva  días sin visitas registradas."
+                    val title = "⚠️ Obra sin relevamientos: ${obra.nombre}"
+                    val msg = "La obra '${obra.nombre}' para '${obra.cliente}' lleva $diasSinVisita días sin visitas registradas."
                     NotificationHelper.showNotification(
                         applicationContext,
                         obra.id.hashCode() + 1,

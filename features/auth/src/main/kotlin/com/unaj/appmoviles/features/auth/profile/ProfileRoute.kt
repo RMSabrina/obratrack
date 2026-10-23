@@ -3,14 +3,14 @@ package com.unaj.appmoviles.features.auth.profile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun ProfileRoute(
     viewModel: ProfileViewModel = hiltViewModel(),
     onBack: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onTriggerNotificationDemo: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -29,6 +29,7 @@ fun ProfileRoute(
         onClearMessage = viewModel::clearMessage,
         onClearError = viewModel::clearError,
         onBack = onBack,
-        onLogout = onLogout
+        onLogout = onLogout,
+        onTriggerNotificationDemo = onTriggerNotificationDemo
     )
 }

@@ -96,7 +96,20 @@ fun AppShell(onLogout: () -> Unit) {
             entry<ProfileDestination> {
                 ProfileRoute(
                     onBack = ::goBack,
-                    onLogout = onLogout
+                    onLogout = onLogout,
+                    onTriggerNotificationDemo = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                                NotificationHelper.showDemoNotification(appContext)
+                                RelevamientoReminderWorker.triggerImmediateDemo(appContext)
+                            } else {
+                                notifPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        } else {
+                            NotificationHelper.showDemoNotification(appContext)
+                            RelevamientoReminderWorker.triggerImmediateDemo(appContext)
+                        }
+                    }
                 )
             }
             entry<ObrasDestination> {
