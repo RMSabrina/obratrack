@@ -24,11 +24,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -38,6 +47,7 @@ import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.roundToInt
 
 private val ANCHO_DIA = 24.dp
 // Con la escala por día una tarea de un día ya mide ANCHO_DIA; el mínimo la protege
@@ -54,6 +64,8 @@ private val semanaFormatter = DateTimeFormatter.ofPattern("d MMM", Locale.forLan
 /**
  * Cronograma tipo Gantt: títulos fijos a la izquierda y barras con scroll horizontal.
  * Solo dibuja; las fechas y estados llegan ya calculados en [cronograma].
+ * No tiene scroll vertical: títulos y barras van en el mismo Row, así que el que lo contiene
+ * puede darle scroll vertical sin que se desalineen.
  */
 @Composable
 fun GanttChart(
@@ -61,7 +73,27 @@ fun GanttChart(
     onTareaClick: (tareaId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val periodo = cronograma.periodo ?: return
+    val scrollState = rememberScrollState()
+    var anchoVisible by remember { mutableIntStateOf(0) }
+    // Se centra en hoy una sola vez; después se respeta el scroll del usuario (también al rotar).
+    var centrado by rememberSaveable { mutableStateOf(false) }
+    val anchoDiaPx = with(LocalDensity.current) { ANCHO_DIA.toPx() }
+    val periodo = cronograma.periodo
+
+    LaunchedEffect(anchoVisible, cronograma.hoyDia, periodo) {
+        val hoyDia = cronograma.hoyDia
+        if (centrado || anchoVisible == 0 || hoyDia == null || periodo == null) return@LaunchedEffect
+        val destino = desplazamientoInicial(
+            hoyDia = hoyDia,
+            anchoDia = anchoDiaPx,
+            anchoVisible = anchoVisible.toFloat(),
+            anchoTotal = periodo.dias * anchoDiaPx
+        )
+        scrollState.scrollTo(destino.roundToInt())
+        centrado = true
+    }
+
+    if (periodo == null) return
 
     Row(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.width(ANCHO_TITULOS)) {
@@ -78,7 +110,8 @@ fun GanttChart(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .horizontalScroll(rememberScrollState())
+                .onSizeChanged { anchoVisible = it.width }
+                .horizontalScroll(scrollState)
                 .width(ANCHO_DIA * periodo.dias)
                 .drawWithContent {
                     val anchoDia = ANCHO_DIA.toPx()

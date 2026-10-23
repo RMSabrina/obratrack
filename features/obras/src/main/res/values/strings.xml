@@ -87,4 +87,14 @@
     <!-- Cronograma -->
     <string name="cronograma_hoy">Hoy</string>
     <string name="cronograma_fecha_inicio">%1$s –</string>
+    <string name="cronograma_titulo">Cronograma</string>
+    <string name="obra_cronograma_ver">Ver cronograma</string>
+    <string name="cronograma_vacio_titulo">Todavía no hay tareas</string>
+    <string name="cronograma_vacio_descripcion">Cargá tareas con fecha de inicio y de fin para verlas en el cronograma.</string>
+    <string name="cronograma_sin_planificadas_titulo">Ninguna tarea tiene fechas</string>
+    <string name="cronograma_sin_planificadas_descripcion">Para ver una tarea en el cronograma, cargale la fecha de inicio y la de fin.</string>
+    <plurals name="cronograma_sin_fechas">
+        <item quantity="one">%d tarea sin fechas no aparece en el cronograma</item>
+        <item quantity="other">%d tareas sin fechas no aparecen en el cronograma</item>
+    </plurals>
 </resources>

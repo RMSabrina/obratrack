@@ -79,6 +79,21 @@ fun anchoBarra(duracionDias: Int, anchoDia: Float, anchoMinimo: Float): Float =
 fun PeriodoVisible.iniciosDeSemana(): List<Int> =
     (0 until dias).filter { inicio.plusDays(it.toLong()).dayOfWeek == DayOfWeek.MONDAY }
 
+/**
+ * Scroll horizontal inicial para que el centro del día [hoyDia] quede en el centro de la
+ * parte visible, sin pasarse de los bordes. Todas las medidas en la misma unidad (px).
+ */
+fun desplazamientoInicial(
+    hoyDia: Int,
+    anchoDia: Float,
+    anchoVisible: Float,
+    anchoTotal: Float
+): Float {
+    val centroHoy = (hoyDia + 0.5f) * anchoDia
+    val maximo = maxOf(anchoTotal - anchoVisible, 0f)
+    return (centroHoy - anchoVisible / 2).coerceIn(0f, maximo)
+}
+
 /** Arma el cronograma con las tareas ordenadas; solo las planificadas tienen barra. */
 fun calcularCronograma(tareas: List<Tarea>, hoy: LocalDate): Cronograma {
     val sinFechas = tareas.count { !it.estaPlanificada() }

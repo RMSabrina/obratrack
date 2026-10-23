@@ -77,6 +77,11 @@ data class TareaFormDestination(
 ) : NavKey
 
 @Serializable
+data class CronogramaDestination(
+    val obraId: String
+) : NavKey
+
+@Serializable
 data class TareaDetailDestination(
     val obraId: String,
     val tareaId: String

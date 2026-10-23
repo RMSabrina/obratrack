@@ -149,6 +149,29 @@ class CronogramaCalculoTest {
         assertNull(periodo.indiceDe(LocalDate.of(2026, 10, 11)))
     }
 
+    // Scroll inicial
+
+    @Test
+    fun desplazamientoInicial_centraElDiaDeHoy() {
+        // Centro de hoy = 20.5 × 10 = 205; mitad visible = 50 → 155.
+        assertEquals(155f, desplazamientoInicial(hoyDia = 20, anchoDia = 10f, anchoVisible = 100f, anchoTotal = 500f), 0.001f)
+    }
+
+    @Test
+    fun desplazamientoInicial_hoyCercaDelInicio_noBajaDeCero() {
+        assertEquals(0f, desplazamientoInicial(hoyDia = 1, anchoDia = 10f, anchoVisible = 100f, anchoTotal = 500f), 0.001f)
+    }
+
+    @Test
+    fun desplazamientoInicial_hoyCercaDelFin_noPasaDelMaximo() {
+        assertEquals(400f, desplazamientoInicial(hoyDia = 49, anchoDia = 10f, anchoVisible = 100f, anchoTotal = 500f), 0.001f)
+    }
+
+    @Test
+    fun desplazamientoInicial_todoEntraEnPantalla_esCero() {
+        assertEquals(0f, desplazamientoInicial(hoyDia = 5, anchoDia = 10f, anchoVisible = 300f, anchoTotal = 100f), 0.001f)
+    }
+
     // Encabezado de semanas
 
     @Test

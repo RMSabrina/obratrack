@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
@@ -82,6 +83,7 @@ fun ObraDetailRoute(
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onOpenTareas: () -> Unit,
+    onOpenCronograma: () -> Unit,
     viewModel: ObraDetailViewModel = hiltViewModel(
         creationCallback = { factory: ObraDetailViewModel.Factory -> factory.create(obraId) }
     )
@@ -96,7 +98,8 @@ fun ObraDetailRoute(
         onEditObra = onEditObra,
         onCreateRelevamiento = onCreateRelevamiento,
         onOpenRelevamiento = onOpenRelevamiento,
-        onOpenTareas = onOpenTareas
+        onOpenTareas = onOpenTareas,
+        onOpenCronograma = onOpenCronograma
     )
 }
 
@@ -112,6 +115,7 @@ fun ObraDetailScreen(
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onOpenTareas: () -> Unit,
+    onOpenCronograma: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val obra = state.obra
@@ -250,7 +254,8 @@ fun ObraDetailScreen(
                             TareasResumenCard(
                                 resumen = state.resumenTareas,
                                 enabled = !state.isDeleting,
-                                onOpenTareas = onOpenTareas
+                                onOpenTareas = onOpenTareas,
+                                onOpenCronograma = onOpenCronograma
                             )
                         }
                     }
@@ -299,6 +304,7 @@ private fun TareasResumenCard(
     resumen: ResumenTareas?,
     enabled: Boolean,
     onOpenTareas: () -> Unit,
+    onOpenCronograma: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
@@ -341,6 +347,15 @@ private fun TareasResumenCard(
                 Icon(Icons.Default.Checklist, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.obra_tareas_ver))
+            }
+            OutlinedButton(
+                onClick = onOpenCronograma,
+                enabled = enabled,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Timeline, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.obra_cronograma_ver))
             }
         }
     }

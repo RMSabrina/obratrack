@@ -24,6 +24,7 @@ import com.unaj.appmoviles.features.obras.detail.ObraPublicaDetailRoute
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormInitial
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormRoute
 import com.unaj.appmoviles.features.obras.relevamiento.detail.RelevamientoDetailRoute
+import com.unaj.appmoviles.features.obras.tareas.cronograma.CronogramaRoute
 import com.unaj.appmoviles.features.obras.tareas.detail.TareaDetailRoute
 import com.unaj.appmoviles.features.obras.tareas.form.TareaFormRoute
 import com.unaj.appmoviles.features.obras.tareas.list.TareasListRoute
@@ -167,6 +168,21 @@ fun AppShell(onLogout: () -> Unit) {
                     },
                     onOpenTareas = {
                         backStack.add(TareasListDestination(obraId = destination.obraId))
+                    },
+                    onOpenCronograma = {
+                        backStack.add(CronogramaDestination(obraId = destination.obraId))
+                    }
+                )
+            }
+            entry<CronogramaDestination> { destination ->
+                CronogramaRoute(
+                    obraId = destination.obraId,
+                    onBack = ::goBack,
+                    onOpenTarea = { tareaId ->
+                        backStack.add(TareaDetailDestination(obraId = destination.obraId, tareaId = tareaId))
+                    },
+                    onOpenTareas = {
+                        backStack.add(TareasListDestination(obraId = destination.obraId))
                     }
                 )
             }
@@ -202,9 +218,14 @@ fun AppShell(onLogout: () -> Unit) {
                     obraId = destination.obraId,
                     tareaId = destination.tareaId,
                     onBack = ::goBack,
-                    // Al guardar se vuelve al listado, aunque la edición se haya abierto desde el detalle.
+                    // Al guardar se vuelve a la pantalla de origen (listado o cronograma), aunque la
+                    // edición se haya abierto desde el detalle de la tarea.
                     onSaved = {
-                        while (backStack.size > 1 && backStack.last() !is TareasListDestination) {
+                        while (
+                            backStack.size > 1 &&
+                            backStack.last() !is TareasListDestination &&
+                            backStack.last() !is CronogramaDestination
+                        ) {
                             backStack.removeAt(backStack.lastIndex)
                         }
                     }
