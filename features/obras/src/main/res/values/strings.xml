@@ -83,4 +83,8 @@
     <string name="obra_tareas_atrasadas">Atrasadas</string>
     <string name="obra_tareas_sin_tareas">Todavía no hay tareas cargadas.</string>
     <string name="obra_tareas_ver">Ver tareas</string>
+
+    <!-- Cronograma -->
+    <string name="cronograma_hoy">Hoy</string>
+    <string name="cronograma_fecha_inicio">%1$s –</string>
 </resources>
