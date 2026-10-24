@@ -131,9 +131,14 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
                 return FirebaseResult.Error(RelevamientoForbiddenException())
             }
             val stored = dto.copy(userId = userId)
-            // Con merge, omitir un campo conserva el valor viejo: para desvincular la tarea
-            // hay que borrar el campo explícitamente.
-            val campos = stored.toMap() + (FIELD_TAREA_ID to valorTareaIdParaMerge(stored.tareaId))
+            // Con merge, omitir un campo conserva el valor viejo: para desvincular la tarea o
+            // quitar la foto, la ubicación o la próxima visita hay que borrar el campo explícitamente.
+            val campos = stored.toMap() + mapOf(
+                FIELD_TAREA_ID to valorTareaIdParaMerge(stored.tareaId),
+                FIELD_FOTO_URL to valorOpcionalParaMerge(stored.fotoUrl),
+                FIELD_UBICACION to ubicacionParaMerge(stored.latitud, stored.longitud),
+                FIELD_PROXIMA_VISITA to valorOpcionalParaMerge(stored.proximaVisitaMillis?.let { Timestamp(Date(it)) })
+            )
             ref.set(campos, SetOptions.merge()).await()
             if (stored.proximaVisitaMillis != null) {
                 obraRef.update(FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis))).await()
@@ -263,3 +268,13 @@ internal const val RELEVAMIENTO_FIELD_TAREA_ID = "tareaId"
  */
 internal fun valorTareaIdParaMerge(tareaId: String?): Any =
     tareaId?.takeIf { it.isNotBlank() } ?: FieldValue.delete()
+
+/** Valor de un campo opcional en un update con merge: null borra el campo guardado. */
+internal fun valorOpcionalParaMerge(valor: Any?): Any = valor ?: FieldValue.delete()
+
+/**
+ * La ubicación se guarda como un solo campo `GeoPoint`. Igual que al escribirla en un alta,
+ * hace falta latitud y longitud; si falta alguna, se borra el campo.
+ */
+internal fun ubicacionParaMerge(latitud: Double?, longitud: Double?): Any =
+    if (latitud != null && longitud != null) GeoPoint(latitud, longitud) else FieldValue.delete()
