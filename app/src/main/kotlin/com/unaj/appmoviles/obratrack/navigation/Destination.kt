@@ -61,7 +61,8 @@ data class RelevamientoFormDestination(
     val fotoUrl: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
-    val proximaVisita: Long? = null
+    val proximaVisita: Long? = null,
+    val tareaId: String? = null
 ) : NavKey
 
 /** Sin tareaId crea una tarea; con tareaId la edita (el ViewModel la carga por id). */

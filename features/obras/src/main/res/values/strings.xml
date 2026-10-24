@@ -72,6 +72,18 @@
     <string name="tarea_eliminar">Eliminar tarea</string>
     <string name="tarea_eliminar_confirmacion">¿Eliminar esta tarea? Esta acción no se puede deshacer.</string>
     <string name="eliminar">Eliminar</string>
+    <string name="tarea_eliminar_solo_tarea">Eliminar solo la tarea</string>
+    <plurals name="tarea_eliminar_vinculados">
+        <item quantity="one">Esta tarea tiene %d relevamiento vinculado. Si eliminás solo la tarea, el relevamiento se conserva sin tarea.</item>
+        <item quantity="other">Esta tarea tiene %d relevamientos vinculados. Si eliminás solo la tarea, los relevamientos se conservan sin tarea.</item>
+    </plurals>
+    <plurals name="tarea_eliminar_con_relevamientos">
+        <item quantity="one">Eliminar tarea y %d relevamiento</item>
+        <item quantity="other">Eliminar tarea y %d relevamientos</item>
+    </plurals>
+    <string name="tarea_vinculados_titulo">Relevamientos vinculados (%1$d)</string>
+    <string name="tarea_vinculados_vacio">Ningún relevamiento está vinculado a esta tarea.</string>
+    <string name="tarea_vinculados_error">No pudimos cargar los relevamientos vinculados. Volvé a abrir la tarea para reintentar.</string>
 
     <!-- Detalle de obra: secciones -->
     <string name="obra_seccion_resumen">Resumen</string>
@@ -91,6 +103,14 @@
         <item quantity="one">%d tarea atrasada</item>
         <item quantity="other">%d tareas atrasadas</item>
     </plurals>
+
+    <!-- Relevamiento: tarea vinculada -->
+    <string name="relevamiento_tarea_titulo">Tarea vinculada</string>
+    <string name="relevamiento_tarea_ninguna">Ninguna</string>
+    <string name="relevamiento_tarea_completada">%1$s (completada)</string>
+    <string name="relevamiento_tarea_ayuda">Opcional. Vincularlo no cambia el estado de la tarea.</string>
+    <string name="relevamiento_tarea_sin_tareas">Esta obra no tiene tareas para vincular.</string>
+    <string name="relevamiento_tarea_error">No pudimos cargar las tareas. Se conserva el vínculo actual.</string>
 
     <!-- Cronograma -->
     <string name="cronograma_hoy">Hoy</string>

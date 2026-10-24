@@ -2,6 +2,7 @@ package com.unaj.appmoviles.obratrack.core.firebase
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
@@ -86,10 +87,33 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun delete(obraId: String, tareaId: String): FirebaseResult<Unit> {
+    override suspend fun delete(
+        obraId: String,
+        tareaId: String,
+        eliminarRelevamientos: Boolean
+    ): FirebaseResult<Unit> {
         return try {
             if (auth.uid == null) return FirebaseResult.Error(TareaForbiddenException())
-            tareas(obraId).document(tareaId).delete().await()
+            // Del servidor y no del caché: sin conexión falla en vez de dejar vínculos sin ver.
+            val vinculados = firestore.collection(OBRAS).document(obraId).collection(RELEVAMIENTOS)
+                .whereEqualTo(RELEVAMIENTO_FIELD_TAREA_ID, tareaId)
+                .get(Source.SERVER).await()
+                .documents
+            // Un batch admite hasta 500 escrituras: los vinculados + la tarea. Partirlo dejaría
+            // de ser atómico, así que se rechaza (no se espera llegar a este número).
+            if (vinculados.size + 1 > BATCH_SIZE) {
+                return FirebaseResult.Error(DemasiadosVinculadosException())
+            }
+            firestore.batch().apply {
+                vinculados.forEach { doc ->
+                    if (eliminarRelevamientos) {
+                        delete(doc.reference)
+                    } else {
+                        update(doc.reference, RELEVAMIENTO_FIELD_TAREA_ID, FieldValue.delete())
+                    }
+                }
+                delete(tareas(obraId).document(tareaId))
+            }.commit().await()
             FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -147,6 +171,7 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
         const val BATCH_SIZE = 500
         const val OBRAS = "obras"
         const val TAREAS = "tareas"
+        const val RELEVAMIENTOS = "relevamientos"
         const val FIELD_USER_ID = "userId"
         const val FIELD_TITULO = "titulo"
         const val FIELD_DESCRIPCION = "descripcion"

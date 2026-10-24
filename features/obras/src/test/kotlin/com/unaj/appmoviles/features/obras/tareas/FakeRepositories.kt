@@ -8,6 +8,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.User
@@ -77,25 +78,43 @@ class FakeRelevamientoRepository(relevamientos: List<Relevamiento> = emptyList()
     override fun observe(userId: String, obraId: String): Flow<List<Relevamiento>> =
         observeByObra(obraId)
 
+    /** Si no es null, observeByTarea falla con esta excepción. */
+    var observeByTareaError: Exception? = null
+    var observeByTareaCalls = 0
+    val created = mutableListOf<RelevamientoDraft>()
+    val updated = mutableListOf<Pair<String, RelevamientoDraft>>()
+
     override fun observeAll(userId: String): Flow<List<Relevamiento>> = TODO()
     override fun observeByObra(obraId: String): Flow<List<Relevamiento>> {
         val error = observeError
         if (error != null) return flow { throw error }
         return relevamientos.map { lista -> lista.filter { it.obraId == obraId } }
     }
+    override fun observeByTarea(obraId: String, tareaId: String): Flow<List<Relevamiento>> {
+        observeByTareaCalls++
+        val error = observeByTareaError
+        if (error != null) return flow { throw error }
+        return relevamientos.map { lista -> lista.filter { it.obraId == obraId && it.tareaId == tareaId } }
+    }
     override suspend fun create(
         userId: String,
         obraId: String,
         draft: RelevamientoDraft,
         photo: ByteArray?
-    ): AppResult<Relevamiento> = TODO()
+    ): AppResult<Relevamiento> {
+        created += draft
+        return AppResult.Success(draft.toRelevamiento("nuevo", obraId, userId))
+    }
     override suspend fun update(
         userId: String,
         obraId: String,
         relevamientoId: String,
         draft: RelevamientoDraft,
         photo: ByteArray?
-    ): AppResult<Relevamiento> = TODO()
+    ): AppResult<Relevamiento> {
+        updated += relevamientoId to draft
+        return AppResult.Success(draft.toRelevamiento(relevamientoId, obraId, userId))
+    }
     override suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit> = TODO()
     override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> = TODO()
 }
@@ -146,7 +165,14 @@ class FakeTareaRepository(tareas: List<Tarea> = emptyList()) : TareaRepository {
         return AppResult.Success(actualizada)
     }
 
-    override suspend fun delete(obraId: String, tareaId: String): AppResult<Unit> {
+    /** Opción elegida para los vinculados en cada borrado exitoso. */
+    val deletedVinculados = mutableListOf<RelevamientosVinculados>()
+
+    override suspend fun delete(
+        obraId: String,
+        tareaId: String,
+        vinculados: RelevamientosVinculados
+    ): AppResult<Unit> {
         val error = deleteError
         if (error == null || deleteRemovesOnError) {
             tareas.value = tareas.value.filterNot { it.obraId == obraId && it.id == tareaId }
@@ -157,6 +183,7 @@ class FakeTareaRepository(tareas: List<Tarea> = emptyList()) : TareaRepository {
             return AppResult.Error(error)
         }
         deleted += obraId to tareaId
+        deletedVinculados += vinculados
         return AppResult.Success(Unit)
     }
     override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> = TODO()
@@ -172,4 +199,13 @@ private fun TareaDraft.toTarea(id: String, obraId: String, userId: String) = Tar
     fechaInicio = fechaInicio,
     fechaFin = fechaFin,
     estado = estado
+)
+
+private fun RelevamientoDraft.toRelevamiento(id: String, obraId: String, userId: String) = Relevamiento(
+    id = id,
+    obraId = obraId,
+    userId = userId,
+    fecha = fecha,
+    nota = nota,
+    tareaId = tareaId
 )

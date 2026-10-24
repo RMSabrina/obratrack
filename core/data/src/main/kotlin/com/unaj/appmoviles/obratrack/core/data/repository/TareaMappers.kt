@@ -7,6 +7,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaTarea
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
+import com.unaj.appmoviles.obratrack.core.firebase.DemasiadosVinculadosException
 import com.unaj.appmoviles.obratrack.core.firebase.ObraForbiddenException
 import com.unaj.appmoviles.obratrack.core.firebase.ObraNotFoundException
 import com.unaj.appmoviles.obratrack.core.firebase.TareaDto
@@ -47,6 +48,7 @@ fun Exception.toTareaError(): TareaError = when (this) {
     is TimeoutCancellationException -> TareaError.Timeout
     is TareaNotFoundException, is ObraNotFoundException -> TareaError.NoEncontrada
     is TareaForbiddenException, is ObraForbiddenException -> TareaError.NoAutorizada
+    is DemasiadosVinculadosException -> TareaError.DemasiadosVinculados
     is FirebaseNetworkException -> TareaError.Red
     is FirebaseFirestoreException -> when (code) {
         FirebaseFirestoreException.Code.UNAVAILABLE,

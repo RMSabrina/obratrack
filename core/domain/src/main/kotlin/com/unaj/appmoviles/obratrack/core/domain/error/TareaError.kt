@@ -8,5 +8,7 @@ sealed interface TareaError : DomainError {
     data object NoAutorizada : TareaError
     data object Red : TareaError
     data object Timeout : TareaError
+    /** Más relevamientos vinculados de los que se pueden procesar en un solo batch. */
+    data object DemasiadosVinculados : TareaError
     data object Desconocido : TareaError
 }

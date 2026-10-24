@@ -105,7 +105,8 @@ data class RelevamientoFormInitial(
     val fotoUrl: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
-    val proximaVisita: Long? = null
+    val proximaVisita: Long? = null,
+    val tareaId: String? = null
 )
 
 @Composable
@@ -115,11 +116,12 @@ fun RelevamientoFormRoute(
     onSaved: () -> Unit,
     viewModel: RelevamientoFormViewModel = hiltViewModel(
         creationCallback = { factory: RelevamientoFormViewModel.Factory -> 
-            factory.create(initial.obraId, initial.relevamientoId) 
+            factory.create(initial.obraId, initial.relevamientoId, initial.tareaId)
         }
     )
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val selector by viewModel.selector.collectAsStateWithLifecycle()
     LaunchedEffect(state) {
         if (state is RelevamientoFormUiState.Saved) onSaved()
     }
@@ -128,7 +130,9 @@ fun RelevamientoFormRoute(
         state = state,
         onBack = onBack,
         onSave = viewModel::save,
-        onInputChanged = viewModel::onErrorShown
+        onInputChanged = viewModel::onErrorShown,
+        selector = selector,
+        onTareaSeleccionada = viewModel::onTareaSeleccionada
     )
 }
 
@@ -140,6 +144,8 @@ fun RelevamientoFormScreen(
     onBack: () -> Unit,
     onSave: (RelevamientoDraft, ByteArray?) -> Unit,
     onInputChanged: () -> Unit,
+    selector: SelectorTareaUiState,
+    onTareaSeleccionada: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var nota by rememberSaveable { mutableStateOf(initial.nota) }
@@ -589,6 +595,13 @@ fun RelevamientoFormScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+
+            // Sección: Tarea vinculada (opcional, solo el dueño)
+            TareaSelector(
+                selector = selector,
+                onTareaSeleccionada = onTareaSeleccionada,
+                enabled = !isLoading
+            )
 
             // Otros Errores (generales)
             if (

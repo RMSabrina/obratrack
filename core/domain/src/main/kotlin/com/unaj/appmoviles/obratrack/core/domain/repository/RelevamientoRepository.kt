@@ -9,6 +9,8 @@ interface RelevamientoRepository {
     fun observeAll(userId: String): Flow<List<Relevamiento>>
     fun observe(userId: String, obraId: String): Flow<List<Relevamiento>>
     fun observeByObra(obraId: String): Flow<List<Relevamiento>>
+    /** Solo para el dueño de la obra: las tareas son privadas. */
+    fun observeByTarea(obraId: String, tareaId: String): Flow<List<Relevamiento>>
     suspend fun create(
         userId: String,
         obraId: String,

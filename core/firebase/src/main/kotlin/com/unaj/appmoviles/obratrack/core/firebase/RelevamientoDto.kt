@@ -13,5 +13,7 @@ data class RelevamientoDto(
     val fotoUrl: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
-    val proximaVisitaMillis: Long? = null
+    val proximaVisitaMillis: Long? = null,
+    /** Campo opcional: los documentos anteriores a la Etapa 4 no lo tienen y se leen como null. */
+    val tareaId: String? = null
 )

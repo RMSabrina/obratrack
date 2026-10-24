@@ -45,6 +45,7 @@ fun DomainError.asMessage(): String = stringResource(
         TareaError.NoAutorizada -> R.string.error_tarea_forbidden
         TareaError.Red -> R.string.error_network
         TareaError.Timeout -> R.string.error_tarea_timeout
+        TareaError.DemasiadosVinculados -> R.string.error_tarea_demasiados_vinculados
         else -> R.string.error_unknown
     }
 )

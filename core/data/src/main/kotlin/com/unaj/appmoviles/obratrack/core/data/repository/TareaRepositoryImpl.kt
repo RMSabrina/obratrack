@@ -1,6 +1,7 @@
 package com.unaj.appmoviles.obratrack.core.data.repository
 
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
@@ -37,8 +38,13 @@ class TareaRepositoryImpl @Inject constructor(
     ): AppResult<Tarea> =
         remoteDataSource.update(userId, draft.toDto(userId, obraId).copy(id = tareaId)).toAppResult()
 
-    override suspend fun delete(obraId: String, tareaId: String): AppResult<Unit> {
-        return when (val res = remoteDataSource.delete(obraId, tareaId)) {
+    override suspend fun delete(
+        obraId: String,
+        tareaId: String,
+        vinculados: RelevamientosVinculados
+    ): AppResult<Unit> {
+        val eliminar = vinculados == RelevamientosVinculados.ELIMINAR
+        return when (val res = remoteDataSource.delete(obraId, tareaId, eliminar)) {
             is FirebaseResult.Success -> AppResult.Success(Unit)
             is FirebaseResult.Error -> AppResult.Error(res.exception.toTareaError())
         }

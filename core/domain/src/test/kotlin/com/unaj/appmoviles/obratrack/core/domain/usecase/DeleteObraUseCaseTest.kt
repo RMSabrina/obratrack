@@ -7,6 +7,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
@@ -254,6 +255,7 @@ open class FakeRelevamientoRepo(
     override fun observeAll(userId: String): Flow<List<Relevamiento>> = emptyFlow()
     override fun observe(userId: String, obraId: String): Flow<List<Relevamiento>> = emptyFlow()
     override fun observeByObra(obraId: String): Flow<List<Relevamiento>> = emptyFlow()
+    override fun observeByTarea(obraId: String, tareaId: String): Flow<List<Relevamiento>> = emptyFlow()
     override suspend fun create(userId: String, obraId: String, draft: RelevamientoDraft, photo: ByteArray?): AppResult<Relevamiento> = error("Not needed")
     override suspend fun update(userId: String, obraId: String, relevamientoId: String, draft: RelevamientoDraft, photo: ByteArray?): AppResult<Relevamiento> = error("Not needed")
 
@@ -277,7 +279,7 @@ open class FakeTareaRepo(
     override fun observeOne(obraId: String, tareaId: String): Flow<Tarea?> = emptyFlow()
     override suspend fun create(userId: String, obraId: String, draft: TareaDraft): AppResult<Tarea> = error("Not needed")
     override suspend fun update(userId: String, obraId: String, tareaId: String, draft: TareaDraft): AppResult<Tarea> = error("Not needed")
-    override suspend fun delete(obraId: String, tareaId: String): AppResult<Unit> = error("Not needed")
+    override suspend fun delete(obraId: String, tareaId: String, vinculados: RelevamientosVinculados): AppResult<Unit> = error("Not needed")
 
     override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> {
         deleteAllCalls++

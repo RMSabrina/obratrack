@@ -2,10 +2,12 @@ package com.unaj.appmoviles.obratrack.core.domain.usecase
 
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.CreateTareaUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.DeleteTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.UpdateTareaUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -122,6 +124,17 @@ class TareaUseCasesTest {
         assertEquals(1, repository.updateCalls)
     }
 
+    @Test
+    fun delete_pasaAlRepositorioLaOpcionElegidaParaLosVinculados() = runBlocking {
+        val repository = FakeTareaRepository()
+
+        DeleteTareaUseCase(repository)("obra-1", "tarea-1", RelevamientosVinculados.ELIMINAR)
+        assertEquals(RelevamientosVinculados.ELIMINAR, repository.lastVinculados)
+
+        DeleteTareaUseCase(repository)("obra-1", "tarea-1", RelevamientosVinculados.DESVINCULAR)
+        assertEquals(RelevamientosVinculados.DESVINCULAR, repository.lastVinculados)
+    }
+
     private fun draft(
         titulo: String = "Tarea",
         descripcion: String = "",
@@ -163,7 +176,16 @@ private class FakeTareaRepository : TareaRepository {
         return AppResult.Success(draft.toTarea(id = tareaId, obraId = obraId, userId = userId))
     }
 
-    override suspend fun delete(obraId: String, tareaId: String): AppResult<Unit> = AppResult.Success(Unit)
+    var lastVinculados: RelevamientosVinculados? = null
+
+    override suspend fun delete(
+        obraId: String,
+        tareaId: String,
+        vinculados: RelevamientosVinculados
+    ): AppResult<Unit> {
+        lastVinculados = vinculados
+        return AppResult.Success(Unit)
+    }
     override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> = AppResult.Success(Unit)
 
     private fun TareaDraft.toTarea(id: String, obraId: String, userId: String) = Tarea(

@@ -3,6 +3,7 @@ package com.unaj.appmoviles.features.obras.tareas.detail
 import com.unaj.appmoviles.features.obras.tareas.DUENO
 import com.unaj.appmoviles.features.obras.tareas.FakeAuthRepository
 import com.unaj.appmoviles.features.obras.tareas.FakeObraRepository
+import com.unaj.appmoviles.features.obras.tareas.FakeRelevamientoRepository
 import com.unaj.appmoviles.features.obras.tareas.FakeTareaRepository
 import com.unaj.appmoviles.features.obras.tareas.OBRA_ID
 import com.unaj.appmoviles.features.obras.tareas.OTRO_USUARIO
@@ -10,11 +11,14 @@ import com.unaj.appmoviles.features.obras.tareas.obraDe
 import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
 import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaTarea
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
+import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.User
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosDeTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.DeleteTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.UpdateTareaUseCase
@@ -73,13 +77,15 @@ class TareaDetailViewModelTest {
     private fun crearViewModel(
         tareaId: String = tarea.id,
         user: User? = DUENO,
-        repo: FakeTareaRepository = FakeTareaRepository(listOf(tarea))
+        repo: FakeTareaRepository = FakeTareaRepository(listOf(tarea)),
+        relevamientoRepo: FakeRelevamientoRepository = FakeRelevamientoRepository()
     ) = TareaDetailViewModel(
         obraId = OBRA_ID,
         tareaId = tareaId,
         observeSession = ObserveSessionUseCase(FakeAuthRepository(user)),
         observeObra = ObserveObraUseCase(FakeObraRepository(obraDe(DUENO.id, publica = true))),
         observeTarea = ObserveTareaUseCase(repo),
+        observeRelevamientosDeTarea = ObserveRelevamientosDeTareaUseCase(relevamientoRepo),
         updateTarea = UpdateTareaUseCase(repo),
         deleteTarea = DeleteTareaUseCase(repo),
         clock = clock
@@ -243,6 +249,90 @@ class TareaDetailViewModelTest {
         assertNull(state.tarea)
         assertTrue(repo.updated.isEmpty())
         assertTrue(repo.deleted.isEmpty())
+    }
+
+    private fun relevamiento(id: String, tareaId: String?) = Relevamiento(
+        id = id,
+        obraId = OBRA_ID,
+        userId = DUENO.id,
+        fecha = 0L,
+        nota = "Nota $id",
+        tareaId = tareaId
+    )
+
+    @Test
+    fun dueno_veSoloLosRelevamientosVinculadosALaTarea() = runTest {
+        val vinculado = relevamiento("r1", tareaId = tarea.id)
+        val relevamientoRepo = FakeRelevamientoRepository(
+            listOf(
+                vinculado,
+                relevamiento("r2", tareaId = "otra-tarea"),
+                // Anterior a la Etapa 4: sin tareaId, no aparece en ninguna tarea.
+                relevamiento("r3", tareaId = null)
+            )
+        )
+        val viewModel = crearViewModel(relevamientoRepo = relevamientoRepo)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(vinculado), state.vinculados)
+        assertFalse(state.vinculadosError)
+    }
+
+    @Test
+    fun errorAlLeerVinculados_avisaSinOcultarLaTareaYNoPermiteEliminar() = runTest {
+        val repo = FakeTareaRepository(listOf(tarea))
+        val relevamientoRepo = FakeRelevamientoRepository().apply {
+            observeByTareaError = IllegalStateException("PERMISSION_DENIED")
+        }
+        val viewModel = crearViewModel(repo = repo, relevamientoRepo = relevamientoRepo)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.eliminar(RelevamientosVinculados.DESVINCULAR)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.vinculadosError)
+        assertEquals(tarea, state.tarea)
+        assertTrue(repo.deleted.isEmpty())
+    }
+
+    @Test
+    fun eliminar_pasaLaOpcionElegidaParaLosVinculados() = runTest {
+        val repo = FakeTareaRepository(listOf(tarea))
+        val relevamientoRepo = FakeRelevamientoRepository(listOf(relevamiento("r1", tareaId = tarea.id)))
+        val viewModel = crearViewModel(repo = repo, relevamientoRepo = relevamientoRepo)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.eliminar(RelevamientosVinculados.ELIMINAR)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.isDeleted)
+        assertEquals(RelevamientosVinculados.ELIMINAR, repo.deletedVinculados.single())
+    }
+
+    @Test
+    fun eliminar_sinElegir_desvinculaPorDefecto() = runTest {
+        val repo = FakeTareaRepository(listOf(tarea))
+        val viewModel = crearViewModel(repo = repo)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.eliminar()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(RelevamientosVinculados.DESVINCULAR, repo.deletedVinculados.single())
+    }
+
+    @Test
+    fun noDueno_noConsultaLosVinculados() = runTest {
+        val relevamientoRepo = FakeRelevamientoRepository(listOf(relevamiento("r1", tareaId = tarea.id)))
+        val viewModel = crearViewModel(user = OTRO_USUARIO, relevamientoRepo = relevamientoRepo)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.vinculados.isEmpty())
+        assertEquals(0, relevamientoRepo.observeByTareaCalls)
     }
 
     @Test

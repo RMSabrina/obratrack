@@ -33,6 +33,11 @@ class RelevamientoRepositoryImpl @Inject constructor(
             relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
         }
 
+    override fun observeByTarea(obraId: String, tareaId: String): Flow<List<Relevamiento>> =
+        remoteDataSource.observeByTarea(obraId, tareaId).map { relevamientos ->
+            relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
+        }
+
     override suspend fun create(
         userId: String,
         obraId: String,

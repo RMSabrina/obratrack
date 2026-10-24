@@ -7,9 +7,12 @@ import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
+import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosDeTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.DeleteTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.UpdateTareaUseCase
@@ -22,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -39,6 +43,7 @@ class TareaDetailViewModel @AssistedInject constructor(
     observeSession: ObserveSessionUseCase,
     observeObra: ObserveObraUseCase,
     observeTarea: ObserveTareaUseCase,
+    observeRelevamientosDeTarea: ObserveRelevamientosDeTareaUseCase,
     private val updateTarea: UpdateTareaUseCase,
     private val deleteTarea: DeleteTareaUseCase,
     private val clock: Clock
@@ -61,7 +66,12 @@ class TareaDetailViewModel @AssistedInject constructor(
     /** Última lectura de la tarea, aunque la pantalla no se actualice durante el borrado. */
     private var ultimaTarea: Tarea? = null
 
-    private data class Lectura(val tarea: Tarea?, val error: DomainError?)
+    /** vinculados = null si no se pudieron leer. */
+    private data class Lectura(
+        val tarea: Tarea?,
+        val error: DomainError?,
+        val vinculados: List<Relevamiento>? = emptyList()
+    )
 
     init {
         viewModelScope.launch {
@@ -77,8 +87,12 @@ class TareaDetailViewModel @AssistedInject constructor(
                             flowOf(Lectura(null, TareaError.NoAutorizada))
                         } else {
                             userId = user.id
-                            observeTarea(obraId, tareaId).map { tarea ->
-                                Lectura(tarea, if (tarea == null) TareaError.NoEncontrada else null)
+                            // Un error en los vinculados no oculta la tarea.
+                            val vinculados = observeRelevamientosDeTarea(obraId, tareaId)
+                                .map<List<Relevamiento>, List<Relevamiento>?> { it }
+                                .catch { emit(null) }
+                            combine(observeTarea(obraId, tareaId), vinculados) { tarea, relevamientos ->
+                                Lectura(tarea, if (tarea == null) TareaError.NoEncontrada else null, relevamientos)
                             }
                         }
                     }
@@ -94,7 +108,9 @@ class TareaDetailViewModel @AssistedInject constructor(
                         isLoading = false,
                         tarea = tarea,
                         atrasada = tarea?.estaAtrasada(LocalDate.now(clock)) ?: false,
-                        error = lectura.error
+                        error = lectura.error,
+                        vinculados = lectura.vinculados.orEmpty(),
+                        vinculadosError = lectura.vinculados == null
                     )
                 }
             }
@@ -121,12 +137,16 @@ class TareaDetailViewModel @AssistedInject constructor(
         }
     }
 
-    fun eliminar() {
+    /**
+     * [vinculados]: qué hacer con los relevamientos vinculados (lo elige el usuario en el diálogo).
+     * Sin poder leer los vinculados no se borra: no se sabría qué se está eliminando.
+     */
+    fun eliminar(vinculados: RelevamientosVinculados = RelevamientosVinculados.DESVINCULAR) {
         val state = _uiState.value
-        if (state.isDeleting || state.tarea == null) return
+        if (state.isDeleting || state.tarea == null || state.vinculadosError) return
         _uiState.update { it.copy(isDeleting = true, deleteError = null) }
         viewModelScope.launch {
-            when (val result = deleteTarea(obraId, tareaId)) {
+            when (val result = deleteTarea(obraId, tareaId, vinculados)) {
                 is AppResult.Success -> _uiState.update { it.copy(isDeleted = true) }
                 is AppResult.Error -> {
                     // Sin conexión, Firestore aplica el borrado en el caché local y la

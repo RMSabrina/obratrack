@@ -182,6 +182,14 @@ fun AppShell(onLogout: () -> Unit) {
                         backStack.add(
                             TareaFormDestination(obraId = destination.obraId, tareaId = destination.tareaId)
                         )
+                    },
+                    onOpenRelevamiento = { relevamientoId ->
+                        backStack.add(
+                            RelevamientoDetailDestination(
+                                obraId = destination.obraId,
+                                relevamientoId = relevamientoId
+                            )
+                        )
                     }
                 )
             }
@@ -232,7 +240,8 @@ fun AppShell(onLogout: () -> Unit) {
                                 fotoUrl = relevamiento.fotoUrl,
                                 latitud = relevamiento.ubicacion?.latitud,
                                 longitud = relevamiento.ubicacion?.longitud,
-                                proximaVisita = relevamiento.proximaVisita
+                                proximaVisita = relevamiento.proximaVisita,
+                                tareaId = relevamiento.tareaId
                             )
                         )
                     }
@@ -248,7 +257,8 @@ fun AppShell(onLogout: () -> Unit) {
                         fotoUrl = destination.fotoUrl,
                         latitud = destination.latitud,
                         longitud = destination.longitud,
-                        proximaVisita = destination.proximaVisita
+                        proximaVisita = destination.proximaVisita,
+                        tareaId = destination.tareaId
                     ),
                     onBack = ::goBack,
                     onSaved = ::goBack

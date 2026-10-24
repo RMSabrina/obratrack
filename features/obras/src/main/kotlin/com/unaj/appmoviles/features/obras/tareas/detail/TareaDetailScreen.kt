@@ -1,6 +1,7 @@
 package com.unaj.appmoviles.features.obras.tareas.detail
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +45,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,6 +55,8 @@ import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.tareas.labelRes
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
+import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
@@ -65,6 +70,7 @@ fun TareaDetailRoute(
     onBack: () -> Unit,
     onDeleteSuccess: () -> Unit,
     onEditTarea: () -> Unit,
+    onOpenRelevamiento: (relevamientoId: String) -> Unit,
     viewModel: TareaDetailViewModel = hiltViewModel(
         creationCallback = { factory: TareaDetailViewModel.Factory -> factory.create(obraId, tareaId) }
     )
@@ -75,6 +81,7 @@ fun TareaDetailRoute(
         onBack = onBack,
         onDeleteSuccess = onDeleteSuccess,
         onEditTarea = onEditTarea,
+        onOpenRelevamiento = onOpenRelevamiento,
         onCompletar = viewModel::completar,
         onEliminar = viewModel::eliminar,
         onActionErrorShown = viewModel::onActionErrorShown,
@@ -89,8 +96,9 @@ fun TareaDetailScreen(
     onBack: () -> Unit,
     onDeleteSuccess: () -> Unit,
     onEditTarea: () -> Unit,
+    onOpenRelevamiento: (relevamientoId: String) -> Unit,
     onCompletar: () -> Unit,
-    onEliminar: () -> Unit,
+    onEliminar: (RelevamientosVinculados) -> Unit,
     onActionErrorShown: () -> Unit,
     onDeleteErrorShown: () -> Unit,
     modifier: Modifier = Modifier
@@ -122,7 +130,17 @@ fun TareaDetailScreen(
         }
     }
 
-    if (showDeleteDialog) {
+    if (showDeleteDialog && state.vinculados.isNotEmpty()) {
+        EliminarConVinculadosDialog(
+            cantidad = state.vinculados.size,
+            onElegir = { opcion ->
+                showDeleteDialog = false
+                onEliminar(opcion)
+            },
+            onCancelar = { showDeleteDialog = false }
+        )
+    } else if (showDeleteDialog) {
+        // Sin vínculos, confirmación simple.
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text(stringResource(R.string.tarea_eliminar)) },
@@ -130,7 +148,7 @@ fun TareaDetailScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteDialog = false
-                    onEliminar()
+                    onEliminar(RelevamientosVinculados.DESVINCULAR)
                 }) {
                     Text(stringResource(R.string.eliminar), color = MaterialTheme.colorScheme.error)
                 }
@@ -156,7 +174,11 @@ fun TareaDetailScreen(
                 },
                 actions = {
                     if (tarea != null) {
-                        IconButton(onClick = { showDeleteDialog = true }, enabled = !isBusy) {
+                        // Sin la lista de vinculados no se sabe qué se borraría: no se ofrece.
+                        IconButton(
+                            onClick = { showDeleteDialog = true },
+                            enabled = !isBusy && !state.vinculadosError
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = stringResource(R.string.tarea_eliminar),
@@ -215,6 +237,12 @@ fun TareaDetailScreen(
                         }
                     }
                 }
+
+                RelevamientosVinculadosSeccion(
+                    vinculados = state.vinculados,
+                    error = state.vinculadosError,
+                    onOpenRelevamiento = { if (!isBusy) onOpenRelevamiento(it) }
+                )
             }
         }
     }
@@ -284,6 +312,79 @@ private fun TareaDetailCard(tarea: Tarea, atrasada: Boolean, modifier: Modifier 
                     MaterialTheme.colorScheme.onSurface
                 }
             )
+        }
+    }
+}
+
+/** Borrar una tarea con relevamientos vinculados: el usuario elige qué pasa con ellos. */
+@Composable
+private fun EliminarConVinculadosDialog(
+    cantidad: Int,
+    onElegir: (RelevamientosVinculados) -> Unit,
+    onCancelar: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onCancelar,
+        title = { Text(stringResource(R.string.tarea_eliminar)) },
+        text = { Text(pluralStringResource(R.plurals.tarea_eliminar_vinculados, cantidad, cantidad)) },
+        confirmButton = {
+            Column(horizontalAlignment = Alignment.End) {
+                // Opción por defecto: los relevamientos se conservan, sin tarea.
+                TextButton(onClick = { onElegir(RelevamientosVinculados.DESVINCULAR) }) {
+                    Text(stringResource(R.string.tarea_eliminar_solo_tarea))
+                }
+                TextButton(onClick = { onElegir(RelevamientosVinculados.ELIMINAR) }) {
+                    Text(
+                        text = pluralStringResource(R.plurals.tarea_eliminar_con_relevamientos, cantidad, cantidad),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                TextButton(onClick = onCancelar) {
+                    Text(stringResource(R.string.cancelar))
+                }
+            }
+        }
+    )
+}
+
+/** Relevamientos vinculados a la tarea, del más nuevo al más viejo. */
+@Composable
+private fun RelevamientosVinculadosSeccion(
+    vinculados: List<Relevamiento>,
+    error: Boolean,
+    onOpenRelevamiento: (relevamientoId: String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.tarea_vinculados_titulo, vinculados.size),
+            style = MaterialTheme.typography.titleMedium
+        )
+        when {
+            error -> Text(
+                text = stringResource(R.string.tarea_vinculados_error),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+            vinculados.isEmpty() -> Text(
+                text = stringResource(R.string.tarea_vinculados_vacio),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            else -> vinculados.forEach { relevamiento ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onOpenRelevamiento(relevamiento.id) }
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(formatFecha(relevamiento.fecha), style = MaterialTheme.typography.labelLarge)
+                        Text(relevamiento.nota, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                    }
+                }
+            }
         }
     }
 }

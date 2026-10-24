@@ -25,7 +25,9 @@ fun RelevamientoDto.toDomain(): Relevamiento = Relevamiento(
         val lng = longitud
         if (lat != null && lng != null) Ubicacion(lat, lng) else null
     },
-    proximaVisita = proximaVisitaMillis
+    proximaVisita = proximaVisitaMillis,
+    // Sin campo (relevamientos anteriores a la Etapa 4) o vacío: sin tarea vinculada.
+    tareaId = tareaId?.takeIf { it.isNotBlank() }
 )
 
 fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = RelevamientoDto(
@@ -37,7 +39,8 @@ fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = R
     fotoUrl = fotoUrl,
     latitud = ubicacion?.latitud,
     longitud = ubicacion?.longitud,
-    proximaVisitaMillis = proximaVisita
+    proximaVisitaMillis = proximaVisita,
+    tareaId = tareaId?.takeIf { it.isNotBlank() }
 )
 
 fun Exception.toRelevamientoError(): RelevamientoError = when (this) {

@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.SetOptions
@@ -66,6 +67,20 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
         awaitClose { registration.remove() }
     }
 
+    override fun observeByTarea(obraId: String, tareaId: String): Flow<List<RelevamientoDto>> = callbackFlow {
+        val registration = relevamientos(obraId)
+            .whereEqualTo(FIELD_TAREA_ID, tareaId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val items = snapshot?.documents?.mapNotNull { it.toRelevamientoDto(obraId) }.orEmpty()
+                trySend(items)
+            }
+        awaitClose { registration.remove() }
+    }
+
     override suspend fun create(dto: RelevamientoDto, photo: ByteArray?): FirebaseResult<RelevamientoDto> {
         return try {
             val obraRef = firestore.collection(OBRAS).document(dto.obraId)
@@ -116,7 +131,10 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
                 return FirebaseResult.Error(RelevamientoForbiddenException())
             }
             val stored = dto.copy(userId = userId)
-            ref.set(stored.toMap(), SetOptions.merge()).await()
+            // Con merge, omitir un campo conserva el valor viejo: para desvincular la tarea
+            // hay que borrar el campo explícitamente.
+            val campos = stored.toMap() + (FIELD_TAREA_ID to valorTareaIdParaMerge(stored.tareaId))
+            ref.set(campos, SetOptions.merge()).await()
             if (stored.proximaVisitaMillis != null) {
                 obraRef.update(FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis))).await()
             }
@@ -142,6 +160,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
         }
         proximaVisitaMillis?.let { map[FIELD_PROXIMA_VISITA] = Timestamp(Date(it)) }
+        tareaId?.let { map[FIELD_TAREA_ID] = it }
         return map
     }
 
@@ -157,7 +176,8 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             fotoUrl = getString(FIELD_FOTO_URL),
             latitud = geo?.latitude,
             longitud = geo?.longitude,
-            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
+            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time,
+            tareaId = getString(FIELD_TAREA_ID)
         )
     }
 
@@ -182,7 +202,8 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             fotoUrl = getString(FIELD_FOTO_URL),
             latitud = geo?.latitude,
             longitud = geo?.longitude,
-            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
+            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time,
+            tareaId = getString(FIELD_TAREA_ID)
         )
     }
 
@@ -229,5 +250,16 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
         const val FIELD_UBICACION = "ubicacion"
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
         const val FIELD_PROXIMA_VISITA = "proximaVisita"
+        const val FIELD_TAREA_ID = RELEVAMIENTO_FIELD_TAREA_ID
     }
 }
+
+/** Nombre del campo en Firestore; también lo usa el borrado de tareas (batch). */
+internal const val RELEVAMIENTO_FIELD_TAREA_ID = "tareaId"
+
+/**
+ * Valor de `tareaId` en un update con merge: sin tarea se borra el campo, porque escribir
+ * nada (o null en el mapa omitido) dejaría el vínculo viejo.
+ */
+internal fun valorTareaIdParaMerge(tareaId: String?): Any =
+    tareaId?.takeIf { it.isNotBlank() } ?: FieldValue.delete()
