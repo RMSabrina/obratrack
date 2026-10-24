@@ -59,7 +59,8 @@ class FakeObraRepository(obra: Obra?) : ObraRepository {
 
     override fun observe(userId: String): Flow<List<Obra>> = TODO()
     override fun observePublicas(): Flow<List<Obra>> = TODO()
-    override fun observePublica(obraId: String): Flow<Obra?> = TODO()
+    override fun observePublica(obraId: String): Flow<Obra?> =
+        this.obra.map { it?.takeIf { o -> o.id == obraId && o.publica } }
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> = TODO()
@@ -70,11 +71,18 @@ class FakeObraRepository(obra: Obra?) : ObraRepository {
 class FakeRelevamientoRepository(relevamientos: List<Relevamiento> = emptyList()) : RelevamientoRepository {
     val relevamientos = MutableStateFlow(relevamientos)
 
+    /** Si no es null, observe y observeByObra fallan con esta excepción (como Firestore). */
+    var observeError: Exception? = null
+
     override fun observe(userId: String, obraId: String): Flow<List<Relevamiento>> =
-        relevamientos.map { lista -> lista.filter { it.obraId == obraId } }
+        observeByObra(obraId)
 
     override fun observeAll(userId: String): Flow<List<Relevamiento>> = TODO()
-    override fun observeByObra(obraId: String): Flow<List<Relevamiento>> = TODO()
+    override fun observeByObra(obraId: String): Flow<List<Relevamiento>> {
+        val error = observeError
+        if (error != null) return flow { throw error }
+        return relevamientos.map { lista -> lista.filter { it.obraId == obraId } }
+    }
     override suspend fun create(
         userId: String,
         obraId: String,

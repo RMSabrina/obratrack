@@ -405,7 +405,9 @@ private fun ResumenTab(
         item {
             SectionTitle(stringResource(R.string.obra_seccion_relevamientos))
         }
-        if (recientes.isEmpty()) {
+        if (state.relevamientosError) {
+            item { RelevamientosErrorMensaje() }
+        } else if (recientes.isEmpty()) {
             item {
                 Text(
                     text = stringResource(R.string.obra_relevamientos_vacio),
@@ -433,6 +435,17 @@ private fun ResumenTab(
     }
 }
 
+/** Aviso de la sección cuando fallan los relevamientos (también en la obra pública). */
+@Composable
+internal fun RelevamientosErrorMensaje(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.obra_relevamientos_error),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.error,
+        modifier = modifier
+    )
+}
+
 /** Historial completo de relevamientos, del más nuevo al más viejo. */
 @Composable
 private fun RelevamientosTab(
@@ -442,12 +455,16 @@ private fun RelevamientosTab(
     modifier: Modifier = Modifier
 ) {
     val puedeCrear = state.isEditable && !state.isDeleting
+    if (state.relevamientosError) {
+        RelevamientosErrorMensaje(modifier.padding(24.dp))
+        return
+    }
     if (state.relevamientos.isEmpty()) {
         EmptyState(
             icon = Icons.Default.Info,
-            title = "Todavía no hay relevamientos",
-            description = "Esta obra no cuenta con relevamientos cargados.",
-            actionLabel = if (puedeCrear) "Agregar el primero" else null,
+            title = stringResource(R.string.obra_relevamientos_vacio_titulo),
+            description = stringResource(R.string.obra_relevamientos_vacio_descripcion),
+            actionLabel = if (puedeCrear) stringResource(R.string.obra_relevamientos_agregar_primero) else null,
             onActionClick = if (puedeCrear) onCreateRelevamiento else null,
             modifier = modifier
         )

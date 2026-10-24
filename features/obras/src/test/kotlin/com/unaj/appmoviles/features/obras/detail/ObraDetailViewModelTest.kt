@@ -81,10 +81,10 @@ class ObraDetailViewModelTest {
 
     private fun crearViewModel(
         user: User? = DUENO,
-        tareaRepo: FakeTareaRepository = FakeTareaRepository()
+        tareaRepo: FakeTareaRepository = FakeTareaRepository(),
+        relevamientoRepo: FakeRelevamientoRepository = FakeRelevamientoRepository(listOf(relevamiento))
     ): ObraDetailViewModel {
         val obraRepo = FakeObraRepository(obraDe(DUENO.id, publica = true))
-        val relevamientoRepo = FakeRelevamientoRepository(listOf(relevamiento))
         return ObraDetailViewModel(
             obraId = OBRA_ID,
             observeSession = ObserveSessionUseCase(FakeAuthRepository(user)),
@@ -149,6 +149,35 @@ class ObraDetailViewModelTest {
         assertNull(state.error)
         assertTrue(state.isEditable)
         assertEquals(listOf(relevamiento), state.relevamientos)
+    }
+
+    @Test
+    fun relevamientosCargados_sinError() = runTest {
+        val viewModel = crearViewModel()
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.relevamientosError)
+    }
+
+    @Test
+    fun errorAlLeerRelevamientos_avisaSinOcultarLaObraNiLasTareas() = runTest {
+        val relevamientoRepo = FakeRelevamientoRepository().apply {
+            observeError = IllegalStateException("PERMISSION_DENIED")
+        }
+        val viewModel = crearViewModel(
+            tareaRepo = FakeTareaRepository(listOf(tarea("a"))),
+            relevamientoRepo = relevamientoRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.relevamientosError)
+        assertTrue(state.relevamientos.isEmpty())
+        assertNull(state.error)
+        assertEquals(OBRA_ID, state.obra?.id)
+        assertEquals(ResumenTareas(0, 1, 0), state.resumenTareas)
     }
 
     @Test

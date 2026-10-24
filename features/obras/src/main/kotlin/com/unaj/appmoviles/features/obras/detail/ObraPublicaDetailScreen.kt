@@ -141,10 +141,17 @@ fun ObraPublicaDetailScreen(
                             }
                         }
                         item { HorizontalDivider() }
-                        item { Text("Relevamientos", style = MaterialTheme.typography.titleMedium) }
+                        item {
+                            Text(
+                                stringResource(R.string.obra_seccion_relevamientos),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
                     }
-                    if (relevamientos.isEmpty()) {
-                        item { Text("Todavía no hay relevamientos.") }
+                    if (state.relevamientosError) {
+                        item { RelevamientosErrorMensaje() }
+                    } else if (relevamientos.isEmpty()) {
+                        item { Text(stringResource(R.string.obra_relevamientos_vacio)) }
                     } else {
                         items(relevamientos, key = { it.id }) { relevamiento ->
                             RelevamientoPublicoCard(relevamiento = relevamiento, onClick = { onOpenRelevamiento(relevamiento) })

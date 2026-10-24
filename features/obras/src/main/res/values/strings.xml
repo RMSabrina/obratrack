@@ -83,6 +83,10 @@
     <string name="obra_relevamiento_nuevo">Nuevo relevamiento</string>
     <string name="obra_relevamientos_vacio">Todavía no hay relevamientos.</string>
     <string name="obra_relevamientos_ver_todos">Ver todos (%1$d)</string>
+    <string name="obra_relevamientos_error">No pudimos cargar los relevamientos. Volvé a abrir la obra para reintentar.</string>
+    <string name="obra_relevamientos_vacio_titulo">Todavía no hay relevamientos</string>
+    <string name="obra_relevamientos_vacio_descripcion">Esta obra no cuenta con relevamientos cargados.</string>
+    <string name="obra_relevamientos_agregar_primero">Agregar el primero</string>
     <plurals name="obra_tareas_atrasadas_insignia">
         <item quantity="one">%d tarea atrasada</item>
         <item quantity="other">%d tareas atrasadas</item>

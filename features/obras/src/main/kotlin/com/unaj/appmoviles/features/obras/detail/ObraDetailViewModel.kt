@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
+import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
@@ -62,7 +63,7 @@ class ObraDetailViewModel @AssistedInject constructor(
                 }
                 combine(
                     observeObra(user.id, obraId),
-                    observeRelevamientos(user.id, obraId),
+                    observeRelevamientosOError(user.id),
                     observeResumenTareas(user.id)
                 ) { obra, relevamientos, resumenTareas ->
                     val current = _uiState.value
@@ -77,7 +78,8 @@ class ObraDetailViewModel @AssistedInject constructor(
                             isLoading = false,
                             isEditable = obra?.userId == user.id,
                             obra = obra,
-                            relevamientos = relevamientos,
+                            relevamientos = relevamientos.orEmpty(),
+                            relevamientosError = relevamientos == null,
                             resumenTareas = resumenTareas,
                             error = if (obra == null) ObraError.NoEncontrada else null,
                             isDeleting = current.isDeleting,
@@ -95,6 +97,15 @@ class ObraDetailViewModel @AssistedInject constructor(
             }
         }
     }
+
+    /**
+     * null si fallan los relevamientos: la obra se sigue mostrando y la sección avisa del error
+     * (si no, el error cortaría el combine y la lista quedaría vacía como si no hubiera ninguno).
+     */
+    private fun observeRelevamientosOError(userId: String): Flow<List<Relevamiento>?> =
+        observeRelevamientos(userId, obraId)
+            .map<List<Relevamiento>, List<Relevamiento>?> { it }
+            .catch { emit(null) }
 
     /**
      * Las tareas son privadas: solo se observan si el usuario es dueño (si no, Firestore
