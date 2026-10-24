@@ -70,7 +70,9 @@ class RelevamientoRepositoryImpl @Inject constructor(
             val result = imageStorageRepository.uploadImage(
                 bytes = photo,
                 folder = "relevamientos/$obraId",
-                name = relevamientoId
+                // Nombre único, igual que al crear: la subida sin firma no reemplaza una imagen
+                // existente y, con el mismo nombre, Cloudinary devolvía la URL de la foto vieja.
+                name = java.util.UUID.randomUUID().toString()
             )
             if (result is AppResult.Error) return AppResult.Error(result.error)
             (result as AppResult.Success).data
