@@ -13,14 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -28,19 +26,20 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -55,14 +54,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.label
+import com.unaj.appmoviles.features.obras.tareas.cronograma.CronogramaRoute
+import com.unaj.appmoviles.features.obras.tareas.list.TareasListRoute
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
@@ -82,8 +87,8 @@ fun ObraDetailRoute(
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
-    onOpenTareas: () -> Unit,
-    onOpenCronograma: () -> Unit,
+    onCreateTarea: () -> Unit,
+    onOpenTarea: (tareaId: String) -> Unit,
     viewModel: ObraDetailViewModel = hiltViewModel(
         creationCallback = { factory: ObraDetailViewModel.Factory -> factory.create(obraId) }
     )
@@ -98,8 +103,25 @@ fun ObraDetailRoute(
         onEditObra = onEditObra,
         onCreateRelevamiento = onCreateRelevamiento,
         onOpenRelevamiento = onOpenRelevamiento,
-        onOpenTareas = onOpenTareas,
-        onOpenCronograma = onOpenCronograma
+        onCreateTarea = onCreateTarea,
+        // Las pestañas Tareas y Cronograma tienen su propio ViewModel, que vuelve a verificar
+        // el dueño. Solo se crean al abrir la pestaña.
+        tareasTab = { modifier ->
+            TareasListRoute(
+                obraId = obraId,
+                onCreateTarea = onCreateTarea,
+                onOpenTarea = { tarea -> onOpenTarea(tarea.id) },
+                modifier = modifier
+            )
+        },
+        cronogramaTab = { onOpenTareas, modifier ->
+            CronogramaRoute(
+                obraId = obraId,
+                onOpenTarea = onOpenTarea,
+                onOpenTareas = onOpenTareas,
+                modifier = modifier
+            )
+        }
     )
 }
 
@@ -114,12 +136,17 @@ fun ObraDetailScreen(
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
-    onOpenTareas: () -> Unit,
-    onOpenCronograma: () -> Unit,
+    onCreateTarea: () -> Unit,
+    tareasTab: @Composable (Modifier) -> Unit,
+    cronogramaTab: @Composable (onOpenTareas: () -> Unit, Modifier) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val obra = state.obra
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    // Se conserva al volver del detalle o del formulario de una tarea (decorador de Nav3).
+    var pestana by rememberSaveable { mutableStateOf(ObraDetailTab.RESUMEN) }
+    val pestanas = pestanasVisibles(esDueno = state.isEditable)
+    val pestanaActual = pestana.takeIf { it in pestanas } ?: ObraDetailTab.RESUMEN
     val snackbarHostState = remember { SnackbarHostState() }
 
     BackHandler(enabled = state.isDeleting) {}
@@ -208,13 +235,17 @@ fun ObraDetailScreen(
             )
         },
         floatingActionButton = {
-            if (obra != null && state.isEditable && !state.isDeleting) {
-                FloatingActionButton(onClick = onCreateRelevamiento) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Agregar relevamiento"
-                    )
+            val fab = pestanaActual.fab()
+            if (obra != null && state.isEditable && !state.isDeleting && fab != null) {
+                val (texto, onClick) = when (fab) {
+                    FabDetalle.NUEVO_RELEVAMIENTO -> stringResource(R.string.obra_relevamiento_nuevo) to onCreateRelevamiento
+                    FabDetalle.NUEVA_TAREA -> stringResource(R.string.tarea_nueva) to onCreateTarea
                 }
+                ExtendedFloatingActionButton(
+                    onClick = onClick,
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    text = { Text(texto) }
+                )
             }
         }
     ) { padding ->
@@ -229,62 +260,210 @@ fun ObraDetailScreen(
                         .padding(24.dp)
                 )
             }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        SectionTitle(stringResource(R.string.obra_seccion_resumen))
-                    }
-
-                    item {
-                        ObraHeaderCard(obra = obra)
-                    }
-
-                    // Las tareas son privadas del dueño: la sección no se muestra a otros usuarios.
-                    if (state.isEditable) {
-                        item {
-                            SectionTitle(stringResource(R.string.obras_tareas))
-                        }
-                        item {
-                            TareasResumenCard(
-                                resumen = state.resumenTareas,
-                                enabled = !state.isDeleting,
-                                onOpenTareas = onOpenTareas,
-                                onOpenCronograma = onOpenCronograma
-                            )
-                        }
-                    }
-
-                    item {
-                        SectionTitle(stringResource(R.string.obra_seccion_relevamientos))
-                    }
-
-                    if (state.relevamientos.isEmpty() && state.error == null) {
-                        item {
-                            EmptyState(
-                                icon = Icons.Default.Info,
-                                title = "Todavía no hay relevamientos",
-                                description = "Esta obra no cuenta con relevamientos cargados.",
-                                actionLabel = if (state.isEditable && !state.isDeleting) "Agregar el primero" else null,
-                                onActionClick = if (state.isEditable && !state.isDeleting) onCreateRelevamiento else null
-                            )
-                        }
-                    } else {
-                        items(state.relevamientos, key = { it.id }) { relevamiento ->
-                            RelevamientoCard(
-                                relevamiento = relevamiento,
-                                isEditable = state.isEditable && !state.isDeleting,
-                                onClick = { if (!state.isDeleting) onOpenRelevamiento(relevamiento) }
-                            )
-                        }
-                    }
+            else -> Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                ObraDetailTabRow(
+                    pestanas = pestanas,
+                    seleccionada = pestanaActual,
+                    atrasadas = insigniaAtrasadas(state.resumenTareas),
+                    onSelect = { pestana = it }
+                )
+                val contenido = Modifier.weight(1f)
+                when (pestanaActual) {
+                    ObraDetailTab.RESUMEN -> ResumenTab(
+                        state = state,
+                        obra = obra,
+                        onOpenRelevamiento = onOpenRelevamiento,
+                        onVerTodos = { pestana = ObraDetailTab.RELEVAMIENTOS },
+                        modifier = contenido
+                    )
+                    ObraDetailTab.TAREAS -> tareasTab(contenido)
+                    ObraDetailTab.CRONOGRAMA -> cronogramaTab({ pestana = ObraDetailTab.TAREAS }, contenido)
+                    ObraDetailTab.RELEVAMIENTOS -> RelevamientosTab(
+                        state = state,
+                        onCreateRelevamiento = onCreateRelevamiento,
+                        onOpenRelevamiento = onOpenRelevamiento,
+                        modifier = contenido
+                    )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Sin swipe: el contenido cambia solo al tocar una pestaña. Con cuatro pestañas los títulos no
+ * entran en partes iguales en un celular: cada pestaña toma el ancho de su título y la fila se
+ * desliza (nunca se cortan los textos). Sin margen inicial, la pestaña siguiente se asoma en el
+ * borde, y la fila centra sola la pestaña seleccionada cuando cambia.
+ */
+@Composable
+private fun ObraDetailTabRow(
+    pestanas: List<ObraDetailTab>,
+    seleccionada: ObraDetailTab,
+    atrasadas: Int?,
+    onSelect: (ObraDetailTab) -> Unit
+) {
+    PrimaryScrollableTabRow(
+        selectedTabIndex = pestanas.indexOf(seleccionada),
+        edgePadding = 0.dp
+    ) {
+        pestanas.forEach { tab ->
+            Tab(
+                selected = tab == seleccionada,
+                onClick = { onSelect(tab) },
+                text = {
+                    PestanaTitulo(
+                        tab = tab,
+                        atrasadas = if (tab == ObraDetailTab.TAREAS) atrasadas else null
+                    )
+                }
+            )
+        }
+    }
+}
+
+// Para revisar en Android Studio que los títulos no se corten y que la pestaña siguiente se
+// asome: celular angosto (360 dp) y letra del sistema agrandada.
+@Preview(showBackground = true, widthDp = 360)
+@Preview(showBackground = true, widthDp = 360, fontScale = 1.3f)
+@Composable
+private fun ObraDetailTabRowPreview() {
+    ObraDetailTabRow(
+        pestanas = pestanasVisibles(esDueno = true),
+        seleccionada = ObraDetailTab.RESUMEN,
+        atrasadas = 2,
+        onSelect = {}
+    )
+}
+
+@Preview(showBackground = true, widthDp = 360)
+@Composable
+private fun ObraDetailTabRowSeleccionadaPreview() {
+    ObraDetailTabRow(
+        pestanas = pestanasVisibles(esDueno = true),
+        seleccionada = ObraDetailTab.RELEVAMIENTOS,
+        atrasadas = null,
+        onSelect = {}
+    )
+}
+
+/** Título de la pestaña; en Tareas lleva la insignia con las atrasadas, si hay. */
+@Composable
+private fun PestanaTitulo(tab: ObraDetailTab, atrasadas: Int?) {
+    val titulo = stringResource(tab.labelRes())
+    if (atrasadas == null) {
+        Text(titulo, maxLines = 1)
+        return
+    }
+    val descripcion = pluralStringResource(R.plurals.obra_tareas_atrasadas_insignia, atrasadas, atrasadas)
+    // La insignia va al lado del texto, no encima: así nunca tapa el título.
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        // TalkBack lee "Tareas, 1 tarea atrasada" en vez de "Tareas, 1".
+        modifier = Modifier.clearAndSetSemantics { contentDescription = "$titulo, $descripcion" }
+    ) {
+        Text(titulo, maxLines = 1)
+        Badge(containerColor = MaterialTheme.colorScheme.error) { Text(atrasadas.toString()) }
+    }
+}
+
+/** Datos de la obra, resumen de tareas (solo dueño) y los últimos relevamientos. */
+@Composable
+private fun ResumenTab(
+    state: ObraDetailUiState,
+    obra: Obra,
+    onOpenRelevamiento: (Relevamiento) -> Unit,
+    onVerTodos: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val recientes = state.relevamientos.recientes()
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            ObraHeaderCard(obra = obra)
+        }
+
+        // Las tareas son privadas del dueño. Sin resumen (error al leerlas) no se muestra la sección.
+        val resumen = state.resumenTareas
+        if (state.isEditable && resumen != null) {
+            item {
+                SectionTitle(stringResource(R.string.obras_tareas))
+            }
+            item {
+                TareasResumenCard(resumen = resumen)
+            }
+        }
+
+        item {
+            SectionTitle(stringResource(R.string.obra_seccion_relevamientos))
+        }
+        if (recientes.isEmpty()) {
+            item {
+                Text(
+                    text = stringResource(R.string.obra_relevamientos_vacio),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            items(recientes, key = { it.id }) { relevamiento ->
+                RelevamientoCard(
+                    relevamiento = relevamiento,
+                    isEditable = state.isEditable && !state.isDeleting,
+                    onClick = { if (!state.isDeleting) onOpenRelevamiento(relevamiento) }
+                )
+            }
+        }
+        // Solo si hay más de los que entran en el resumen.
+        if (state.relevamientos.size > recientes.size) {
+            item {
+                TextButton(onClick = onVerTodos, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.obra_relevamientos_ver_todos, state.relevamientos.size))
+                }
+            }
+        }
+    }
+}
+
+/** Historial completo de relevamientos, del más nuevo al más viejo. */
+@Composable
+private fun RelevamientosTab(
+    state: ObraDetailUiState,
+    onCreateRelevamiento: () -> Unit,
+    onOpenRelevamiento: (Relevamiento) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val puedeCrear = state.isEditable && !state.isDeleting
+    if (state.relevamientos.isEmpty()) {
+        EmptyState(
+            icon = Icons.Default.Info,
+            title = "Todavía no hay relevamientos",
+            description = "Esta obra no cuenta con relevamientos cargados.",
+            actionLabel = if (puedeCrear) "Agregar el primero" else null,
+            onActionClick = if (puedeCrear) onCreateRelevamiento else null,
+            modifier = modifier
+        )
+        return
+    }
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(state.relevamientos, key = { it.id }) { relevamiento ->
+            RelevamientoCard(
+                relevamiento = relevamiento,
+                isEditable = puedeCrear,
+                onClick = { if (!state.isDeleting) onOpenRelevamiento(relevamiento) }
+            )
         }
     }
 }
@@ -299,12 +478,10 @@ private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
     )
 }
 
+/** Contadores de tareas; para verlas o planificarlas están las pestañas Tareas y Cronograma. */
 @Composable
 private fun TareasResumenCard(
-    resumen: ResumenTareas?,
-    enabled: Boolean,
-    onOpenTareas: () -> Unit,
-    onOpenCronograma: () -> Unit,
+    resumen: ResumenTareas,
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
@@ -313,8 +490,6 @@ private fun TareasResumenCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             when {
-                // Sin resumen (error al leer las tareas) solo se muestra el acceso.
-                resumen == null -> Unit
                 resumen.completadas + resumen.pendientes == 0 -> Text(
                     text = stringResource(R.string.obra_tareas_sin_tareas),
                     style = MaterialTheme.typography.bodyMedium,
@@ -338,24 +513,6 @@ private fun TareasResumenCard(
                         modifier = Modifier.weight(1f)
                     )
                 }
-            }
-            OutlinedButton(
-                onClick = onOpenTareas,
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Default.Checklist, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.obra_tareas_ver))
-            }
-            OutlinedButton(
-                onClick = onOpenCronograma,
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Default.Timeline, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.obra_cronograma_ver))
             }
         }
     }

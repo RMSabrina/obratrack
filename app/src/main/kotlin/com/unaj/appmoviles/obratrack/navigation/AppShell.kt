@@ -24,10 +24,8 @@ import com.unaj.appmoviles.features.obras.detail.ObraPublicaDetailRoute
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormInitial
 import com.unaj.appmoviles.features.obras.relevamiento.RelevamientoFormRoute
 import com.unaj.appmoviles.features.obras.relevamiento.detail.RelevamientoDetailRoute
-import com.unaj.appmoviles.features.obras.tareas.cronograma.CronogramaRoute
 import com.unaj.appmoviles.features.obras.tareas.detail.TareaDetailRoute
 import com.unaj.appmoviles.features.obras.tareas.form.TareaFormRoute
-import com.unaj.appmoviles.features.obras.tareas.list.TareasListRoute
 import com.unaj.appmoviles.features.home.HomeRoute
 import com.unaj.appmoviles.features.home.ObraSelectionRoute
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
@@ -166,37 +164,11 @@ fun AppShell(onLogout: () -> Unit) {
                             )
                         )
                     },
-                    onOpenTareas = {
-                        backStack.add(TareasListDestination(obraId = destination.obraId))
-                    },
-                    onOpenCronograma = {
-                        backStack.add(CronogramaDestination(obraId = destination.obraId))
-                    }
-                )
-            }
-            entry<CronogramaDestination> { destination ->
-                CronogramaRoute(
-                    obraId = destination.obraId,
-                    onBack = ::goBack,
-                    onOpenTarea = { tareaId ->
-                        backStack.add(TareaDetailDestination(obraId = destination.obraId, tareaId = tareaId))
-                    },
-                    onOpenTareas = {
-                        backStack.add(TareasListDestination(obraId = destination.obraId))
-                    }
-                )
-            }
-            entry<TareasListDestination> { destination ->
-                TareasListRoute(
-                    obraId = destination.obraId,
-                    onBack = ::goBack,
                     onCreateTarea = {
                         backStack.add(TareaFormDestination(obraId = destination.obraId))
                     },
-                    onOpenTarea = { tarea ->
-                        backStack.add(
-                            TareaDetailDestination(obraId = destination.obraId, tareaId = tarea.id)
-                        )
+                    onOpenTarea = { tareaId ->
+                        backStack.add(TareaDetailDestination(obraId = destination.obraId, tareaId = tareaId))
                     }
                 )
             }
@@ -218,14 +190,10 @@ fun AppShell(onLogout: () -> Unit) {
                     obraId = destination.obraId,
                     tareaId = destination.tareaId,
                     onBack = ::goBack,
-                    // Al guardar se vuelve a la pantalla de origen (listado o cronograma), aunque la
-                    // edición se haya abierto desde el detalle de la tarea.
+                    // Al guardar se vuelve al detalle de obra (en la pestaña de origen, Tareas o
+                    // Cronograma), aunque la edición se haya abierto desde el detalle de la tarea.
                     onSaved = {
-                        while (
-                            backStack.size > 1 &&
-                            backStack.last() !is TareasListDestination &&
-                            backStack.last() !is CronogramaDestination
-                        ) {
+                        while (backStack.size > 1 && backStack.last() !is ObraDetailDestination) {
                             backStack.removeAt(backStack.lastIndex)
                         }
                     }

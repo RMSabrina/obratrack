@@ -39,11 +39,9 @@
 
     <!-- Tareas: listado -->
     <string name="obras_tareas">Tareas</string>
-    <string name="tareas_titulo">Tareas de la obra</string>
     <string name="tareas_vacio_titulo">Todavía no hay tareas</string>
     <string name="tareas_vacio_descripcion">Planificá el trabajo de la obra cargando sus tareas.</string>
     <string name="tareas_agregar_primera">Agregar la primera</string>
-    <string name="tareas_agregar">Agregar tarea</string>
     <string name="tareas_sin_fechas">Sin planificar</string>
     <string name="tareas_rango_fechas">%1$s – %2$s</string>
     <string name="volver">Volver</string>
@@ -82,13 +80,19 @@
     <string name="obra_tareas_pendientes">Pendientes</string>
     <string name="obra_tareas_atrasadas">Atrasadas</string>
     <string name="obra_tareas_sin_tareas">Todavía no hay tareas cargadas.</string>
-    <string name="obra_tareas_ver">Ver tareas</string>
+    <string name="obra_relevamiento_nuevo">Nuevo relevamiento</string>
+    <string name="obra_relevamientos_vacio">Todavía no hay relevamientos.</string>
+    <string name="obra_relevamientos_ver_todos">Ver todos (%1$d)</string>
+    <plurals name="obra_tareas_atrasadas_insignia">
+        <item quantity="one">%d tarea atrasada</item>
+        <item quantity="other">%d tareas atrasadas</item>
+    </plurals>
 
     <!-- Cronograma -->
     <string name="cronograma_hoy">Hoy</string>
     <string name="cronograma_fecha_inicio">%1$s –</string>
     <string name="cronograma_titulo">Cronograma</string>
-    <string name="obra_cronograma_ver">Ver cronograma</string>
+    <string name="cronograma_ir_a_tareas">Ver tareas</string>
     <string name="cronograma_vacio_titulo">Todavía no hay tareas</string>
     <string name="cronograma_vacio_descripcion">Cargá tareas con fecha de inicio y de fin para verlas en el cronograma.</string>
     <string name="cronograma_sin_planificadas_titulo">Ninguna tarea tiene fechas</string>
