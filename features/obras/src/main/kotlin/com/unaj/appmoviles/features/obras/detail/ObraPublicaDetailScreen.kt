@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
@@ -20,19 +21,26 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.label
+import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 
@@ -64,6 +72,9 @@ fun ObraPublicaDetailScreen(
     modifier: Modifier = Modifier,
 ) {
     val obra = state.obra
+    var pestana by rememberSaveable { mutableStateOf(ObraDetailTab.RESUMEN) }
+    val scrollResumen = rememberLazyListState()
+    val scrollRelevamientos = rememberLazyListState()
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -88,31 +99,65 @@ fun ObraPublicaDetailScreen(
                         .padding(24.dp)
                 )
             }
-            else -> {
+            else -> Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                // Un no dueño nunca ve Tareas ni Cronograma: son privados aunque la obra sea pública.
+                val pestanas = pestanasVisibles(esDueno = false)
+                PrimaryTabRow(selectedTabIndex = pestanas.indexOf(pestana)) {
+                    pestanas.forEach { tab ->
+                        Tab(
+                            selected = tab == pestana,
+                            onClick = { pestana = tab },
+                            text = { Text(stringResource(tab.labelRes()), maxLines = 1) }
+                        )
+                    }
+                }
+                // En el Resumen, solo los más recientes; el historial completo, en su pestaña.
+                val relevamientos = if (pestana == ObraDetailTab.RESUMEN) {
+                    state.relevamientos.recientes()
+                } else {
+                    state.relevamientos
+                }
+                // Un estado de scroll por pestaña: si no, volver a Resumen conserva el scroll de
+                // Relevamientos y la obra queda fuera de la vista.
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                    state = if (pestana == ObraDetailTab.RESUMEN) scrollResumen else scrollRelevamientos,
+                    modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    item {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(obra.cliente, style = MaterialTheme.typography.titleMedium)
-                            Text(obra.direccion)
-                            Text(
-                                "${obra.estado.label()} · Pública",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                    if (pestana == ObraDetailTab.RESUMEN) {
+                        item {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(obra.cliente, style = MaterialTheme.typography.titleMedium)
+                                Text(obra.direccion)
+                                Text(
+                                    "${obra.estado.label()} · Pública",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
+                        item { HorizontalDivider() }
+                        item { Text("Relevamientos", style = MaterialTheme.typography.titleMedium) }
                     }
-                    item { HorizontalDivider() }
-                    item { Text("Relevamientos", style = MaterialTheme.typography.titleMedium) }
-                    if (state.relevamientos.isEmpty()) {
+                    if (relevamientos.isEmpty()) {
                         item { Text("Todavía no hay relevamientos.") }
                     } else {
-                        items(state.relevamientos, key = { it.id }) { relevamiento ->
+                        items(relevamientos, key = { it.id }) { relevamiento ->
                             RelevamientoPublicoCard(relevamiento = relevamiento, onClick = { onOpenRelevamiento(relevamiento) })
+                        }
+                    }
+                    if (pestana == ObraDetailTab.RESUMEN && state.relevamientos.size > relevamientos.size) {
+                        item {
+                            TextButton(
+                                onClick = { pestana = ObraDetailTab.RELEVAMIENTOS },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(R.string.obra_relevamientos_ver_todos, state.relevamientos.size))
+                            }
                         }
                     }
                 }
