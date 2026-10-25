@@ -13,8 +13,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
@@ -30,6 +34,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -45,12 +50,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.tareas.labelRes
 import com.unaj.appmoviles.obras.R
@@ -71,6 +80,7 @@ fun TareaDetailRoute(
     onDeleteSuccess: () -> Unit,
     onEditTarea: () -> Unit,
     onOpenRelevamiento: (relevamientoId: String) -> Unit,
+    onCreateRelevamiento: () -> Unit,
     viewModel: TareaDetailViewModel = hiltViewModel(
         creationCallback = { factory: TareaDetailViewModel.Factory -> factory.create(obraId, tareaId) }
     )
@@ -82,6 +92,7 @@ fun TareaDetailRoute(
         onDeleteSuccess = onDeleteSuccess,
         onEditTarea = onEditTarea,
         onOpenRelevamiento = onOpenRelevamiento,
+        onCreateRelevamiento = onCreateRelevamiento,
         onCompletar = viewModel::completar,
         onEliminar = viewModel::eliminar,
         onActionErrorShown = viewModel::onActionErrorShown,
@@ -97,6 +108,7 @@ fun TareaDetailScreen(
     onDeleteSuccess: () -> Unit,
     onEditTarea: () -> Unit,
     onOpenRelevamiento: (relevamientoId: String) -> Unit,
+    onCreateRelevamiento: () -> Unit,
     onCompletar: () -> Unit,
     onEliminar: (RelevamientosVinculados) -> Unit,
     onActionErrorShown: () -> Unit,
@@ -214,6 +226,17 @@ fun TareaDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 TareaDetailCard(tarea = tarea, atrasada = state.atrasada)
+
+                // Botón directo para registrar avance con foto vinculado a esta tarea
+                OutlinedButton(
+                    onClick = onCreateRelevamiento,
+                    enabled = !isBusy,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.AddAPhoto, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Registrar evidencia con foto")
+                }
 
                 // Reabrir una tarea completada se hace editándola.
                 if (tarea.estado != EstadoTarea.COMPLETADA) {
@@ -376,12 +399,54 @@ private fun RelevamientosVinculadosSeccion(
                         .fillMaxWidth()
                         .clickable { onOpenRelevamiento(relevamiento.id) }
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(formatFecha(relevamiento.fecha), style = MaterialTheme.typography.labelLarge)
-                        Text(relevamiento.nota, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                        if (!relevamiento.fotoUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = relevamiento.fotoUrl,
+                                contentDescription = "Foto evidencia",
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = formatFecha(relevamiento.fecha),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = relevamiento.nota.ifBlank { "Sin nota descriptiva" },
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }

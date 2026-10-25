@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -28,6 +29,7 @@ import com.unaj.appmoviles.features.obras.tareas.detail.TareaDetailRoute
 import com.unaj.appmoviles.features.obras.tareas.form.TareaFormRoute
 import com.unaj.appmoviles.features.home.HomeRoute
 import com.unaj.appmoviles.features.home.ObraSelectionRoute
+import com.unaj.appmoviles.features.home.agenda.AgendaRoute
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.features.obras.toStorageValue
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
@@ -46,7 +48,28 @@ fun AppShell(onLogout: () -> Unit) {
     }
 
     fun goBack() {
-        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+        if (backStack.size > 1) {
+            backStack.removeAt(backStack.lastIndex)
+        } else {
+            backStack.clear()
+            backStack.add(HomeDestination)
+        }
+    }
+
+    fun navigateTo(destination: NavKey) {
+        if (backStack.lastOrNull() != destination) {
+            backStack.add(destination)
+        }
+    }
+
+    fun popToHome() {
+        while (backStack.size > 1 && backStack.last() !is HomeDestination) {
+            backStack.removeAt(backStack.lastIndex)
+        }
+        if (backStack.isEmpty() || backStack.first() !is HomeDestination) {
+            backStack.clear()
+            backStack.add(HomeDestination)
+        }
     }
 
     NavDisplay(
@@ -59,12 +82,16 @@ fun AppShell(onLogout: () -> Unit) {
         entryProvider = entryProvider {
             entry<HomeDestination> {
                 HomeRoute(
-                    onNavigateToObras = { backStack.add(ObrasDestination) },
-                    onNavigateToObraSelection = { backStack.add(ObraSelectionDestination) },
-                    onNavigateToObrasPublicas = { backStack.add(ObrasPublicasDestination) },
-                    onNavigateToProfile = { backStack.add(ProfileDestination) },
+                    onNavigateToObras = { navigateTo(ObrasDestination) },
+                    onNavigateToAgenda = { navigateTo(AgendaDestination) },
+                    onNavigateToObraSelection = { navigateTo(ObraSelectionDestination) },
+                    onNavigateToObrasPublicas = { navigateTo(ObrasPublicasDestination) },
+                    onNavigateToProfile = { navigateTo(ProfileDestination) },
+                    onIniciarRelevamientoParaObra = { obraId ->
+                        navigateTo(RelevamientoFormDestination(obraId = obraId))
+                    },
                     onOpenRelevamiento = { relevamiento ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoDetailDestination(
                                 obraId = relevamiento.obraId,
                                 relevamientoId = relevamiento.id
@@ -86,27 +113,47 @@ fun AppShell(onLogout: () -> Unit) {
                     }
                 )
             }
+            entry<AgendaDestination> {
+                AgendaRoute(
+                    onBack = ::popToHome,
+                    onNavigateToHome = ::popToHome,
+                    onNavigateToObras = {
+                        popToHome()
+                        navigateTo(ObrasDestination)
+                    },
+                    onNavigateToProfile = {
+                        popToHome()
+                        navigateTo(ProfileDestination)
+                    },
+                    onOpenObra = { obraId ->
+                        navigateTo(ObraDetailDestination(obraId))
+                    },
+                    onIniciarRelevamiento = { obraId ->
+                        navigateTo(RelevamientoFormDestination(obraId = obraId))
+                    }
+                )
+            }
             entry<ObraSelectionDestination> {
                 ObraSelectionRoute(
                     onObraSelected = { obra ->
                         backStack.removeAt(backStack.lastIndex)
-                        backStack.add(RelevamientoFormDestination(obraId = obra.id))
+                        navigateTo(RelevamientoFormDestination(obraId = obra.id))
                     },
                     onBack = ::goBack
                 )
             }
             entry<ProfileDestination> {
                 ProfileRoute(
-                    onBack = ::goBack,
+                    onBack = ::popToHome,
                     onLogout = onLogout
                 )
             }
             entry<ObrasDestination> {
                 ObrasListRoute(
-                    onCreate = { backStack.add(ObraFormDestination()) },
-                    onOpen = { obra -> backStack.add(ObraDetailDestination(obra.id)) },
+                    onCreate = { navigateTo(ObraFormDestination()) },
+                    onOpen = { obra -> navigateTo(ObraDetailDestination(obra.id)) },
                     onLogout = onLogout,
-                    onBack = ::goBack
+                    onBack = ::popToHome
                 )
             }
             entry<ObrasPublicasDestination> {
@@ -188,6 +235,14 @@ fun AppShell(onLogout: () -> Unit) {
                             RelevamientoDetailDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamientoId
+                            )
+                        )
+                    },
+                    onCreateRelevamiento = {
+                        backStack.add(
+                            RelevamientoFormDestination(
+                                obraId = destination.obraId,
+                                tareaId = destination.tareaId
                             )
                         )
                     }

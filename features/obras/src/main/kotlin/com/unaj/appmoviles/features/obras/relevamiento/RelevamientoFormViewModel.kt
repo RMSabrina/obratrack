@@ -106,7 +106,7 @@ class RelevamientoFormViewModel @AssistedInject constructor(
         }
     }
 
-    fun save(draft: RelevamientoDraft, photo: ByteArray?) {
+    fun save(draft: RelevamientoDraft, photo: ByteArray?, continueAdding: Boolean = false) {
         if (_uiState.value is RelevamientoFormUiState.Loading) return
         
         // Validación de tamaño de imagen (límite de 5 MB)
@@ -132,9 +132,21 @@ class RelevamientoFormViewModel @AssistedInject constructor(
                 updateRelevamiento(user.id, obraId, relevamientoId, conTarea, photo)
             }
             _uiState.value = when (result) {
-                is AppResult.Success -> RelevamientoFormUiState.Saved
+                is AppResult.Success -> {
+                    if (continueAdding) {
+                        RelevamientoFormUiState.SavedAndContinue("¡Evidencia guardada! Listo para la siguiente observación.")
+                    } else {
+                        RelevamientoFormUiState.Saved
+                    }
+                }
                 is AppResult.Error -> RelevamientoFormUiState.Error(result.error)
             }
+        }
+    }
+
+    fun onContinueReset() {
+        if (_uiState.value is RelevamientoFormUiState.SavedAndContinue) {
+            _uiState.value = RelevamientoFormUiState.Idle
         }
     }
 

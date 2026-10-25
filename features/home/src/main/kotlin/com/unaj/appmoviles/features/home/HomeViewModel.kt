@@ -3,27 +3,28 @@ package com.unaj.appmoviles.features.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveAgendaVisitasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveAllRelevamientosUseCase
-import kotlinx.coroutines.flow.combine
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-
-import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val observeSessionUseCase: ObserveSessionUseCase,
     private val observeObrasUseCase: ObserveObrasUseCase,
-    private val observeAllRelevamientosUseCase: ObserveAllRelevamientosUseCase
+    private val observeAllRelevamientosUseCase: ObserveAllRelevamientosUseCase,
+    private val observeAgendaVisitasUseCase: ObserveAgendaVisitasUseCase
 ) : ViewModel() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,11 +36,14 @@ class HomeViewModel @Inject constructor(
                 combine(
                     observeObrasUseCase(user.id),
                     observeAllRelevamientosUseCase(user.id).catch { e ->
-                        Log.e("HomeViewModel", "Fallo al obtener relevamientos. \u00bfFalta \u00edndice de collectionGroup?", e)
+                        Log.e("HomeViewModel", "Fallo al obtener relevamientos", e)
+                        emit(emptyList())
+                    },
+                    observeAgendaVisitasUseCase(user.id).catch { e ->
+                        Log.e("HomeViewModel", "Fallo al obtener agenda de visitas", e)
                         emit(emptyList())
                     }
-                ) { obras, relevamientos ->
-                    Log.d("HomeViewModel", "obras: ${obras.size}, relevamientos: ${relevamientos.size}")
+                ) { obras, relevamientos, agendaItems ->
                     val recientes = relevamientos
                         .sortedByDescending { it.fecha }
                         .take(3)
@@ -50,16 +54,25 @@ class HomeViewModel @Inject constructor(
                                 obraNombre = obra?.nombre ?: "Obra desconocida"
                             )
                         }
+
+                    val visitasHoy = agendaItems.count { it.categoria == CategoriaAgendaVisita.HOY }
+                    val visitasAtrasadas = agendaItems.count { it.categoria == CategoriaAgendaVisita.URGENTE_VENCIDA }
+                    val destacada = agendaItems.firstOrNull {
+                        it.categoria == CategoriaAgendaVisita.HOY || it.categoria == CategoriaAgendaVisita.URGENTE_VENCIDA
+                    } ?: agendaItems.firstOrNull { it.categoria == CategoriaAgendaVisita.ESTA_SEMANA }
                         
                     HomeUiState(
                         isLoading = false,
                         userName = user.name.ifBlank { "Usuario" },
                         obras = obras,
-                        recientes = recientes
+                        recientes = recientes,
+                        proximaVisitaDestacada = destacada,
+                        totalVisitasHoy = visitasHoy,
+                        totalVisitasAtrasadas = visitasAtrasadas
                     )
                 }.catch { e ->
                     Log.e("HomeViewModel", "Error general en Home", e)
-                    emit(HomeUiState(isLoading = false, userName = user.name.ifBlank { "Usuario" }, error = null)) // O un error m\u00e1s espec\u00edfico
+                    emit(HomeUiState(isLoading = false, userName = user.name.ifBlank { "Usuario" }))
                 }
             }
         }

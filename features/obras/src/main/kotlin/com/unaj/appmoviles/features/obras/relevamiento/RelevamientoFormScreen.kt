@@ -62,6 +62,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -80,9 +82,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
+import kotlinx.coroutines.launch
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obras.R
@@ -90,7 +101,6 @@ import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPickerDialog
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
-import androidx.compose.material3.CircularProgressIndicator
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import java.io.File
 import java.util.Calendar
@@ -130,6 +140,7 @@ fun RelevamientoFormRoute(
         state = state,
         onBack = onBack,
         onSave = viewModel::save,
+        onContinueReset = viewModel::onContinueReset,
         onInputChanged = viewModel::onErrorShown,
         selector = selector,
         onTareaSeleccionada = viewModel::onTareaSeleccionada
@@ -142,7 +153,8 @@ fun RelevamientoFormScreen(
     initial: RelevamientoFormInitial,
     state: RelevamientoFormUiState,
     onBack: () -> Unit,
-    onSave: (RelevamientoDraft, ByteArray?) -> Unit,
+    onSave: (RelevamientoDraft, ByteArray?, Boolean) -> Unit,
+    onContinueReset: () -> Unit,
     onInputChanged: () -> Unit,
     selector: SelectorTareaUiState,
     onTareaSeleccionada: (String?) -> Unit,
@@ -152,6 +164,7 @@ fun RelevamientoFormScreen(
     var fecha by rememberSaveable {
         mutableLongStateOf(if (initial.fechaMillis > 0L) initial.fechaMillis else startOfTodayUtc())
     }
+    val snackbarHostState = remember { SnackbarHostState() }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var proximaVisita by rememberSaveable { mutableStateOf(initial.proximaVisita) }
     var showProximaVisitaPicker by rememberSaveable { mutableStateOf(false) }
@@ -171,18 +184,73 @@ fun RelevamientoFormScreen(
     }
     
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+
+    var pendingPhotoPath by rememberSaveable { mutableStateOf<String?>(null) }
+
     val tomarFoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
-        if (!ok) fotoLocal = null
+        if (ok && pendingPhotoPath != null) {
+            val file = File(pendingPhotoPath!!)
+            if (file.exists() && file.length() > 0) {
+                fotoLocal = file.absolutePath
+                fotoRemota = null
+                onInputChanged()
+            }
+        } else {
+            pendingPhotoPath = null
+        }
     }
-    val pedirCamara = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (!granted) return@rememberLauncherForActivityResult
+
+    val launchCamera: () -> Unit = {
         val file = File(context.cacheDir, "relevamiento-${System.currentTimeMillis()}.jpg")
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        fotoLocal = uri.toString()
+        pendingPhotoPath = file.absolutePath
         tomarFoto.launch(uri)
     }
+
+    val pedirCamara = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            launchCamera()
+        }
+    }
+
+    val abrirCamara: () -> Unit = {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        if (hasPermission) {
+            launchCamera()
+        } else {
+            pedirCamara.launch(Manifest.permission.CAMERA)
+        }
+    }
+
     val elegirFoto = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
-        if (uri != null) fotoLocal = uri.toString()
+        if (uri != null) {
+            fotoLocal = uri.toString()
+            fotoRemota = null
+            onInputChanged()
+        }
+    }
+
+    fun readPhotoBytes(pathOrUri: String?): ByteArray? {
+        if (pathOrUri.isNullOrBlank()) return null
+        return try {
+            if (pathOrUri.startsWith("content://")) {
+                context.contentResolver.openInputStream(Uri.parse(pathOrUri))?.use { it.readBytes() }
+            } else {
+                val file = File(pathOrUri.removePrefix("file://"))
+                if (file.exists() && file.length() > 0) {
+                    file.readBytes()
+                } else {
+                    context.contentResolver.openInputStream(Uri.parse(pathOrUri))?.use { it.readBytes() }
+                }
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
     val pedirUbicacion = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
@@ -247,8 +315,26 @@ fun RelevamientoFormScreen(
         }
     }
 
+    LaunchedEffect(state) {
+        if (state is RelevamientoFormUiState.SavedAndContinue) {
+            fotoLocal = null
+            fotoRemota = null
+            nota = ""
+            pendingPhotoPath = null
+            coroutineScope.launch {
+                scrollState.animateScrollTo(0)
+            }
+            snackbarHostState.showSnackbar(
+                message = "✓ Foto y observación guardadas. Listo para tomar la siguiente.",
+                duration = androidx.compose.material3.SnackbarDuration.Short
+            )
+            onContinueReset()
+        }
+    }
+
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(if (initial.relevamientoId == null) "Nuevo relevamiento" else "Editar relevamiento") },
@@ -264,32 +350,97 @@ fun RelevamientoFormScreen(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)
             ) {
-                Button(
-                    onClick = {
-                        val bytes = fotoLocal?.let { uri ->
-                            context.contentResolver.openInputStream(Uri.parse(uri))?.use { it.readBytes() }
+                if (initial.relevamientoId == null) {
+                    val hasPendingContent = fotoLocal != null || nota.isNotBlank()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                val bytes = readPhotoBytes(fotoLocal)
+                                val lat = latitud
+                                val lng = longitud
+                                val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
+                                onSave(
+                                    RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
+                                    bytes,
+                                    true
+                                )
+                            },
+                            enabled = !isLoading && hasPendingContent,
+                            modifier = Modifier.weight(1.2f)
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier.size(18.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Guardando...")
+                            } else {
+                                Icon(Icons.Default.AddAPhoto, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("Guardar y otra foto", maxLines = 1)
+                            }
                         }
-                        val lat = latitud
-                        val lng = longitud
-                        val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
-                        onSave(
-                            RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
-                            bytes
-                        )
-                    },
-                    enabled = !isLoading,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            strokeWidth = 2.dp,
-                            modifier = Modifier.size(20.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Guardando...")
-                    } else {
-                        Text("Guardar Relevamiento")
+
+                        OutlinedButton(
+                            onClick = {
+                                if (hasPendingContent) {
+                                    val bytes = readPhotoBytes(fotoLocal)
+                                    val lat = latitud
+                                    val lng = longitud
+                                    val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
+                                    onSave(
+                                        RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
+                                        bytes,
+                                        false
+                                    )
+                                } else {
+                                    onBack()
+                                }
+                            },
+                            enabled = !isLoading,
+                            modifier = Modifier.weight(0.8f)
+                        ) {
+                            Icon(
+                                imageVector = if (hasPendingContent) Icons.Default.Check else Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(if (hasPendingContent) "Finalizar" else "Salir", maxLines = 1)
+                        }
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            val bytes = readPhotoBytes(fotoLocal)
+                            val lat = latitud
+                            val lng = longitud
+                            val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
+                            onSave(
+                                RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
+                                bytes,
+                                false
+                            )
+                        },
+                        enabled = !isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Guardando...")
+                        } else {
+                            Text("Guardar Cambios")
+                        }
                     }
                 }
             }
@@ -300,7 +451,7 @@ fun RelevamientoFormScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .imePadding()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -353,18 +504,58 @@ fun RelevamientoFormScreen(
                     ) {
                         val vistaPrevia = fotoLocal ?: fotoRemota
                         if (vistaPrevia != null) {
-                            AsyncImage(
-                                model = vistaPrevia,
+                            SubcomposeAsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(
+                                        when {
+                                            vistaPrevia.startsWith("/") -> File(vistaPrevia)
+                                            else -> Uri.parse(vistaPrevia)
+                                        }
+                                    )
+                                    .crossfade(true)
+                                    .build(),
                                 contentDescription = "Foto del relevamiento",
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp)
+                                    .height(240.dp)
                                     .clip(RoundedCornerShape(8.dp)),
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
+                                loading = {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                                    }
+                                },
+                                error = {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Icon(
+                                                imageVector = Icons.Default.Warning,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.error
+                                            )
+                                            Spacer(Modifier.height(4.dp))
+                                            Text(
+                                                text = "No se pudo cargar la vista previa",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                    }
+                                }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                OutlinedButton(onClick = { pedirCamara.launch(Manifest.permission.CAMERA) }) {
+                                OutlinedButton(onClick = abrirCamara) {
                                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
                                     Text("Cambiar")
@@ -372,6 +563,8 @@ fun RelevamientoFormScreen(
                                 OutlinedButton(onClick = {
                                     fotoLocal = null
                                     fotoRemota = null
+                                    pendingPhotoPath = null
+                                    onInputChanged()
                                 }) {
                                     Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
@@ -389,7 +582,7 @@ fun RelevamientoFormScreen(
                             Text("No hay foto adjunta", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(modifier = Modifier.height(16.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                Button(onClick = { pedirCamara.launch(Manifest.permission.CAMERA) }) {
+                                Button(onClick = abrirCamara) {
                                     Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
                                     Text("Cámara")

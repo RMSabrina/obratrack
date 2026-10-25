@@ -64,8 +64,10 @@ class ObraDetailViewModel @AssistedInject constructor(
                 combine(
                     observeObra(user.id, obraId),
                     observeRelevamientosOError(user.id),
-                    observeResumenTareas(user.id)
-                ) { obra, relevamientos, resumenTareas ->
+                    observeTareasOError(user.id)
+                ) { obra, relevamientos, tareas ->
+                    val esDueno = obra?.userId == user.id
+                    val resumenTareas = if (esDueno && tareas.isNotEmpty()) tareas.resumen(LocalDate.now(clock)) else if (esDueno) ResumenTareas(0, 0, 0) else null
                     val current = _uiState.value
                     if (current.isDeleting) {
                         if (obra == null && current.deleteError == ObraError.Timeout) {
@@ -76,10 +78,11 @@ class ObraDetailViewModel @AssistedInject constructor(
                     } else {
                         ObraDetailUiState(
                             isLoading = false,
-                            isEditable = obra?.userId == user.id,
+                            isEditable = esDueno,
                             obra = obra,
                             relevamientos = relevamientos.orEmpty(),
                             relevamientosError = relevamientos == null,
+                            tareas = if (esDueno) tareas else emptyList(),
                             resumenTareas = resumenTareas,
                             error = if (obra == null) ObraError.NoEncontrada else null,
                             isDeleting = current.isDeleting,
@@ -109,19 +112,18 @@ class ObraDetailViewModel @AssistedInject constructor(
 
     /**
      * Las tareas son privadas: solo se observan si el usuario es dueño (si no, Firestore
-     * rechaza la lectura). Un error de tareas oculta el resumen sin afectar al resto.
+     * rechaza la lectura). Un error de tareas devuelve lista vacía sin afectar al resto.
      */
-    private fun observeResumenTareas(userId: String): Flow<ResumenTareas?> =
+    private fun observeTareasOError(userId: String): Flow<List<Tarea>> =
         observeObra(userId, obraId)
             .map { obra -> obra?.userId == userId }
             .distinctUntilChanged()
             .flatMapLatest { esDueno ->
                 if (!esDueno) {
-                    flowOf(null)
+                    flowOf(emptyList())
                 } else {
                     observeTareas(obraId)
-                        .map<List<Tarea>, ResumenTareas?> { tareas -> tareas.resumen(LocalDate.now(clock)) }
-                        .catch { emit(null) }
+                        .catch { emit(emptyList()) }
                 }
             }
 

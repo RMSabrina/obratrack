@@ -1,5 +1,6 @@
 package com.unaj.appmoviles.features.obras.list
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -51,7 +52,7 @@ fun ObrasListRoute(
     onCreate: () -> Unit,
     onOpen: (Obra) -> Unit,
     onLogout: () -> Unit,
-    onBack: () -> Unit = {}
+    onBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ObrasListScreen(
@@ -73,6 +74,8 @@ fun ObrasListScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    BackHandler(onBack = onBack)
+
     var searchQuery by remember { mutableStateOf("") }
     var selectedEstado by remember { mutableStateOf<EstadoObra?>(null) }
     var showFilterMenu by remember { mutableStateOf(false) }

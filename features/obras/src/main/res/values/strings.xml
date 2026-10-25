@@ -2,6 +2,8 @@
 <resources>
     <string name="compartir">Compartir</string>
     <string name="compartir_relevamiento_via">Compartir relevamiento vía&#8230;</string>
+    <string name="compartir_informe_obra">Compartir informe de obra</string>
+    <string name="compartir_informe_obra_via">Compartir informe de obra vía&#8230;</string>
     <string name="error_exportacion_pdf">No se pudo generar el documento PDF</string>
     <string name="generando_documento">Generando documento...</string>
 

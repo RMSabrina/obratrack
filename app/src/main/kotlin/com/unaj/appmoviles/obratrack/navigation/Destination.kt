@@ -21,6 +21,9 @@ data object ObraSelectionDestination : NavKey
 data object ObrasDestination : NavKey
 
 @Serializable
+data object AgendaDestination : NavKey
+
+@Serializable
 data class ObraFormDestination(
     val obraId: String? = null,
     val nombre: String = "",

@@ -44,6 +44,7 @@ import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -66,14 +67,20 @@ import com.unaj.appmoviles.features.home.components.RelevamientoCard
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 
+import androidx.compose.material.icons.outlined.CalendarMonth
+import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
+
 @Composable
 fun HomeScreen(
     state: HomeUiState,
     onNavigateToObras: () -> Unit,
+    onNavigateToAgenda: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
     onNavigateToObrasPublicas: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
+    onIniciarRelevamientoParaObra: (String) -> Unit = {},
     onTriggerDemoNotification: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -83,6 +90,7 @@ fun HomeScreen(
         bottomBar = {
             HomeBottomNavigation(
                 onNavigateToObras = onNavigateToObras,
+                onNavigateToAgenda = onNavigateToAgenda,
                 onNavigateToProfile = onNavigateToProfile
             )
         }
@@ -185,6 +193,129 @@ fun HomeScreen(
                 }
 
                 item {
+                    val destacada = state.proximaVisitaDestacada
+                    if (state.totalVisitasAtrasadas > 0) {
+                        Card(
+                            onClick = onNavigateToAgenda,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.error),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Warning,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onError,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "⚠️ ${state.totalVisitasAtrasadas} visita(s) técnica(s) atrasada(s)",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Text(
+                                        text = "Hay inspecciones de obra pendientes en tu itinerario",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f)
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.Outlined.ChevronRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                    } else if (destacada != null && destacada.categoria == CategoriaAgendaVisita.HOY) {
+                        Card(
+                            onClick = onNavigateToAgenda,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = RoundedCornerShape(6.dp)
+                                    ) {
+                                        Text(
+                                            text = "🔔 VISITA PARA HOY",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = "Ver Agenda",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = destacada.obra.nombre,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = destacada.obra.direccion.ifBlank { "Sin dirección especificada" },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                    )
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    Button(
+                                        onClick = { onIniciarRelevamientoParaObra(destacada.obra.id) },
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.CameraAlt,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Relevar Ahora", style = MaterialTheme.typography.labelMedium)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -199,14 +330,25 @@ fun HomeScreen(
                         )
                         
                         ActionCard(
-                            title = "Nuevo",
-                            subtitle = "Relevamiento",
-                            icon = Icons.Outlined.CameraAlt,
-                            onClick = onNavigateToObraSelection,
+                            title = "Agenda",
+                            subtitle = if (state.totalVisitasHoy > 0) "${state.totalVisitasHoy} para hoy" else "Itinerario de visitas",
+                            icon = Icons.Outlined.CalendarMonth,
+                            onClick = onNavigateToAgenda,
                             modifier = Modifier.weight(1f),
                             outlined = false
                         )
                     }
+                }
+
+                item {
+                    ActionCard(
+                        title = "Nuevo Relevamiento de Campo",
+                        subtitle = "Fotografías, notas técnicas y geolocalización",
+                        icon = Icons.Outlined.CameraAlt,
+                        onClick = onNavigateToObraSelection,
+                        modifier = Modifier.fillMaxWidth(),
+                        outlined = true
+                    )
                 }
                 
                 item {
@@ -378,6 +520,7 @@ fun BannerLocation(
 @Composable
 fun HomeBottomNavigation(
     onNavigateToObras: () -> Unit,
+    onNavigateToAgenda: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
     NavigationBar(
@@ -402,6 +545,18 @@ fun HomeBottomNavigation(
             onClick = onNavigateToObras,
             icon = { Icon(Icons.Outlined.Business, contentDescription = "Obras") },
             label = { Text("Obras") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.primary,
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+        NavigationBarItem(
+            selected = false,
+            onClick = onNavigateToAgenda,
+            icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = "Agenda") },
+            label = { Text("Agenda") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,

@@ -36,6 +36,8 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -76,8 +78,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.style.TextOverflow
+import kotlinx.coroutines.launch
 import com.unaj.appmoviles.obras.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,7 +132,9 @@ fun ObraFormRoute(
         state = state,
         onBack = onBack,
         onSave = viewModel::save,
-        onInputChanged = viewModel::onErrorShown
+        onInputChanged = viewModel::onErrorShown,
+        onGeocodeAddress = viewModel::buscarUbicacionDeDireccion,
+        onReverseGeocode = viewModel::buscarDireccionDeUbicacion
     )
 }
 
@@ -139,12 +146,18 @@ fun ObraFormScreen(
     onBack: () -> Unit,
     onSave: (ObraDraft) -> Unit,
     onInputChanged: () -> Unit,
+    onGeocodeAddress: (suspend (String) -> Ubicacion?)? = null,
+    onReverseGeocode: (suspend (Double, Double) -> String?)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var nombre by rememberSaveable { mutableStateOf(initial.nombre) }
     var cliente by rememberSaveable { mutableStateOf(initial.cliente) }
     var direccion by rememberSaveable { mutableStateOf(initial.direccion) }
+    var sugerenciaDireccion by rememberSaveable { mutableStateOf<String?>(null) }
+    var isSearchingAddress by remember { mutableStateOf(false) }
+    var geocodingFeedback by rememberSaveable { mutableStateOf<String?>(null) }
     var estado by rememberSaveable { mutableStateOf(initial.estado) }
     var publica by rememberSaveable { mutableStateOf(initial.publica) }
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
@@ -167,6 +180,7 @@ fun ObraFormScreen(
     ) { concedido ->
         if (concedido) {
             ubicacionMensaje = null
+            geocodingFeedback = null
             isCapturingLocation = true
             cancellationTokenSource = capturarUbicacion(context) { ubicacion ->
                 isCapturingLocation = false
@@ -174,6 +188,17 @@ fun ObraFormScreen(
                 if (ubicacion != null) {
                     latitud = ubicacion.latitud
                     longitud = ubicacion.longitud
+                    coroutineScope.launch {
+                        val autoAddress = onReverseGeocode?.invoke(ubicacion.latitud, ubicacion.longitud)
+                        if (!autoAddress.isNullOrBlank()) {
+                            if (direccion.isBlank()) {
+                                direccion = autoAddress
+                                onInputChanged()
+                            } else if (direccion != autoAddress) {
+                                sugerenciaDireccion = autoAddress
+                            }
+                        }
+                    }
                 } else {
                     ubicacionMensaje = context.getString(R.string.obras_error_ubicacion_no_disponible)
                 }
@@ -305,18 +330,87 @@ fun ObraFormScreen(
                     )
                     OutlinedTextField(
                         value = direccion,
-                        onValueChange = { direccion = it; onInputChanged() },
+                        onValueChange = {
+                            direccion = it
+                            sugerenciaDireccion = null
+                            geocodingFeedback = null
+                            onInputChanged()
+                        },
                         label = { Text("Dirección") },
                         leadingIcon = {
                             Icon(Icons.Default.Place, contentDescription = null)
                         },
+                        trailingIcon = {
+                            if (isSearchingAddress) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else if (direccion.isNotBlank()) {
+                                IconButton(
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            isSearchingAddress = true
+                                            ubicacionMensaje = null
+                                            geocodingFeedback = null
+                                            val found = onGeocodeAddress?.invoke(direccion)
+                                            isSearchingAddress = false
+                                            if (found != null) {
+                                                latitud = found.latitud
+                                                longitud = found.longitud
+                                                geocodingFeedback = "Ubicación fijada en el mapa según la dirección"
+                                                onInputChanged()
+                                            } else {
+                                                ubicacionMensaje = "No se encontraron coordenadas exactas. Podés ajustar el punto en el mapa."
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "Localizar dirección en el mapa",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        },
                         isError = error == ObraError.DireccionVacia,
                         supportingText = {
-                            if (error == ObraError.DireccionVacia) Text(error.asMessage())
+                            if (error == ObraError.DireccionVacia) {
+                                Text(error.asMessage())
+                            } else if (geocodingFeedback != null) {
+                                Text(geocodingFeedback!!, color = MaterialTheme.colorScheme.primary)
+                            }
                         },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    if (sugerenciaDireccion != null) {
+                        AssistChip(
+                            onClick = {
+                                direccion = sugerenciaDireccion!!
+                                sugerenciaDireccion = null
+                                geocodingFeedback = "Dirección actualizada desde el mapa/GPS"
+                                onInputChanged()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Place,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = "Usar detectada: $sugerenciaDireccion",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        )
+                    }
                 }
             }
 
@@ -395,7 +489,20 @@ fun ObraFormScreen(
                                 latitud = selectedLat
                                 longitud = selectedLng
                                 showMapPicker = false
+                                geocodingFeedback = "Coordenadas seleccionadas desde el mapa"
                                 onInputChanged()
+                                coroutineScope.launch {
+                                    val autoAddress = onReverseGeocode?.invoke(selectedLat, selectedLng)
+                                    if (!autoAddress.isNullOrBlank()) {
+                                        if (direccion.isBlank()) {
+                                            direccion = autoAddress
+                                            geocodingFeedback = "Dirección detectada desde el mapa"
+                                            onInputChanged()
+                                        } else if (direccion != autoAddress) {
+                                            sugerenciaDireccion = autoAddress
+                                        }
+                                    }
+                                }
                             }
                         )
                     }

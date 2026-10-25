@@ -26,7 +26,12 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.runtime.rememberCoroutineScope
+import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ElevatedCard
@@ -94,6 +99,10 @@ fun ObraDetailRoute(
     )
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val shareTitle = stringResource(R.string.compartir_informe_obra_via)
+
     ObraDetailScreen(
         state = state,
         onBack = onBack,
@@ -104,6 +113,29 @@ fun ObraDetailRoute(
         onCreateRelevamiento = onCreateRelevamiento,
         onOpenRelevamiento = onOpenRelevamiento,
         onCreateTarea = onCreateTarea,
+        onShareInforme = {
+            val obra = state.obra
+            if (obra != null && !state.isDeleting) {
+                coroutineScope.launch(Dispatchers.IO) {
+                    val uri = RelevamientoPdfExporter.exportInformeObraToPdf(
+                        context = context,
+                        obra = obra,
+                        resumenTareas = state.resumenTareas,
+                        relevamientos = state.relevamientos,
+                        tareas = state.tareas
+                    )
+                    if (uri != null) {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "application/pdf"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        val chooser = Intent.createChooser(intent, shareTitle)
+                        context.startActivity(chooser)
+                    }
+                }
+            }
+        },
         // Las pestañas Tareas y Cronograma tienen su propio ViewModel, que vuelve a verificar
         // el dueño. Solo se crean al abrir la pestaña.
         tareasTab = { modifier ->
@@ -137,6 +169,7 @@ fun ObraDetailScreen(
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onCreateTarea: () -> Unit,
+    onShareInforme: () -> Unit = {},
     tareasTab: @Composable (Modifier) -> Unit,
     cronogramaTab: @Composable (onOpenTareas: () -> Unit, Modifier) -> Unit,
     modifier: Modifier = Modifier
@@ -210,25 +243,36 @@ fun ObraDetailScreen(
                     }
                 },
                 actions = {
-                    if (obra != null && state.isEditable) {
+                    if (obra != null) {
                         IconButton(
-                            onClick = { if (!state.isDeleting) showDeleteDialog = true },
+                            onClick = onShareInforme,
                             enabled = !state.isDeleting
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Eliminar obra",
-                                tint = MaterialTheme.colorScheme.error
+                                imageVector = Icons.Default.Share,
+                                contentDescription = stringResource(R.string.compartir_informe_obra)
                             )
                         }
-                        IconButton(
-                            onClick = { if (!state.isDeleting) onEditObra(obra) },
-                            enabled = !state.isDeleting
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Editar obra"
-                            )
+                        if (state.isEditable) {
+                            IconButton(
+                                onClick = { if (!state.isDeleting) showDeleteDialog = true },
+                                enabled = !state.isDeleting
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Eliminar obra",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                            IconButton(
+                                onClick = { if (!state.isDeleting) onEditObra(obra) },
+                                enabled = !state.isDeleting
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Editar obra"
+                                )
+                            }
                         }
                     }
                 }

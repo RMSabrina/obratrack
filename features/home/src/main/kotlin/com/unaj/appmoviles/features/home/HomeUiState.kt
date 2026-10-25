@@ -1,6 +1,7 @@
 package com.unaj.appmoviles.features.home
 
 import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
+import com.unaj.appmoviles.obratrack.core.domain.model.ItemAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 
@@ -9,6 +10,9 @@ data class HomeUiState(
     val userName: String = "",
     val obras: List<Obra> = emptyList(),
     val recientes: List<RelevamientoReciente> = emptyList(),
+    val proximaVisitaDestacada: ItemAgendaVisita? = null,
+    val totalVisitasHoy: Int = 0,
+    val totalVisitasAtrasadas: Int = 0,
     val error: DomainError? = null
 )
 

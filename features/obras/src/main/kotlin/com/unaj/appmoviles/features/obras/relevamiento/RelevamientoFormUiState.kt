@@ -7,4 +7,5 @@ sealed interface RelevamientoFormUiState {
     data object Loading : RelevamientoFormUiState
     data class Error(val error: DomainError) : RelevamientoFormUiState
     data object Saved : RelevamientoFormUiState
+    data class SavedAndContinue(val message: String = "Evidencia guardada exitosamente.") : RelevamientoFormUiState
 }

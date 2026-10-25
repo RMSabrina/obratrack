@@ -4,6 +4,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
+import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 
 data class ObraDetailUiState(
     val isLoading: Boolean = true,
@@ -12,6 +13,7 @@ data class ObraDetailUiState(
     val relevamientos: List<Relevamiento> = emptyList(),
     /** No se pudieron leer los relevamientos: la sección muestra un mensaje, no "vacío". */
     val relevamientosError: Boolean = false,
+    val tareas: List<Tarea> = emptyList(),
     /** Solo para el dueño; null si no es dueño o si no se pudieron leer las tareas. */
     val resumenTareas: ResumenTareas? = null,
     val error: DomainError? = null,
