@@ -256,6 +256,19 @@ object RelevamientoPdfExporter {
                 contentWidth = contentWidth
             )
 
+            // Las tareas son privadas del dueño: el informe avisa que las incluye.
+            val avisoPaint = TextPaint().apply {
+                color = textMuted
+                textSize = 9.5f
+            }
+            pageManager.canvas.drawText(
+                "Este informe incluye las tareas de la obra.",
+                PADDING,
+                pageManager.currentY,
+                avisoPaint
+            )
+            pageManager.currentY += 16f
+
             // 2. DATOS GENERALES DE LA OBRA
             pageManager.currentY = drawObraMetaTable(
                 canvas = pageManager.canvas,
@@ -839,12 +852,7 @@ object RelevamientoPdfExporter {
 
         val titleText = "REGISTRO FOTOGRÁFICO DE CAMPO #${index + 1}"
         val fechaText = "Fecha de Captura: ${formatFecha(relevamiento.fecha)}"
-        val tareaText = if (!relevamiento.tareaId.isNullOrBlank()) {
-            val matched = tareas.find { it.id == relevamiento.tareaId }
-            "Tarea Vinculada: ${matched?.titulo ?: "Ref #${relevamiento.tareaId}"}"
-        } else {
-            "Tarea Vinculada: Supervisión General de Obra"
-        }
+        val tareaText = tareaVinculadaTexto(relevamiento.tareaId, tareas)
         val gpsText = relevamiento.ubicacion?.let {
             String.format(Locale.US, "GPS: %.5f, %.5f", it.latitud, it.longitud)
         } ?: "GPS: No georreferenciado en campo"
@@ -938,8 +946,10 @@ object RelevamientoPdfExporter {
         pageManager.canvas.drawText(fechaText, rightColLeft, curTextY, metaPaint)
         curTextY += 12f
 
-        pageManager.canvas.drawText(tareaText, rightColLeft, curTextY, metaPaint)
-        curTextY += 12f
+        if (tareaText != null) {
+            pageManager.canvas.drawText(tareaText, rightColLeft, curTextY, metaPaint)
+            curTextY += 12f
+        }
 
         pageManager.canvas.drawText(gpsText, rightColLeft, curTextY, metaPaint)
         curTextY += 15f

@@ -243,7 +243,8 @@ fun ObraDetailScreen(
                     }
                 },
                 actions = {
-                    if (obra != null) {
+                    // El informe incluye las tareas (privadas): solo lo comparte el dueño.
+                    if (obra != null && state.isEditable) {
                         IconButton(
                             onClick = onShareInforme,
                             enabled = !state.isDeleting
@@ -253,26 +254,24 @@ fun ObraDetailScreen(
                                 contentDescription = stringResource(R.string.compartir_informe_obra)
                             )
                         }
-                        if (state.isEditable) {
-                            IconButton(
-                                onClick = { if (!state.isDeleting) showDeleteDialog = true },
-                                enabled = !state.isDeleting
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Eliminar obra",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                            IconButton(
-                                onClick = { if (!state.isDeleting) onEditObra(obra) },
-                                enabled = !state.isDeleting
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = "Editar obra"
-                                )
-                            }
+                        IconButton(
+                            onClick = { if (!state.isDeleting) showDeleteDialog = true },
+                            enabled = !state.isDeleting
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar obra",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        IconButton(
+                            onClick = { if (!state.isDeleting) onEditObra(obra) },
+                            enabled = !state.isDeleting
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Editar obra"
+                            )
                         }
                     }
                 }
