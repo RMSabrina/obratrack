@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
-import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.DeleteObraUseCase
@@ -67,7 +66,8 @@ class ObraDetailViewModel @AssistedInject constructor(
                     observeTareasOError(user.id)
                 ) { obra, relevamientos, tareas ->
                     val esDueno = obra?.userId == user.id
-                    val resumenTareas = if (esDueno && tareas.isNotEmpty()) tareas.resumen(LocalDate.now(clock)) else if (esDueno) ResumenTareas(0, 0, 0) else null
+                    // tareas == null: no se pudieron leer; el resumen se oculta.
+                    val resumenTareas = if (esDueno) tareas?.resumen(LocalDate.now(clock)) else null
                     val current = _uiState.value
                     if (current.isDeleting) {
                         if (obra == null && current.deleteError == ObraError.Timeout) {
@@ -82,7 +82,7 @@ class ObraDetailViewModel @AssistedInject constructor(
                             obra = obra,
                             relevamientos = relevamientos.orEmpty(),
                             relevamientosError = relevamientos == null,
-                            tareas = if (esDueno) tareas else emptyList(),
+                            tareas = if (esDueno) tareas.orEmpty() else emptyList(),
                             resumenTareas = resumenTareas,
                             error = if (obra == null) ObraError.NoEncontrada else null,
                             isDeleting = current.isDeleting,
@@ -112,9 +112,10 @@ class ObraDetailViewModel @AssistedInject constructor(
 
     /**
      * Las tareas son privadas: solo se observan si el usuario es dueño (si no, Firestore
-     * rechaza la lectura). Un error de tareas devuelve lista vacía sin afectar al resto.
+     * rechaza la lectura). Un error de tareas devuelve null (se oculta el resumen) sin
+     * afectar al resto.
      */
-    private fun observeTareasOError(userId: String): Flow<List<Tarea>> =
+    private fun observeTareasOError(userId: String): Flow<List<Tarea>?> =
         observeObra(userId, obraId)
             .map { obra -> obra?.userId == userId }
             .distinctUntilChanged()
@@ -123,7 +124,8 @@ class ObraDetailViewModel @AssistedInject constructor(
                     flowOf(emptyList())
                 } else {
                     observeTareas(obraId)
-                        .catch { emit(emptyList()) }
+                        .map<List<Tarea>, List<Tarea>?> { it }
+                        .catch { emit(null) }
                 }
             }
 
