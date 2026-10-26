@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_perfil_titulo">Mi Perfil</string>
+    <string name="auth_nombre">Nombre</string>
+    <string name="auth_email">Correo electrónico</string>
+    <string name="auth_guardar_cambios">Guardar cambios</string>
+    <string name="auth_cambiar_password">Cambiar contraseña</string>
+    <string name="auth_logout">Cerrar sesión</string>
+    <string name="auth_verificado">Verificado</string>
+    <string name="auth_idioma_titulo">Idioma de la aplicación</string>
+    <string name="auth_idioma_espanol">🇪🇸 Español</string>
+    <string name="auth_idioma_ingles">🇬🇧 English</string>
+    <string name="auth_cancelar">Cancelar</string>
+    <string name="auth_eliminar_cuenta">Eliminar cuenta</string>
+    <string name="auth_nueva_password_instruccion">Ingresá tu nueva contraseña (mínimo 6 caracteres):</string>
+    <string name="auth_nueva_password">Nueva contraseña</string>
+    <string name="auth_cambiar">Cambiar</string>
+    <string name="auth_eliminar_cuenta_titulo">¿Eliminar cuenta?</string>
+    <string name="auth_eliminar_cuenta_mensaje">Esta acción es irreversible. Se eliminará tu cuenta de usuario de ObraTrack.</string>
+    <string name="auth_eliminar_definitivamente">Eliminar definitivamente</string>
+    <string name="auth_reauth_titulo">Confirmación de seguridad</string>
+    <string name="auth_reauth_mensaje">Por seguridad, ingresá tu contraseña actual para continuar con esta acción:</string>
+    <string name="auth_password_actual">Contraseña actual</string>
+    <string name="auth_confirmar">Confirmar</string>
+    <string name="auth_nombre_actualizado">Nombre actualizado con éxito</string>
+    <string name="auth_password_actualizada">Contraseña actualizada con éxito</string>
+    <string name="auth_cuenta_eliminada">Cuenta eliminada</string>
+</resources>

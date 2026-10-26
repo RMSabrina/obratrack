@@ -56,6 +56,14 @@ import androidx.compose.ui.unit.dp
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.auth.R
+import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -72,6 +80,7 @@ fun ProfileScreen(
     onReauthenticateAndRetry: (String) -> Unit,
     onClearMessage: () -> Unit,
     onClearError: () -> Unit,
+    onLanguageChange: (AppLanguage) -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
@@ -82,7 +91,7 @@ fun ProfileScreen(
     val user = state.user
 
     val errorMessage = state.error?.asMessage()
-    val successMessage = state.successMessage
+    val successMessage = state.successMessage?.let { stringResource(it) }
 
     LaunchedEffect(errorMessage) {
         if (errorMessage != null) {
@@ -103,12 +112,12 @@ fun ProfileScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Mi Perfil", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.auth_perfil_titulo), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.auth_cancelar)
                         )
                     }
                 }
@@ -153,11 +162,49 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Selector de Idioma (i18n)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text(
+                            text = stringResource(R.string.auth_idioma_titulo),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            FilterChip(
+                                selected = state.selectedLanguage == AppLanguage.SPANISH,
+                                onClick = { onLanguageChange(AppLanguage.SPANISH) },
+                                label = { Text(stringResource(R.string.auth_idioma_espanol)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                            FilterChip(
+                                selected = state.selectedLanguage == AppLanguage.ENGLISH,
+                                onClick = { onLanguageChange(AppLanguage.ENGLISH) },
+                                label = { Text(stringResource(R.string.auth_idioma_ingles)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 // Campo Editable: Nombre completo
                 OutlinedTextField(
                     value = state.nameInput,
                     onValueChange = onNameChange,
-                    label = { Text("Nombre completo") },
+                    label = { Text(stringResource(R.string.auth_nombre)) },
                     leadingIcon = {
                         Icon(Icons.Default.Person, contentDescription = null)
                     },
@@ -170,7 +217,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = user.email,
                     onValueChange = {},
-                    label = { Text("Correo electrónico") },
+                    label = { Text(stringResource(R.string.auth_email)) },
                     readOnly = true,
                     enabled = false,
                     modifier = Modifier.fillMaxWidth(),
@@ -181,13 +228,13 @@ fun ProfileScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Verificado",
+                                contentDescription = stringResource(R.string.auth_verificado),
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.size(4.dp))
                             Text(
-                                text = "Verificado",
+                                text = stringResource(R.string.auth_verificado),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
@@ -196,7 +243,7 @@ fun ProfileScreen(
                     }
                 )
 
-                // Botón Guardar Cambios (Ubicado debajo de todos los campos de texto)
+                // Botón Guardar Cambios
                 val isNameChanged = state.nameInput.trim() != user.name && state.nameInput.isNotBlank()
 
                 Button(
@@ -214,13 +261,13 @@ fun ProfileScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Guardar cambios", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.auth_guardar_cambios), fontWeight = FontWeight.Bold)
                     }
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // Opciones de Cuenta (Parte Inferior)
+                // Opciones de Cuenta
                 OutlinedButton(
                     onClick = onShowChangePasswordDialog,
                     modifier = Modifier
@@ -234,7 +281,7 @@ fun ProfileScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text("Cambiar contraseña", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auth_cambiar_password), fontWeight = FontWeight.Bold)
                 }
 
                 OutlinedButton(
@@ -250,7 +297,7 @@ fun ProfileScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text("Cerrar sesión", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auth_logout), fontWeight = FontWeight.Bold)
                 }
 
                 TextButton(
@@ -258,7 +305,7 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Eliminar cuenta",
+                        text = stringResource(R.string.auth_eliminar_cuenta),
                         color = MaterialTheme.colorScheme.error,
                         fontWeight = FontWeight.Bold
                     )
@@ -305,14 +352,14 @@ private fun ChangePasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Cambiar contraseña") },
+        title = { Text(stringResource(R.string.auth_cambiar_password)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Ingresá tu nueva contraseña (mínimo 6 caracteres):")
+                Text(stringResource(R.string.auth_nueva_password_instruccion))
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    label = { Text("Nueva contraseña") },
+                    label = { Text(stringResource(R.string.auth_nueva_password)) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -328,13 +375,13 @@ private fun ChangePasswordDialog(
                 if (isChangingPassword) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
-                    Text("Cambiar")
+                    Text(stringResource(R.string.auth_cambiar))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isChangingPassword) {
-                Text("Cancelar")
+                Text(stringResource(R.string.auth_cancelar))
             }
         }
     )
@@ -348,9 +395,9 @@ private fun DeleteAccountConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("¿Eliminar cuenta?") },
+        title = { Text(stringResource(R.string.auth_eliminar_cuenta_titulo)) },
         text = {
-            Text("Esta acción es irreversible. Se eliminará tu cuenta de usuario de ObraTrack.")
+            Text(stringResource(R.string.auth_eliminar_cuenta_mensaje))
         },
         confirmButton = {
             Button(
@@ -363,13 +410,13 @@ private fun DeleteAccountConfirmationDialog(
                 if (isDeletingAccount) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
-                    Text("Eliminar definitivamente")
+                    Text(stringResource(R.string.auth_eliminar_definitivamente))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isDeletingAccount) {
-                Text("Cancelar")
+                Text(stringResource(R.string.auth_cancelar))
             }
         }
     )
@@ -385,14 +432,14 @@ private fun ReAuthDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Confirmación de seguridad") },
+        title = { Text(stringResource(R.string.auth_reauth_titulo)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Por seguridad, ingresá tu contraseña actual para continuar con esta acción:")
+                Text(stringResource(R.string.auth_reauth_mensaje))
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Contraseña actual") },
+                    label = { Text(stringResource(R.string.auth_password_actual)) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -408,13 +455,13 @@ private fun ReAuthDialog(
                 if (isReauthenticating) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
-                    Text("Confirmar")
+                    Text(stringResource(R.string.auth_confirmar))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isReauthenticating) {
-                Text("Cancelar")
+                Text(stringResource(R.string.auth_cancelar))
             }
         }
     )

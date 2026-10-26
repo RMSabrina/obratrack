@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_invalid_email">Invalid email</string>
+    <string name="error_password_too_short">Minimum 6 characters</string>
+    <string name="error_blank_name">Please enter your name</string>
+    <string name="error_invalid_credentials">Incorrect email or password</string>
+    <string name="error_email_in_use">An account with that email already exists</string>
+    <string name="error_network">No connection. Check your internet</string>
+    <string name="error_recent_login_required">For security, please confirm your current password to continue</string>
+    <string name="error_email_not_verified">Please check your email and verify your account before logging in.</string>
+    <string name="error_unknown">An unexpected error occurred</string>
+    <string name="error_timeout">Could not confirm deletion. Check your connection and retry</string>
+    <string name="error_fallo_parcial">Could not delete completely, please retry</string>
+    <string name="error_google_config">Google Sign-In configuration error</string>
+    <string name="error_google_failed">Could not sign in with Google</string>
+    <string name="error_google_no_accounts">No Google accounts available on this device</string>
+    <string name="error_obra_nombre">Enter project name</string>
+    <string name="error_obra_cliente">Enter client name</string>
+    <string name="error_obra_direccion">Enter project address</string>
+    <string name="error_obra_not_found">Project not found</string>
+    <string name="error_obra_forbidden">You do not have permission to modify this project</string>
+    <string name="error_relevamiento_nota">Enter inspection notes</string>
+    <string name="error_relevamiento_fecha">Select inspection date</string>
+    <string name="error_relevamiento_not_found">Inspection report not found</string>
+    <string name="error_relevamiento_forbidden">You do not have permission to modify this inspection</string>
+    <string name="error_relevamiento_imagen_grande">Image exceeds 5 MB limit</string>
+    <string name="error_tarea_titulo">Enter task title</string>
+    <string name="error_tarea_fechas_incompletas">Choose both dates or none</string>
+    <string name="error_tarea_fecha_fin_anterior">End date cannot be earlier than start date</string>
+    <string name="error_tarea_not_found">Task not found</string>
+    <string name="error_tarea_forbidden">You do not have permission to modify this task</string>
+    <string name="error_tarea_demasiados_vinculados">Task has too many linked reports to delete at once</string>
+    <string name="error_tarea_timeout">Operation timed out. Check connection and retry</string>
+
+    <!-- UI Map Strings -->
+    <string name="ui_map_title_default">Geographic Location</string>
+    <string name="ui_map_coordinates_format">Coordinates: Lat %1$.5f, Lng %2$.5f</string>
+    <string name="ui_map_open_in_google_maps">Open in Google Maps</string>
+    <string name="ui_map_no_location">No registered geographic location.</string>
+    <string name="ui_map_error_loading_help">If the map does not load, check your internet connection.</string>
+    <string name="ui_map_picker_title">Select location</string>
+    <string name="ui_map_picker_confirm">Confirm location</string>
+    <string name="ui_map_picker_cancel">Cancel</string>
+    <string name="ui_map_picker_instructions">Tap on the map to place the pin</string>
+</resources>

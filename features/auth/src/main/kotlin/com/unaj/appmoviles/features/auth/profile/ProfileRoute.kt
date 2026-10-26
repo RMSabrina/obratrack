@@ -28,6 +28,7 @@ fun ProfileRoute(
         onReauthenticateAndRetry = viewModel::reauthenticateAndRetry,
         onClearMessage = viewModel::clearMessage,
         onClearError = viewModel::clearError,
+        onLanguageChange = viewModel::onLanguageChange,
         onBack = onBack,
         onLogout = onLogout
     )

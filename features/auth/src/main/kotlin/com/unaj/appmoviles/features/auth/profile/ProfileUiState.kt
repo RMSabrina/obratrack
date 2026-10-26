@@ -1,5 +1,6 @@
 package com.unaj.appmoviles.features.auth.profile
 
+import androidx.annotation.StringRes
 import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.model.User
 
@@ -21,6 +22,7 @@ data class ProfileUiState(
     val showDeleteAccountDialog: Boolean = false,
     val showReAuthDialog: Boolean = false,
     val pendingAction: PendingAction = PendingAction.NONE,
-    val successMessage: String? = null,
+    val selectedLanguage: com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage = com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage.SPANISH,
+    @StringRes val successMessage: Int? = null,
     val error: DomainError? = null
 )

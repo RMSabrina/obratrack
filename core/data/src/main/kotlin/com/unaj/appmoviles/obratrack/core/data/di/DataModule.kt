@@ -48,4 +48,9 @@ abstract class DataModule {
     abstract fun bindGeocodingRepository(
         impl: com.unaj.appmoviles.obratrack.core.data.repository.GeocodingRepositoryImpl
     ): com.unaj.appmoviles.obratrack.core.domain.repository.GeocodingRepository
+
+    @Binds
+    abstract fun bindLanguagePreferencesRepository(
+        impl: com.unaj.appmoviles.obratrack.core.data.repository.LanguagePreferencesRepositoryImpl
+    ): com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
 }
