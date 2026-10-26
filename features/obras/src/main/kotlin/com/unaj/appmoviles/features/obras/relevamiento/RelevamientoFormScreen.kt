@@ -104,8 +104,6 @@ import com.unaj.appmoviles.obratrack.core.ui.components.MapPickerDialog
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import java.io.File
-import java.util.Calendar
-import java.util.TimeZone
 import androidx.hilt.navigation.compose.hiltViewModel
 
 data class RelevamientoFormInitial(
@@ -144,7 +142,8 @@ fun RelevamientoFormRoute(
         onContinueReset = viewModel::onContinueReset,
         onInputChanged = viewModel::onErrorShown,
         selector = selector,
-        onTareaSeleccionada = viewModel::onTareaSeleccionada
+        onTareaSeleccionada = viewModel::onTareaSeleccionada,
+        hoyMillisUtc = viewModel.hoyMillisUtc
     )
 }
 
@@ -159,11 +158,12 @@ fun RelevamientoFormScreen(
     onInputChanged: () -> Unit,
     selector: SelectorTareaUiState,
     onTareaSeleccionada: (String?) -> Unit,
+    hoyMillisUtc: Long,
     modifier: Modifier = Modifier
 ) {
     var nota by rememberSaveable { mutableStateOf(initial.nota) }
     var fecha by rememberSaveable {
-        mutableLongStateOf(if (initial.fechaMillis > 0L) initial.fechaMillis else startOfTodayUtc())
+        mutableLongStateOf(if (initial.fechaMillis > 0L) initial.fechaMillis else hoyMillisUtc)
     }
     val snackbarHostState = remember { SnackbarHostState() }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
@@ -812,15 +812,6 @@ fun RelevamientoFormScreen(
             }
         }
     }
-}
-
-private fun startOfTodayUtc(): Long {
-    val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-    calendar.set(Calendar.HOUR_OF_DAY, 0)
-    calendar.set(Calendar.MINUTE, 0)
-    calendar.set(Calendar.SECOND, 0)
-    calendar.set(Calendar.MILLISECOND, 0)
-    return calendar.timeInMillis
 }
 
 @SuppressLint("MissingPermission")

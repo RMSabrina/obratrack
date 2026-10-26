@@ -15,13 +15,17 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 
 class AgendaVisitasUseCasesTest {
 
     private val baseDate = LocalDate.of(2026, 10, 24)
-    private val zoneId = ZoneOffset.UTC
+    // 22:00 del 24/10 en Buenos Aires (01:00 UTC del 25): "hoy" es el 24.
+    private val clock = Clock.fixed(Instant.parse("2026-10-25T01:00:00Z"), ZoneId.of("America/Argentina/Buenos_Aires"))
 
     private fun localDateToUtcMillis(date: LocalDate): Long =
         date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
@@ -65,8 +69,8 @@ class AgendaVisitasUseCasesTest {
                 flowOf(listOf(obraProxima, obraSinProgramar, obraVencida, obraEstaSemana, obraHoy))
         }
 
-        val useCase = ObserveAgendaVisitasUseCase(repo)
-        val items = useCase("u1", zoneId, customToday = baseDate).first()
+        val useCase = ObserveAgendaVisitasUseCase(repo, clock)
+        val items = useCase("u1").first()
 
         assertEquals(5, items.size)
         // 1ro: Vencida

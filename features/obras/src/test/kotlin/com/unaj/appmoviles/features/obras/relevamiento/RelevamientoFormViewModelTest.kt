@@ -30,12 +30,21 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RelevamientoFormViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
+
+    // 22:00 del 21/10 en Buenos Aires (01:00 UTC del 22): "hoy" es el 21.
+    private val clock = Clock.fixed(
+        Instant.parse("2026-10-22T01:00:00Z"),
+        ZoneId.of("America/Argentina/Buenos_Aires")
+    )
 
     private fun tarea(
         id: String,
@@ -82,8 +91,16 @@ class RelevamientoFormViewModelTest {
         observeTareas = ObserveTareasUseCase(tareaRepo),
         obraId = OBRA_ID,
         relevamientoId = relevamientoId,
-        tareaIdInicial = tareaIdInicial
+        tareaIdInicial = tareaIdInicial,
+        clock = clock
     )
+
+    @Test
+    fun hoyMillisUtc_esLaMedianocheUtcDelDiaLocal_aunqueEnUtcYaSeaManana() {
+        val viewModel = crearViewModel()
+
+        assertEquals(1_792_540_800_000L, viewModel.hoyMillisUtc) // 2026-10-21T00:00:00Z
+    }
 
     @Test
     fun dueno_veTodasLasTareasEnElOrdenDelListado_conLasCompletadasMarcadas() = runTest {

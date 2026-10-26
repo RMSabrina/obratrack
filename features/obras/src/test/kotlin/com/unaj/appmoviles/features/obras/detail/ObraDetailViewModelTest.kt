@@ -9,6 +9,7 @@ import com.unaj.appmoviles.features.obras.tareas.OBRA_ID
 import com.unaj.appmoviles.features.obras.tareas.OTRO_USUARIO
 import com.unaj.appmoviles.features.obras.tareas.obraDe
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
+import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
@@ -35,6 +36,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ObraDetailViewModelTest {
@@ -82,9 +84,10 @@ class ObraDetailViewModelTest {
     private fun crearViewModel(
         user: User? = DUENO,
         tareaRepo: FakeTareaRepository = FakeTareaRepository(),
-        relevamientoRepo: FakeRelevamientoRepository = FakeRelevamientoRepository(listOf(relevamiento))
+        relevamientoRepo: FakeRelevamientoRepository = FakeRelevamientoRepository(listOf(relevamiento)),
+        obra: Obra = obraDe(DUENO.id, publica = true)
     ): ObraDetailViewModel {
-        val obraRepo = FakeObraRepository(obraDe(DUENO.id, publica = true))
+        val obraRepo = FakeObraRepository(obra)
         return ObraDetailViewModel(
             obraId = OBRA_ID,
             observeSession = ObserveSessionUseCase(FakeAuthRepository(user)),
@@ -114,6 +117,26 @@ class ObraDetailViewModelTest {
         assertTrue(state.isEditable)
         assertEquals(ResumenTareas(completadas = 1, pendientes = 3, atrasadas = 1), state.resumenTareas)
         assertEquals(listOf(relevamiento), state.relevamientos)
+    }
+
+    private fun diaUtc(dia: LocalDate): Long = dia.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+
+    private suspend fun proximaVisitaAtrasada(dia: LocalDate): Boolean {
+        val obra = obraDe(DUENO.id, publica = true).copy(proximaVisita = diaUtc(dia))
+        val viewModel = crearViewModel(obra = obra)
+        testDispatcher.scheduler.advanceUntilIdle()
+        return viewModel.uiState.value.proximaVisitaAtrasada
+    }
+
+    @Test
+    fun proximaVisita_hoy_noEstaAtrasada_aunqueLaMedianocheUtcYaPaso() = runTest {
+        // "Hoy" es el 21 en Buenos Aires (22:00 locales); la medianoche UTC del 21 ya quedó atrás.
+        assertFalse(proximaVisitaAtrasada(LocalDate.of(2026, 10, 21)))
+    }
+
+    @Test
+    fun proximaVisita_ayer_estaAtrasada() = runTest {
+        assertTrue(proximaVisitaAtrasada(LocalDate.of(2026, 10, 20)))
     }
 
     @Test

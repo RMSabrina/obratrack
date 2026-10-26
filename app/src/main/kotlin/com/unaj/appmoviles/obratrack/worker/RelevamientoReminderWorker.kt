@@ -17,6 +17,12 @@ import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.R
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import kotlinx.coroutines.flow.firstOrNull
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoFechaVisita
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.estadoFechaVisita
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toFechaCalendario
+import java.time.Clock
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
@@ -24,7 +30,8 @@ class RelevamientoReminderWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val authRepository: AuthRepository,
-    private val obraRepository: ObraRepository
+    private val obraRepository: ObraRepository,
+    private val clock: Clock
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -33,22 +40,22 @@ class RelevamientoReminderWorker @AssistedInject constructor(
         val sessionUser = authRepository.session.firstOrNull() ?: return Result.success()
         val obras: List<Obra> = obraRepository.observe(sessionUser.id).firstOrNull().orEmpty()
 
-        val now = System.currentTimeMillis()
-        val oneDayMillis = 24L * 60 * 60 * 1000L
-        val sevenDaysMillis = 7L * 24L * 60 * 60 * 1000L
+        val hoy = LocalDate.now(clock)
+        val diasInactividadMinimos = 7L
 
         var notifiedCount = 0
         for (obra in obras) {
             val proxima = obra.proximaVisita
             if (proxima != null) {
-                val diff = proxima - now
-                if (diff < oneDayMillis) {
-                    val title = if (diff < 0) {
+                val estado = estadoFechaVisita(proxima.toFechaCalendario(), hoy)
+                if (estado !is EstadoFechaVisita.Proxima) {
+                    val atrasada = estado is EstadoFechaVisita.Atrasada
+                    val title = if (atrasada) {
                         applicationContext.getString(R.string.notif_visita_atrasada_titulo, obra.nombre)
                     } else {
                         applicationContext.getString(R.string.notif_visita_hoy_titulo, obra.nombre)
                     }
-                    val msg = if (diff < 0) {
+                    val msg = if (atrasada) {
                         applicationContext.getString(R.string.notif_visita_atrasada_mensaje, obra.cliente)
                     } else {
                         applicationContext.getString(R.string.notif_visita_hoy_mensaje, obra.direccion)
@@ -66,10 +73,9 @@ class RelevamientoReminderWorker @AssistedInject constructor(
 
             // Alerta por inactividad de obra activa (RF7: obra activa con más de X días sin relevamiento)
             if (obra.estado == EstadoObra.ACTIVA) {
-                val ultima = obra.ultimaVisita ?: obra.fechaInicio
-                val diffSinVisita = now - ultima
-                if (diffSinVisita >= sevenDaysMillis) {
-                    val diasSinVisita = diffSinVisita / oneDayMillis
+                val ultima = (obra.ultimaVisita ?: obra.fechaInicio).toFechaCalendario()
+                val diasSinVisita = ChronoUnit.DAYS.between(ultima, hoy)
+                if (diasSinVisita >= diasInactividadMinimos) {
                     val title = applicationContext.getString(R.string.notif_sin_relevamientos_titulo, obra.nombre)
                     val msg = applicationContext.resources.getQuantityString(
                         R.plurals.notif_sin_relevamientos_mensaje,

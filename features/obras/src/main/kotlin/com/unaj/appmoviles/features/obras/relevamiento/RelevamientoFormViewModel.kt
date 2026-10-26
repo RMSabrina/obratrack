@@ -27,6 +27,9 @@ import kotlinx.coroutines.launch
 
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import com.unaj.appmoviles.features.obras.toMillisUtc
+import java.time.Clock
+import java.time.LocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -40,7 +43,8 @@ class RelevamientoFormViewModel @AssistedInject constructor(
     @Assisted("obraId") private val obraId: String,
     @Assisted("relevamientoId") private val relevamientoId: String?,
     /** Tarea vinculada al abrir el formulario (null al crear o si no tenía). */
-    @Assisted("tareaId") tareaIdInicial: String?
+    @Assisted("tareaId") tareaIdInicial: String?,
+    private val clock: Clock
 ) : ViewModel() {
 
     @dagger.assisted.AssistedFactory
@@ -51,6 +55,9 @@ class RelevamientoFormViewModel @AssistedInject constructor(
             @Assisted("tareaId") tareaIdInicial: String?
         ): RelevamientoFormViewModel
     }
+
+    /** Hoy (zona del dispositivo) como medianoche UTC, que es como se guardan las fechas de calendario. */
+    val hoyMillisUtc: Long get() = LocalDate.now(clock).toMillisUtc()
 
     private val _uiState = MutableStateFlow<RelevamientoFormUiState>(RelevamientoFormUiState.Idle)
     val uiState: StateFlow<RelevamientoFormUiState> = _uiState.asStateFlow()

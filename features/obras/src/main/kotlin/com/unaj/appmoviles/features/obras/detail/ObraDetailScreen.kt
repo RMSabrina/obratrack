@@ -431,7 +431,7 @@ private fun ResumenTab(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            ObraHeaderCard(obra = obra)
+            ObraHeaderCard(obra = obra, proximaVisitaAtrasada = state.proximaVisitaAtrasada)
         }
 
         // Las tareas son privadas del dueño. Sin resumen (error al leerlas) no se muestra la sección.
@@ -605,7 +605,7 @@ private fun ContadorTareas(
 }
 
 @Composable
-private fun ObraHeaderCard(obra: Obra, modifier: Modifier = Modifier) {
+private fun ObraHeaderCard(obra: Obra, proximaVisitaAtrasada: Boolean, modifier: Modifier = Modifier) {
     val statusColor = when (obra.estado) {
         EstadoObra.ACTIVA -> MaterialTheme.colorScheme.primaryContainer
         EstadoObra.PAUSADA -> MaterialTheme.colorScheme.surfaceVariant
@@ -662,7 +662,7 @@ private fun ObraHeaderCard(obra: Obra, modifier: Modifier = Modifier) {
             )
 
             obra.proximaVisita?.let { proxima ->
-                val isPast = proxima < System.currentTimeMillis()
+                val isPast = proximaVisitaAtrasada
                 val proximaTexto = if (isPast) {
                     stringResource(R.string.obra_proxima_visita_atrasada, formatFecha(proxima))
                 } else {

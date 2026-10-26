@@ -8,7 +8,10 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.DeleteObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoFechaVisita
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.estadoFechaVisita
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toFechaCalendario
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.resumen
@@ -68,6 +71,9 @@ class ObraDetailViewModel @AssistedInject constructor(
                     val esDueno = obra?.userId == user.id
                     // tareas == null: no se pudieron leer; el resumen se oculta.
                     val resumenTareas = if (esDueno) tareas?.resumen(LocalDate.now(clock)) else null
+                    val proximaVisitaAtrasada = obra?.proximaVisita?.let {
+                        estadoFechaVisita(it.toFechaCalendario(), LocalDate.now(clock)) is EstadoFechaVisita.Atrasada
+                    } ?: false
                     val current = _uiState.value
                     if (current.isDeleting) {
                         if (obra == null && current.deleteError == ObraError.Timeout) {
@@ -84,6 +90,7 @@ class ObraDetailViewModel @AssistedInject constructor(
                             relevamientosError = relevamientos == null,
                             tareas = if (esDueno) tareas.orEmpty() else emptyList(),
                             resumenTareas = resumenTareas,
+                            proximaVisitaAtrasada = proximaVisitaAtrasada,
                             error = if (obra == null) ObraError.NoEncontrada else null,
                             isDeleting = current.isDeleting,
                             isDeleted = current.isDeleted,
