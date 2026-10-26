@@ -20,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.obras.R
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -60,7 +62,7 @@ fun ObrasPublicasListScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = "Explorar Obras Públicas", 
+                        text = stringResource(R.string.obras_publicas_titulo), 
                         fontWeight = FontWeight.Bold 
                     ) 
                 },
@@ -68,7 +70,7 @@ fun ObrasPublicasListScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 }
@@ -89,7 +91,7 @@ fun ObrasPublicasListScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("No se encontraron obras públicas.")
+                        Text(stringResource(R.string.obras_publicas_vacia))
                     }
                 }
             } else {

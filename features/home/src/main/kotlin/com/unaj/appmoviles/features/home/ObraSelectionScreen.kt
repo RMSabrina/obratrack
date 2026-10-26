@@ -19,6 +19,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.home.R
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,7 +63,7 @@ fun ObraSelectionScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = "Seleccionar Obra", 
+                        text = stringResource(R.string.obra_seleccion_titulo), 
                         fontWeight = FontWeight.Bold 
                     ) 
                 },
@@ -69,7 +71,7 @@ fun ObraSelectionScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 }
@@ -82,7 +84,7 @@ fun ObraSelectionScreen(
                 .padding(padding)
         ) {
             Text(
-                text = "Eleg\u00ed a qu\u00e9 obra quer\u00e9s agregar el nuevo relevamiento.",
+                text = stringResource(R.string.obra_seleccion_instruccion),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 color = Color.Gray
@@ -92,7 +94,7 @@ fun ObraSelectionScreen(
                 LoadingContent(Modifier.weight(1f))
             } else if (state.obras.isEmpty()) {
                 Text(
-                    text = "No ten\u00e9s obras disponibles.",
+                    text = stringResource(R.string.obra_seleccion_vacia),
                     modifier = Modifier.padding(24.dp)
                 )
             } else {

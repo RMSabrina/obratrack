@@ -77,4 +77,9 @@
     <string name="agenda_visita_programada">Visita técnica programada con éxito para %1$s</string>
     <string name="agenda_visita_cancelada">Próxima visita cancelada para %1$s</string>
     <string name="agenda_error_programar">Error al programar la visita: %1$s</string>
+
+    <!-- Selección de obra -->
+    <string name="obra_seleccion_titulo">Seleccionar Obra</string>
+    <string name="obra_seleccion_instruccion">Elegí a qué obra querés agregar el nuevo relevamiento.</string>
+    <string name="obra_seleccion_vacia">No tenés obras disponibles.</string>
 </resources>

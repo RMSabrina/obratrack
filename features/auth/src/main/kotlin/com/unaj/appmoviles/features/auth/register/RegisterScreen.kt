@@ -28,6 +28,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.auth.R
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -100,14 +102,14 @@ fun RegisterScreen(
         horizontalAlignment = Alignment.Start
     ) {
         Text(
-            text = "Crear cuenta",
+            text = stringResource(R.string.auth_crear_cuenta),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Completá tus datos para registrarte",
+            text = stringResource(R.string.auth_registro_subtitulo),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -117,7 +119,7 @@ fun RegisterScreen(
         AuthTextField(
             value = name,
             onValueChange = { name = it; onInputChanged() },
-            label = "Nombre",
+            label = stringResource(R.string.auth_nombre),
             error = if (error == AuthError.BlankName) error.asMessage() else null,
             leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray) }
         )
@@ -125,7 +127,7 @@ fun RegisterScreen(
         AuthTextField(
             value = email,
             onValueChange = { email = it; onInputChanged() },
-            label = "Email",
+            label = stringResource(R.string.auth_campo_email),
             error = if (error == AuthError.InvalidEmail || error == AuthError.EmailAlreadyInUse) error.asMessage() else null,
             keyboardType = KeyboardType.Email,
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.Gray) }
@@ -134,7 +136,7 @@ fun RegisterScreen(
         AuthTextField(
             value = password,
             onValueChange = { password = it; mismatch = false; onInputChanged() },
-            label = "Contraseña",
+            label = stringResource(R.string.auth_campo_password),
             error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
             isPassword = true,
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) }
@@ -143,8 +145,8 @@ fun RegisterScreen(
         AuthTextField(
             value = confirm,
             onValueChange = { confirm = it; mismatch = false },
-            label = "Confirmar contraseña",
-            error = if (mismatch) "Las contraseñas no coinciden" else null,
+            label = stringResource(R.string.auth_confirmar_password),
+            error = if (mismatch) stringResource(R.string.auth_passwords_no_coinciden) else null,
             isPassword = true,
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) }
         )
@@ -165,14 +167,14 @@ fun RegisterScreen(
                 .height(48.dp)
         ) {
             if (isLoading) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-            else Text("Registrarse", fontWeight = FontWeight.Bold)
+            else Text(stringResource(R.string.auth_registrarse), fontWeight = FontWeight.Bold)
         }
         
         Spacer(Modifier.height(16.dp))
         
         TextButton(onClick = onBackToLogin, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text("¿Ya tenés cuenta? ", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("Iniciá sesión", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.auth_ya_tenes_cuenta), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.auth_iniciar_sesion_link), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -191,23 +193,22 @@ private fun EmailVerificationSentScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("¡Cuenta creada!", style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.auth_cuenta_creada), style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(16.dp))
         Text(
-            "Te enviamos un correo a $email para verificar tu cuenta. " +
-                    "Revisá tu bandeja (y la carpeta de spam) antes de iniciar sesión.",
+            stringResource(R.string.auth_verificacion_enviada, email),
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(Modifier.height(24.dp))
         Button(onClick = onBackToLogin, modifier = Modifier.fillMaxWidth()) {
-            Text("Volver al login")
+            Text(stringResource(R.string.auth_volver_login))
         }
         TextButton(onClick = onResend, enabled = !isResending) {
             if (isResending) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-            else Text("Reenviar correo")
+            else Text(stringResource(R.string.auth_reenviar_correo))
         }
         if (resendSent) {
-            Text("Correo reenviado", style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.auth_correo_reenviado), style = MaterialTheme.typography.bodySmall)
         }
         if (resendError != null) {
             Text(

@@ -25,4 +25,25 @@
     <string name="auth_nombre_actualizado">Name updated successfully</string>
     <string name="auth_password_actualizada">Password updated successfully</string>
     <string name="auth_cuenta_eliminada">Account deleted</string>
+    <string name="auth_login_subtitulo">Sign in to continue</string>
+    <string name="auth_campo_email">Email</string>
+    <string name="auth_campo_password">Password</string>
+    <string name="auth_iniciar_sesion">Sign in</string>
+    <string name="auth_continuar_google">Continue with Google</string>
+    <string name="auth_sin_cuenta">"Don\'t have an account? "</string>
+    <string name="auth_registrate">Sign up</string>
+    <string name="auth_crear_cuenta">Create account</string>
+    <string name="auth_registro_subtitulo">Fill in your details to sign up</string>
+    <string name="auth_confirmar_password">Confirm password</string>
+    <string name="auth_passwords_no_coinciden">Passwords don\'t match</string>
+    <string name="auth_registrarse">Sign up</string>
+    <string name="auth_ya_tenes_cuenta">"Already have an account? "</string>
+    <string name="auth_iniciar_sesion_link">Sign in</string>
+    <string name="auth_cuenta_creada">Account created!</string>
+    <string name="auth_verificacion_enviada">We sent an email to %1$s to verify your account. Check your inbox (and spam folder) before signing in.</string>
+    <string name="auth_volver_login">Back to sign in</string>
+    <string name="auth_reenviar_correo">Resend email</string>
+    <string name="auth_correo_reenviado">Email resent</string>
+    <string name="auth_ocultar_password">Hide password</string>
+    <string name="auth_mostrar_password">Show password</string>
 </resources>

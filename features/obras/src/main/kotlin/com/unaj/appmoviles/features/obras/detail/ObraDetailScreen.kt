@@ -230,7 +230,7 @@ fun ObraDetailScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Detalle de obra") },
+                title = { Text(stringResource(R.string.obra_detalle_titulo)) },
                 navigationIcon = {
                     IconButton(
                         onClick = { if (!state.isDeleting) onBack() },
@@ -238,7 +238,7 @@ fun ObraDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 },

@@ -79,10 +79,10 @@ fun ObraPublicaDetailScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text(obra?.nombre ?: "Detalle Público") },
+                title = { Text(obra?.nombre ?: stringResource(R.string.obra_publica_detalle_titulo)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 }
             )
@@ -135,7 +135,7 @@ fun ObraPublicaDetailScreen(
                                 Text(obra.cliente, style = MaterialTheme.typography.titleMedium)
                                 Text(obra.direccion)
                                 Text(
-                                    "${obra.estado.label()} · Pública",
+                                    stringResource(R.string.obra_publica_estado, obra.estado.label()),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }

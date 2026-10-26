@@ -83,6 +83,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.obras.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -157,7 +158,7 @@ fun ObraFormScreen(
     var direccion by rememberSaveable { mutableStateOf(initial.direccion) }
     var sugerenciaDireccion by rememberSaveable { mutableStateOf<String?>(null) }
     var isSearchingAddress by remember { mutableStateOf(false) }
-    var geocodingFeedback by rememberSaveable { mutableStateOf<String?>(null) }
+    var geocodingFeedback by rememberSaveable { mutableStateOf<Int?>(null) }
     var estado by rememberSaveable { mutableStateOf(initial.estado) }
     var publica by rememberSaveable { mutableStateOf(initial.publica) }
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
@@ -165,7 +166,7 @@ fun ObraFormScreen(
     var showMapPicker by rememberSaveable { mutableStateOf(false) }
     var proximaVisita by rememberSaveable { mutableStateOf(initial.proximaVisita) }
     var showDatePickerProxima by rememberSaveable { mutableStateOf(false) }
-    var ubicacionMensaje by rememberSaveable { mutableStateOf<String?>(null) }
+    var ubicacionMensaje by rememberSaveable { mutableStateOf<Int?>(null) }
     var isCapturingLocation by remember { mutableStateOf(false) }
     var cancellationTokenSource by remember { mutableStateOf<CancellationTokenSource?>(null) }
 
@@ -200,12 +201,12 @@ fun ObraFormScreen(
                         }
                     }
                 } else {
-                    ubicacionMensaje = context.getString(R.string.obras_error_ubicacion_no_disponible)
+                    ubicacionMensaje = R.string.obras_error_ubicacion_no_disponible
                 }
             }
         } else {
             isCapturingLocation = false
-            ubicacionMensaje = context.getString(R.string.obras_error_permiso_ubicacion)
+            ubicacionMensaje = R.string.obras_error_permiso_ubicacion
         }
     }
 
@@ -226,10 +227,10 @@ fun ObraFormScreen(
                         onInputChanged()
                     }
                     showDatePickerProxima = false
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.aceptar)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePickerProxima = false }) { Text("Cancelar") }
+                TextButton(onClick = { showDatePickerProxima = false }) { Text(stringResource(R.string.cancelar)) }
             }
         ) {
             DatePicker(state = pickerState)
@@ -240,10 +241,10 @@ fun ObraFormScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text(if (initial.obraId == null) "Nueva obra" else "Editar obra") },
+                title = { Text(stringResource(if (initial.obraId == null) R.string.obras_nueva_obra else R.string.obras_editar_obra)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 }
             )
@@ -277,9 +278,9 @@ fun ObraFormScreen(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Guardando...")
+                        Text(stringResource(R.string.guardando))
                     } else {
-                        Text("Guardar Obra")
+                        Text(stringResource(R.string.obra_form_guardar))
                     }
                 }
             }
@@ -299,11 +300,11 @@ fun ObraFormScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Información General", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.obra_form_info_general), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                     OutlinedTextField(
                         value = nombre,
                         onValueChange = { nombre = it; onInputChanged() },
-                        label = { Text("Nombre") },
+                        label = { Text(stringResource(R.string.obra_form_nombre)) },
                         leadingIcon = {
                             Icon(Icons.Default.Build, contentDescription = null)
                         },
@@ -317,7 +318,7 @@ fun ObraFormScreen(
                     OutlinedTextField(
                         value = cliente,
                         onValueChange = { cliente = it; onInputChanged() },
-                        label = { Text("Cliente") },
+                        label = { Text(stringResource(R.string.obra_form_cliente)) },
                         leadingIcon = {
                             Icon(Icons.Default.Person, contentDescription = null)
                         },
@@ -336,7 +337,7 @@ fun ObraFormScreen(
                             geocodingFeedback = null
                             onInputChanged()
                         },
-                        label = { Text("Dirección") },
+                        label = { Text(stringResource(R.string.obra_form_direccion)) },
                         leadingIcon = {
                             Icon(Icons.Default.Place, contentDescription = null)
                         },
@@ -358,17 +359,17 @@ fun ObraFormScreen(
                                             if (found != null) {
                                                 latitud = found.latitud
                                                 longitud = found.longitud
-                                                geocodingFeedback = "Ubicación fijada en el mapa según la dirección"
+                                                geocodingFeedback = R.string.obra_form_ubicacion_por_direccion
                                                 onInputChanged()
                                             } else {
-                                                ubicacionMensaje = "No se encontraron coordenadas exactas. Podés ajustar el punto en el mapa."
+                                                ubicacionMensaje = R.string.obra_form_sin_coordenadas
                                             }
                                         }
                                     }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Search,
-                                        contentDescription = "Localizar dirección en el mapa",
+                                        contentDescription = stringResource(R.string.obra_form_localizar_direccion),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -379,7 +380,7 @@ fun ObraFormScreen(
                             if (error == ObraError.DireccionVacia) {
                                 Text(error.asMessage())
                             } else if (geocodingFeedback != null) {
-                                Text(geocodingFeedback!!, color = MaterialTheme.colorScheme.primary)
+                                Text(stringResource(geocodingFeedback!!), color = MaterialTheme.colorScheme.primary)
                             }
                         },
                         singleLine = true,
@@ -391,7 +392,7 @@ fun ObraFormScreen(
                             onClick = {
                                 direccion = sugerenciaDireccion!!
                                 sugerenciaDireccion = null
-                                geocodingFeedback = "Dirección actualizada desde el mapa/GPS"
+                                geocodingFeedback = R.string.obra_form_direccion_actualizada
                                 onInputChanged()
                             },
                             leadingIcon = {
@@ -404,7 +405,7 @@ fun ObraFormScreen(
                             },
                             label = {
                                 Text(
-                                    text = "Usar detectada: $sugerenciaDireccion",
+                                    text = stringResource(R.string.obra_form_usar_detectada, sugerenciaDireccion.orEmpty()),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -420,7 +421,7 @@ fun ObraFormScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Ubicación Geográfica (GPS)", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.obra_form_ubicacion_gps), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                     if (latitud != null && longitud != null) {
                         MapPreviewCard(
                             latitud = latitud,
@@ -489,14 +490,14 @@ fun ObraFormScreen(
                                 latitud = selectedLat
                                 longitud = selectedLng
                                 showMapPicker = false
-                                geocodingFeedback = "Coordenadas seleccionadas desde el mapa"
+                                geocodingFeedback = R.string.obra_form_coordenadas_mapa
                                 onInputChanged()
                                 coroutineScope.launch {
                                     val autoAddress = onReverseGeocode?.invoke(selectedLat, selectedLng)
                                     if (!autoAddress.isNullOrBlank()) {
                                         if (direccion.isBlank()) {
                                             direccion = autoAddress
-                                            geocodingFeedback = "Dirección detectada desde el mapa"
+                                            geocodingFeedback = R.string.obra_form_direccion_detectada
                                             onInputChanged()
                                         } else if (direccion != autoAddress) {
                                             sugerenciaDireccion = autoAddress
@@ -509,7 +510,7 @@ fun ObraFormScreen(
 
                     if (ubicacionMensaje != null) {
                         Text(
-                            text = ubicacionMensaje!!,
+                            text = stringResource(ubicacionMensaje!!),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -533,7 +534,7 @@ fun ObraFormScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Próxima Visita Técnica",
+                            text = stringResource(R.string.obra_form_proxima_visita),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -546,7 +547,7 @@ fun ObraFormScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Fecha programada: " + formatFecha(proximaVisita!!),
+                                text = stringResource(R.string.obra_form_fecha_programada, formatFecha(proximaVisita!!)),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -558,7 +559,7 @@ fun ObraFormScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Clear,
-                                    contentDescription = "Quitar recordatorio",
+                                    contentDescription = stringResource(R.string.obra_form_quitar_recordatorio),
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }
@@ -569,11 +570,11 @@ fun ObraFormScreen(
                         ) {
                             Icon(Icons.Default.EditCalendar, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Cambiar fecha")
+                            Text(stringResource(R.string.obra_form_cambiar_fecha))
                         }
                     } else {
                         Text(
-                            text = "Puedes programar una fecha estimada para el próximo relevamiento. La app te enviará una notificación cuando llegue el día.",
+                            text = stringResource(R.string.obra_form_proxima_visita_ayuda),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -583,7 +584,7 @@ fun ObraFormScreen(
                         ) {
                             Icon(Icons.Default.AddAlert, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Programar fecha de visita")
+                            Text(stringResource(R.string.obra_form_programar_fecha))
                         }
                     }
                 }
@@ -594,7 +595,7 @@ fun ObraFormScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Estado", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.obra_form_estado), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -626,20 +627,20 @@ fun ObraFormScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Configuración", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.obra_form_configuracion), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Hacer la obra pública", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.obra_form_hacer_publica), style = MaterialTheme.typography.bodyLarge)
                         Switch(
                             checked = publica,
                             onCheckedChange = { publica = it; onInputChanged() }
                         )
                     }
                     Text(
-                        text = "Una obra pública puede ser vista por otras personas, pero sólo tú puedes editarla o agregar relevamientos.",
+                        text = stringResource(R.string.obra_form_publica_ayuda),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

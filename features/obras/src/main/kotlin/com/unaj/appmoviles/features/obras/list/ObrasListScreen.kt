@@ -27,6 +27,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.obras.R
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -96,7 +98,7 @@ fun ObrasListScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = "Mis obras", 
+                        text = stringResource(R.string.obras_lista_titulo), 
                         fontWeight = FontWeight.Bold 
                     ) 
                 },
@@ -104,7 +106,7 @@ fun ObrasListScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 },
@@ -112,7 +114,7 @@ fun ObrasListScreen(
                     IconButton(onClick = onLogout) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Cerrar sesión"
+                            contentDescription = stringResource(R.string.obras_cerrar_sesion)
                         )
                     }
                 }
@@ -127,7 +129,7 @@ fun ObrasListScreen(
             ) { 
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Nueva obra"
+                    contentDescription = stringResource(R.string.obras_nueva_obra)
                 )
             }
         }
@@ -143,7 +145,7 @@ fun ObrasListScreen(
                     onQueryChange = { searchQuery = it },
                     onFilterClick = { showFilterMenu = true },
                     modifier = Modifier,
-                    placeholder = "Buscar obra..."
+                    placeholder = stringResource(R.string.obras_buscar)
                 )
                 
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(top = 48.dp, end = 16.dp)) {
@@ -154,7 +156,7 @@ fun ObrasListScreen(
                         DropdownMenuItem(
                             text = { 
                                 Text(
-                                    text = "Todas",
+                                    text = stringResource(R.string.obras_filtro_todas),
                                     fontWeight = if (selectedEstado == null) FontWeight.Bold else FontWeight.Normal
                                 ) 
                             },
@@ -194,13 +196,13 @@ fun ObrasListScreen(
                 }
                 state.obras.isEmpty() -> {
                     Text(
-                        text = "Todavía no cargaste obras.",
+                        text = stringResource(R.string.obras_lista_vacia),
                         modifier = Modifier.padding(24.dp)
                     )
                 }
                 filteredObras.isEmpty() -> {
                     Text(
-                        text = "No se encontraron obras para la búsqueda.",
+                        text = stringResource(R.string.obras_busqueda_vacia),
                         modifier = Modifier.padding(24.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

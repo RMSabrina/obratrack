@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -99,7 +100,7 @@ fun LoginScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Iniciá sesión para continuar",
+            text = stringResource(R.string.auth_login_subtitulo),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -109,7 +110,7 @@ fun LoginScreen(
         AuthTextField(
             value = email,
             onValueChange = { email = it; onInputChanged() },
-            label = "Email",
+            label = stringResource(R.string.auth_campo_email),
             error = if (error == AuthError.InvalidEmail) error.asMessage() else null,
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.Gray) },
             keyboardType = KeyboardType.Email
@@ -118,7 +119,7 @@ fun LoginScreen(
         AuthTextField(
             value = password,
             onValueChange = { password = it; onInputChanged() },
-            label = "Contraseña",
+            label = stringResource(R.string.auth_campo_password),
             error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) },
             isPassword = true
@@ -139,7 +140,7 @@ fun LoginScreen(
                 .height(48.dp)
         ) {
             if (isLoading) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-            else Text("Iniciar sesión", fontWeight = FontWeight.Bold)
+            else Text(stringResource(R.string.auth_iniciar_sesion), fontWeight = FontWeight.Bold)
         }
 
         Spacer(Modifier.height(12.dp))
@@ -158,14 +159,14 @@ fun LoginScreen(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(Modifier.width(8.dp))
-            Text("Continuar con Google", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auth_continuar_google), fontWeight = FontWeight.Bold)
         }
         
         Spacer(Modifier.height(16.dp))
         
         TextButton(onClick = onRegisterClick) {
-            Text("¿No tenés cuenta? ", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("Registrate", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.auth_sin_cuenta), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.auth_registrate), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
     }
 }

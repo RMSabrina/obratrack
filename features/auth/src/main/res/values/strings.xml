@@ -25,4 +25,25 @@
     <string name="auth_nombre_actualizado">Nombre actualizado con éxito</string>
     <string name="auth_password_actualizada">Contraseña actualizada con éxito</string>
     <string name="auth_cuenta_eliminada">Cuenta eliminada</string>
+    <string name="auth_login_subtitulo">Iniciá sesión para continuar</string>
+    <string name="auth_campo_email">Email</string>
+    <string name="auth_campo_password">Contraseña</string>
+    <string name="auth_iniciar_sesion">Iniciar sesión</string>
+    <string name="auth_continuar_google">Continuar con Google</string>
+    <string name="auth_sin_cuenta">"¿No tenés cuenta? "</string>
+    <string name="auth_registrate">Registrate</string>
+    <string name="auth_crear_cuenta">Crear cuenta</string>
+    <string name="auth_registro_subtitulo">Completá tus datos para registrarte</string>
+    <string name="auth_confirmar_password">Confirmar contraseña</string>
+    <string name="auth_passwords_no_coinciden">Las contraseñas no coinciden</string>
+    <string name="auth_registrarse">Registrarse</string>
+    <string name="auth_ya_tenes_cuenta">"¿Ya tenés cuenta? "</string>
+    <string name="auth_iniciar_sesion_link">Iniciá sesión</string>
+    <string name="auth_cuenta_creada">¡Cuenta creada!</string>
+    <string name="auth_verificacion_enviada">Te enviamos un correo a %1$s para verificar tu cuenta. Revisá tu bandeja (y la carpeta de spam) antes de iniciar sesión.</string>
+    <string name="auth_volver_login">Volver al login</string>
+    <string name="auth_reenviar_correo">Reenviar correo</string>
+    <string name="auth_correo_reenviado">Correo reenviado</string>
+    <string name="auth_ocultar_password">Ocultar contraseña</string>
+    <string name="auth_mostrar_password">Mostrar contraseña</string>
 </resources>

@@ -77,4 +77,9 @@
     <string name="agenda_visita_programada">Site visit scheduled for %1$s</string>
     <string name="agenda_visita_cancelada">Next visit canceled for %1$s</string>
     <string name="agenda_error_programar">Could not schedule the visit: %1$s</string>
+
+    <!-- Selección de obra -->
+    <string name="obra_seleccion_titulo">Select Project</string>
+    <string name="obra_seleccion_instruccion">Choose the project to add the new inspection to.</string>
+    <string name="obra_seleccion_vacia">You have no projects available.</string>
 </resources>

@@ -181,13 +181,13 @@ fun RelevamientoDetailScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Detalle de Relevamiento") },
+                title = { Text(stringResource(R.string.relevamiento_detalle_titulo)) },
                 navigationIcon = {
                     IconButton(
                         onClick = { if (!state.isDeleting) onBack() },
                         enabled = !state.isDeleting
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 },
                 actions = {

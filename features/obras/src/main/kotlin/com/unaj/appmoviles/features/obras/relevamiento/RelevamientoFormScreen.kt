@@ -96,6 +96,7 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.launch
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
+import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
@@ -284,10 +285,10 @@ fun RelevamientoFormScreen(
                     pickerState.selectedDateMillis?.let { fecha = it }
                     showDatePicker = false
                     onInputChanged()
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.aceptar)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.cancelar)) }
             }
         ) {
             DatePicker(state = pickerState)
@@ -305,16 +306,17 @@ fun RelevamientoFormScreen(
                     pickerState.selectedDateMillis?.let { proximaVisita = it }
                     showProximaVisitaPicker = false
                     onInputChanged()
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.aceptar)) }
             },
             dismissButton = {
-                TextButton(onClick = { showProximaVisitaPicker = false }) { Text("Cancelar") }
+                TextButton(onClick = { showProximaVisitaPicker = false }) { Text(stringResource(R.string.cancelar)) }
             }
         ) {
             DatePicker(state = pickerState)
         }
     }
 
+    val mensajeGuardadoContinuar = stringResource(R.string.relevamiento_form_guardado_continuar)
     LaunchedEffect(state) {
         if (state is RelevamientoFormUiState.SavedAndContinue) {
             fotoLocal = null
@@ -325,7 +327,7 @@ fun RelevamientoFormScreen(
                 scrollState.animateScrollTo(0)
             }
             snackbarHostState.showSnackbar(
-                message = "✓ Foto y observación guardadas. Listo para tomar la siguiente.",
+                message = mensajeGuardadoContinuar,
                 duration = androidx.compose.material3.SnackbarDuration.Short
             )
             onContinueReset()
@@ -337,10 +339,10 @@ fun RelevamientoFormScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(if (initial.relevamientoId == null) "Nuevo relevamiento" else "Editar relevamiento") },
+                title = { Text(stringResource(if (initial.relevamientoId == null) R.string.relevamiento_form_nuevo else R.string.relevamiento_form_editar)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 }
             )
@@ -378,11 +380,11 @@ fun RelevamientoFormScreen(
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Guardando...")
+                                Text(stringResource(R.string.guardando))
                             } else {
                                 Icon(Icons.Default.AddAPhoto, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("Guardar y otra foto", maxLines = 1)
+                                Text(stringResource(R.string.relevamiento_form_guardar_y_otra), maxLines = 1)
                             }
                         }
 
@@ -411,7 +413,7 @@ fun RelevamientoFormScreen(
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(Modifier.width(4.dp))
-                            Text(if (hasPendingContent) "Finalizar" else "Salir", maxLines = 1)
+                            Text(stringResource(if (hasPendingContent) R.string.relevamiento_form_finalizar else R.string.relevamiento_form_salir), maxLines = 1)
                         }
                     }
                 } else {
@@ -437,9 +439,9 @@ fun RelevamientoFormScreen(
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Guardando...")
+                            Text(stringResource(R.string.guardando))
                         } else {
-                            Text("Guardar Cambios")
+                            Text(stringResource(R.string.relevamiento_form_guardar_cambios))
                         }
                     }
                 }
@@ -457,7 +459,7 @@ fun RelevamientoFormScreen(
         ) {
             // Sección: Fecha
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Fecha", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.relevamiento_form_fecha), style = MaterialTheme.typography.titleMedium)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -478,7 +480,7 @@ fun RelevamientoFormScreen(
                             disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         ),
                         trailingIcon = {
-                            Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                            Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.relevamiento_form_seleccionar_fecha))
                         },
                         isError = error == RelevamientoError.FechaInvalida,
                         supportingText = {
@@ -491,7 +493,7 @@ fun RelevamientoFormScreen(
 
             // Sección: Foto
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Evidencia Fotográfica", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.relevamiento_form_evidencia), style = MaterialTheme.typography.titleMedium)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -514,7 +516,7 @@ fun RelevamientoFormScreen(
                                     )
                                     .crossfade(true)
                                     .build(),
-                                contentDescription = "Foto del relevamiento",
+                                contentDescription = stringResource(R.string.relevamiento_form_foto),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(240.dp)
@@ -545,7 +547,7 @@ fun RelevamientoFormScreen(
                                             )
                                             Spacer(Modifier.height(4.dp))
                                             Text(
-                                                text = "No se pudo cargar la vista previa",
+                                                text = stringResource(R.string.relevamiento_form_error_vista_previa),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.error
                                             )
@@ -558,7 +560,7 @@ fun RelevamientoFormScreen(
                                 OutlinedButton(onClick = abrirCamara) {
                                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Cambiar")
+                                    Text(stringResource(R.string.relevamiento_form_cambiar))
                                 }
                                 OutlinedButton(onClick = {
                                     fotoLocal = null
@@ -568,7 +570,7 @@ fun RelevamientoFormScreen(
                                 }) {
                                     Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Quitar")
+                                    Text(stringResource(R.string.relevamiento_form_quitar))
                                 }
                             }
                         } else {
@@ -579,18 +581,18 @@ fun RelevamientoFormScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("No hay foto adjunta", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.relevamiento_form_sin_foto), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(modifier = Modifier.height(16.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 Button(onClick = abrirCamara) {
                                     Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Cámara")
+                                    Text(stringResource(R.string.relevamiento_form_camara))
                                 }
                                 FilledTonalButton(onClick = { elegirFoto.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)) }) {
                                     Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Galería")
+                                    Text(stringResource(R.string.relevamiento_form_galeria))
                                 }
                             }
                         }
@@ -600,7 +602,7 @@ fun RelevamientoFormScreen(
 
             // Sección: Ubicación
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Ubicación", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.relevamiento_form_ubicacion), style = MaterialTheme.typography.titleMedium)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -716,7 +718,7 @@ fun RelevamientoFormScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Próxima Visita (Recordatorio)",
+                            text = stringResource(R.string.relevamiento_form_proxima_visita),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -729,7 +731,7 @@ fun RelevamientoFormScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Programada para: " + formatFecha(proximaVisita!!),
+                                text = stringResource(R.string.relevamiento_form_programada_para, formatFecha(proximaVisita!!)),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -741,7 +743,7 @@ fun RelevamientoFormScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Clear,
-                                    contentDescription = "Quitar fecha",
+                                    contentDescription = stringResource(R.string.relevamiento_form_quitar_fecha),
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }
@@ -752,11 +754,11 @@ fun RelevamientoFormScreen(
                         ) {
                             Icon(Icons.Default.EditCalendar, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Cambiar fecha de próxima visita")
+                            Text(stringResource(R.string.relevamiento_form_cambiar_proxima))
                         }
                     } else {
                         Text(
-                            text = "Opcional: define cuándo debería ser el próximo relevamiento para recibir un recordatorio automático en el dispositivo.",
+                            text = stringResource(R.string.relevamiento_form_proxima_ayuda),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -766,7 +768,7 @@ fun RelevamientoFormScreen(
                         ) {
                             Icon(Icons.Default.AddAlert, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Programar próxima visita")
+                            Text(stringResource(R.string.relevamiento_form_programar_proxima))
                         }
                     }
                 }
@@ -774,11 +776,11 @@ fun RelevamientoFormScreen(
 
             // Sección: Nota
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Nota u Observaciones", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.relevamiento_form_nota), style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
                     value = nota,
                     onValueChange = { nota = it; onInputChanged() },
-                    placeholder = { Text("Escribe una descripción del avance o problema...") },
+                    placeholder = { Text(stringResource(R.string.relevamiento_form_nota_placeholder)) },
                     isError = error == RelevamientoError.NotaVacia,
                     supportingText = {
                         if (error == RelevamientoError.NotaVacia) Text(error.asMessage())
