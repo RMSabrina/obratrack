@@ -41,13 +41,16 @@ class LanguagePreferencesRepositoryImpl @Inject constructor(
     override fun getLanguage(): AppLanguage {
         val saved = prefs.getString(KEY_LANGUAGE, null)
         if (saved != null) {
-            return if (saved == AppLanguage.ENGLISH.code) AppLanguage.ENGLISH else AppLanguage.SPANISH
+            return AppLanguage.entries.firstOrNull { it.code == saved } ?: AppLanguage.SPANISH
         }
         val currentLocales = AppCompatDelegate.getApplicationLocales()
         if (!currentLocales.isEmpty) {
             val tag = currentLocales.get(0)?.language.orEmpty()
             if (tag.startsWith("en", ignoreCase = true)) {
                 return AppLanguage.ENGLISH
+            }
+            if (tag.startsWith("it", ignoreCase = true)) {
+                return AppLanguage.ITALIAN
             }
         }
         return AppLanguage.SPANISH

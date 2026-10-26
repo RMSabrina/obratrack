@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ObraTrack</string>
+
+    <!-- Notificaciones -->
+    <string name="notif_canal_nombre">Promemoria ObraTrack</string>
+    <string name="notif_canal_descripcion">Avvisi automatici per i sopralluoghi in cantiere e i rilievi in sospeso</string>
+    <string name="notif_demo_titulo">🔔 Promemoria di sopralluogo</string>
+    <string name="notif_demo_mensaje">Hai un sopralluogo in cantiere programmato oggi presso \'Edificio Mitre\'. Tocca per rivedere i rilievi in sospeso.</string>
+    <string name="notif_visita_atrasada_titulo">⚠️ Sopralluogo in ritardo: %1$s</string>
+    <string name="notif_visita_atrasada_mensaje">Il sopralluogo previsto per %1$s ha un rilievo in sospeso.</string>
+    <string name="notif_visita_hoy_titulo">🔔 Sopralluogo in cantiere oggi: %1$s</string>
+    <string name="notif_visita_hoy_mensaje">Hai un sopralluogo in cantiere programmato nelle prossime ore presso %1$s.</string>
+    <string name="notif_sin_relevamientos_titulo">⚠️ Cantiere senza rilievi: %1$s</string>
+    <plurals name="notif_sin_relevamientos_mensaje">
+        <item quantity="one">Il cantiere \'%1$s\' è senza sopralluoghi registrati da %2$d giorno.</item>
+        <item quantity="other">Il cantiere \'%1$s\' è senza sopralluoghi registrati da %2$d giorni.</item>
+    </plurals>
+</resources>

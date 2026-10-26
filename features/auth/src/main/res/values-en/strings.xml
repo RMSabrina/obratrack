@@ -10,6 +10,7 @@
     <string name="auth_idioma_titulo">App Language</string>
     <string name="auth_idioma_espanol">🇪🇸 Español</string>
     <string name="auth_idioma_ingles">🇬🇧 English</string>
+    <string name="auth_idioma_italiano">🇮🇹 Italiano</string>
     <string name="auth_cancelar">Cancel</string>
     <string name="auth_eliminar_cuenta">Delete account</string>
     <string name="auth_nueva_password_instruccion">Enter your new password (at least 6 characters):</string>

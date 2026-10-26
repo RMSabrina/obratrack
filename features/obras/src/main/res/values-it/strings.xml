@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compartir">Condividi</string>
+    <string name="compartir_relevamiento_via">Condividi il rilievo tramite&#8230;</string>
+    <string name="compartir_informe_obra">Condividi il rapporto del cantiere</string>
+    <string name="compartir_informe_obra_via">Condividi il rapporto del cantiere tramite&#8230;</string>
+    <string name="error_exportacion_pdf">Impossibile generare il documento PDF</string>
+    <string name="generando_documento">Generazione del documento...</string>
+    <string name="obras_capturando_ubicacion">Acquisizione del segnale GPS...</string>
+    <string name="obras_borrar_ubicacion">Cancella posizione</string>
+    <string name="obras_actualizar_ubicacion">Aggiorna le coordinate via GPS</string>
+    <string name="obras_capturar_ubicacion">Acquisisci la posizione GPS</string>
+    <string name="obras_error_permiso_ubicacion">Permesso di localizzazione necessario per acquisire il GPS.</string>
+    <string name="obras_error_ubicacion_no_disponible">Impossibile ottenere il segnale GPS attuale.</string>
+    <string name="obras_ajustar_en_mapa">Regola sulla mappa</string>
+
+    <!-- Tasks: categories -->
+    <string name="tarea_categoria_cimientos_y_excavacion">Fondazioni e scavi</string>
+    <string name="tarea_categoria_estructura">Struttura</string>
+    <string name="tarea_categoria_albanileria">Muratura</string>
+    <string name="tarea_categoria_techos">Coperture</string>
+    <string name="tarea_categoria_electricidad">Impianto elettrico</string>
+    <string name="tarea_categoria_plomeria">Impianto idraulico</string>
+    <string name="tarea_categoria_gas">Gas</string>
+    <string name="tarea_categoria_climatizacion">Climatizzazione</string>
+    <string name="tarea_categoria_carpinteria">Falegnameria</string>
+    <string name="tarea_categoria_herreria">Carpenteria metallica</string>
+    <string name="tarea_categoria_pisos_y_revestimientos">Pavimenti e rivestimenti</string>
+    <string name="tarea_categoria_pintura">Tinteggiatura</string>
+    <string name="tarea_categoria_aberturas">Porte e finestre</string>
+    <string name="tarea_categoria_impermeabilizacion">Impermeabilizzazione</string>
+    <string name="tarea_categoria_limpieza">Pulizia</string>
+    <string name="tarea_categoria_otros">Altro</string>
+
+    <!-- Tasks: states -->
+    <string name="tarea_estado_pendiente">In sospeso</string>
+    <string name="tarea_estado_en_curso">In corso</string>
+    <string name="tarea_estado_completada">Completata</string>
+    <string name="tarea_atrasada">In ritardo</string>
+
+    <!-- Tasks: list -->
+    <string name="obras_tareas">Attività</string>
+    <string name="tareas_vacio_titulo">Ancora nessuna attività</string>
+    <string name="tareas_vacio_descripcion">Pianifica i lavori in cantiere creando delle attività.</string>
+    <string name="tareas_agregar_primera">Aggiungi la prima</string>
+    <string name="tareas_sin_fechas">Non pianificata</string>
+    <string name="tareas_rango_fechas">%1$s – %2$s</string>
+    <string name="volver">Indietro</string>
+
+    <!-- Tasks: form -->
+    <string name="tarea_nueva">Nuova attività</string>
+    <string name="tarea_editar">Modifica attività</string>
+    <string name="tarea_campo_titulo">Titolo</string>
+    <string name="tarea_campo_descripcion">Descrizione (facoltativa)</string>
+    <string name="tarea_campo_categoria">Categoria</string>
+    <string name="tarea_campo_estado">Stato</string>
+    <string name="tarea_campo_fechas">Date (facoltative)</string>
+    <string name="tarea_campo_fecha_inicio">Inizio</string>
+    <string name="tarea_campo_fecha_fin">Fine</string>
+    <string name="tarea_fechas_ayuda">Se imposti le date, indica sia l\'inizio sia la fine. Senza date, l\'attività resta non pianificata.</string>
+    <string name="tarea_quitar_fechas">Rimuovi date</string>
+    <string name="tarea_elegir_fecha">Scegli la data</string>
+    <string name="tarea_guardar">Salva attività</string>
+    <string name="tarea_guardando">Salvataggio…</string>
+    <string name="aceptar">Accetta</string>
+    <string name="cancelar">Annulla</string>
+
+    <!-- Tasks: detail -->
+    <string name="tarea_detalle_titulo">Dettagli dell\'attività</string>
+    <string name="tarea_descripcion">Descrizione</string>
+    <string name="tarea_sin_descripcion">Nessuna descrizione</string>
+    <string name="tarea_marcar_completada">Segna come completata</string>
+    <string name="tarea_eliminar">Elimina attività</string>
+    <string name="tarea_eliminar_confirmacion">Eliminare questa attività? Questa azione non può essere annullata.</string>
+    <string name="eliminar">Elimina</string>
+    <string name="tarea_eliminar_solo_tarea">Elimina solo l\'attività</string>
+    <plurals name="tarea_eliminar_vinculados">
+        <item quantity="one">Questa attività ha %d rilievo collegato. Se elimini solo l\'attività, il rilievo verrà conservato senza attività.</item>
+        <item quantity="other">Questa attività ha %d rilievi collegati. Se elimini solo l\'attività, i rilievi verranno conservati senza attività.</item>
+    </plurals>
+    <plurals name="tarea_eliminar_con_relevamientos">
+        <item quantity="one">Elimina l\'attività e %d rilievo</item>
+        <item quantity="other">Elimina l\'attività e %d rilievi</item>
+    </plurals>
+    <string name="tarea_vinculados_titulo">Rilievi collegati (%1$d)</string>
+    <string name="tarea_vinculados_vacio">Nessun rilievo è collegato a questa attività.</string>
+    <string name="tarea_vinculados_error">Impossibile caricare i rilievi collegati. Riapri l\'attività per riprovare.</string>
+
+    <!-- Project details: tabs -->
+    <string name="obra_seccion_resumen">Riepilogo</string>
+    <string name="obra_seccion_relevamientos">Rilievi</string>
+    <string name="obra_tareas_completadas">Completate</string>
+    <string name="obra_tareas_pendientes">In sospeso</string>
+    <string name="obra_tareas_atrasadas">In ritardo</string>
+    <string name="obra_tareas_sin_tareas">Ancora nessuna attività caricata.</string>
+    <string name="obra_relevamiento_nuevo">Nuovo rilievo</string>
+    <string name="obra_relevamientos_vacio">Ancora nessun rilievo.</string>
+    <string name="obra_relevamientos_ver_todos">Vedi tutti (%1$d)</string>
+    <string name="obra_relevamientos_error">Impossibile caricare i rilievi. Riapri il cantiere per riprovare.</string>
+    <string name="obra_relevamientos_vacio_titulo">Ancora nessun rilievo</string>
+    <string name="obra_relevamientos_vacio_descripcion">Questo cantiere non ha rilievi registrati.</string>
+    <string name="obra_relevamientos_agregar_primero">Aggiungi il primo</string>
+    <plurals name="obra_tareas_atrasadas_insignia">
+        <item quantity="one">%d attività in ritardo</item>
+        <item quantity="other">%d attività in ritardo</item>
+    </plurals>
+
+    <!-- Inspection: linked task -->
+    <string name="relevamiento_tarea_titulo">Attività collegata</string>
+    <string name="relevamiento_tarea_ninguna">Nessuna</string>
+    <string name="relevamiento_tarea_completada">%1$s (completata)</string>
+    <string name="relevamiento_tarea_ayuda">Facoltativo. Il collegamento non modifica lo stato dell\'attività.</string>
+    <string name="relevamiento_tarea_sin_tareas">Questo cantiere non ha attività da collegare.</string>
+    <string name="relevamiento_tarea_error">Impossibile caricare le attività. Il collegamento attuale viene mantenuto.</string>
+
+    <!-- Schedule / Timeline -->
+    <string name="cronograma_hoy">Oggi</string>
+    <string name="cronograma_fecha_inicio">%1$s –</string>
+    <string name="cronograma_titulo">Cronoprogramma</string>
+    <string name="cronograma_ir_a_tareas">Vedi attività</string>
+    <string name="cronograma_vacio_titulo">Ancora nessuna attività</string>
+    <string name="cronograma_vacio_descripcion">Aggiungi attività con data di inizio e di fine per vederle nella linea temporale.</string>
+    <string name="cronograma_sin_planificadas_titulo">Nessuna attività ha delle date</string>
+    <string name="cronograma_sin_planificadas_descripcion">Per vedere un\'attività nella linea temporale, imposta la data di inizio e di fine.</string>
+    <plurals name="cronograma_sin_fechas">
+        <item quantity="one">%d attività non pianificata non è mostrata nella linea temporale</item>
+        <item quantity="other">%d attività non pianificate non sono mostrate nella linea temporale</item>
+    </plurals>
+
+    <!-- Títulos, listas y formularios -->
+    <string name="obra_detalle_titulo">Dettagli del cantiere</string>
+    <string name="obra_publica_detalle_titulo">Dettagli pubblici</string>
+    <string name="obra_publica_estado">%1$s · Pubblico</string>
+    <string name="relevamiento_detalle_titulo">Dettagli del rilievo</string>
+    <string name="obras_lista_titulo">I miei cantieri</string>
+    <string name="obras_publicas_titulo">Esplora i cantieri pubblici</string>
+    <string name="obras_cerrar_sesion">Esci</string>
+    <string name="obras_nueva_obra">Nuovo cantiere</string>
+    <string name="obras_editar_obra">Modifica cantiere</string>
+    <string name="obras_buscar">Cerca cantiere...</string>
+    <string name="obras_filtro_todas">Tutti</string>
+    <string name="obras_lista_vacia">Non hai ancora aggiunto nessun cantiere.</string>
+    <string name="obras_busqueda_vacia">Nessun cantiere corrisponde alla tua ricerca.</string>
+    <string name="obras_publicas_vacia">Nessun cantiere pubblico trovato.</string>
+    <string name="estado_obra_activa">Attivo</string>
+    <string name="estado_obra_pausada">In pausa</string>
+    <string name="estado_obra_finalizada">Concluso</string>
+    <string name="guardando">Salvataggio...</string>
+    <string name="obra_form_guardar">Salva cantiere</string>
+    <string name="obra_form_info_general">Informazioni generali</string>
+    <string name="obra_form_nombre">Nome</string>
+    <string name="obra_form_cliente">Cliente</string>
+    <string name="obra_form_direccion">Indirizzo</string>
+    <string name="obra_form_localizar_direccion">Trova l\'indirizzo sulla mappa</string>
+    <string name="obra_form_ubicacion_por_direccion">Posizione impostata sulla mappa a partire dall\'indirizzo</string>
+    <string name="obra_form_sin_coordenadas">Nessuna coordinata esatta trovata. Puoi regolare il segnaposto sulla mappa.</string>
+    <string name="obra_form_direccion_actualizada">Indirizzo aggiornato dalla mappa/GPS</string>
+    <string name="obra_form_usar_detectada">Usa quello rilevato: %1$s</string>
+    <string name="obra_form_ubicacion_gps">Posizione geografica (GPS)</string>
+    <string name="obra_form_coordenadas_mapa">Coordinate selezionate dalla mappa</string>
+    <string name="obra_form_direccion_detectada">Indirizzo rilevato dalla mappa</string>
+    <string name="obra_form_proxima_visita">Prossimo sopralluogo</string>
+    <string name="obra_form_fecha_programada">Data programmata: %1$s</string>
+    <string name="obra_form_quitar_recordatorio">Rimuovi promemoria</string>
+    <string name="obra_form_cambiar_fecha">Cambia data</string>
+    <string name="obra_form_proxima_visita_ayuda">Puoi programmare una data stimata per il prossimo rilievo. L\'app ti avviserà quando arriva il giorno.</string>
+    <string name="obra_form_programar_fecha">Programma la data del sopralluogo</string>
+    <string name="obra_form_estado">Stato</string>
+    <string name="obra_form_configuracion">Impostazioni</string>
+    <string name="obra_form_hacer_publica">Rendi pubblico il cantiere</string>
+    <string name="obra_form_publica_ayuda">Un cantiere pubblico può essere visto da altri, ma solo tu puoi modificarlo o aggiungere rilievi.</string>
+    <string name="relevamiento_form_nuevo">Nuovo rilievo</string>
+    <string name="relevamiento_form_editar">Modifica rilievo</string>
+    <string name="relevamiento_form_guardado_continuar">✓ Foto e nota salvate. Pronto per la prossima.</string>
+    <string name="relevamiento_form_guardar_y_otra">Salva e aggiungine un\'altra</string>
+    <string name="relevamiento_form_finalizar">Termina</string>
+    <string name="relevamiento_form_salir">Esci</string>
+    <string name="relevamiento_form_guardar_cambios">Salva modifiche</string>
+    <string name="relevamiento_form_fecha">Data</string>
+    <string name="relevamiento_form_seleccionar_fecha">Seleziona la data</string>
+    <string name="relevamiento_form_evidencia">Prova fotografica</string>
+    <string name="relevamiento_form_foto">Foto del rilievo</string>
+    <string name="relevamiento_form_error_vista_previa">Impossibile caricare l\'anteprima</string>
+    <string name="relevamiento_form_cambiar">Cambia</string>
+    <string name="relevamiento_form_quitar">Rimuovi</string>
+    <string name="relevamiento_form_sin_foto">Nessuna foto allegata</string>
+    <string name="relevamiento_form_camara">Fotocamera</string>
+    <string name="relevamiento_form_galeria">Galleria</string>
+    <string name="relevamiento_form_ubicacion">Posizione</string>
+    <string name="relevamiento_form_proxima_visita">Prossimo sopralluogo (promemoria)</string>
+    <string name="relevamiento_form_programada_para">Programmato per: %1$s</string>
+    <string name="relevamiento_form_quitar_fecha">Rimuovi data</string>
+    <string name="relevamiento_form_cambiar_proxima">Cambia la data del prossimo sopralluogo</string>
+    <string name="relevamiento_form_proxima_ayuda">Facoltativo: imposta quando dovrebbe essere il prossimo rilievo per ricevere un promemoria automatico sul dispositivo.</string>
+    <string name="relevamiento_form_programar_proxima">Programma il prossimo sopralluogo</string>
+    <string name="relevamiento_form_nota">Note od osservazioni</string>
+    <string name="relevamiento_form_nota_placeholder">Descrivi l\'avanzamento o il problema...</string>
+
+    <!-- Diálogos de borrado y cuerpo de los detalles -->
+    <string name="obra_eliminar_titulo">Elimina cantiere</string>
+    <string name="obra_eliminar_confirmacion">Eliminare il cantiere con tutti i suoi rilievi, attività e iscritti? Questa azione non può essere annullata.</string>
+    <string name="obra_eliminar">Elimina cantiere</string>
+    <string name="obra_no_encontrada">Non abbiamo trovato questo cantiere</string>
+    <string name="obra_publica_no_encontrada">Non abbiamo trovato questo cantiere, oppure non è più pubblico.</string>
+    <string name="obra_fechas">Date</string>
+    <string name="obra_fecha_inicio">Inizio: %1$s</string>
+    <string name="obra_ultima_visita">Ultimo sopralluogo: %1$s</string>
+    <string name="obra_proxima_visita">Prossimo sopralluogo</string>
+    <string name="obra_proxima_visita_fecha">Prossimo sopralluogo: %1$s</string>
+    <string name="obra_proxima_visita_atrasada">Prossimo sopralluogo: %1$s (in ritardo)</string>
+    <string name="ver_en_mapa">Vedi sulla mappa</string>
+    <string name="relevamiento_eliminar_titulo">Elimina rilievo</string>
+    <string name="relevamiento_eliminar_confirmacion">Eliminare questo rilievo? Questa azione non può essere annullata.</string>
+    <string name="relevamiento_eliminar">Elimina rilievo</string>
+    <string name="relevamiento_no_encontrado">Non abbiamo trovato questo rilievo</string>
+    <string name="relevamiento_detalle_cliente">Cliente: %1$s</string>
+    <string name="relevamiento_detalle_fotografia">Foto del rilievo</string>
+    <string name="relevamiento_detalle_sin_foto">Nessuna foto allegata</string>
+    <string name="relevamiento_detalle_observaciones">Note del sopralluogo</string>
+    <string name="relevamiento_detalle_fecha">Data del sopralluogo: %1$s</string>
+    <string name="relevamiento_detalle_proxima">Prossimo sopralluogo previsto: %1$s</string>
+    <string name="relevamiento_detalle_sin_notas">Nessuna nota registrata.</string>
+    <string name="relevamiento_detalle_ubicacion">Posizione del rilievo</string>
+    <string name="tarea_registrar_evidencia">Registra una prova fotografica</string>
+    <string name="tarea_foto_evidencia">Foto di prova</string>
+    <string name="tarea_sin_nota">Nessuna descrizione</string>
+
+    <!-- PDF -->
+    <string name="pdf_acta_titulo">VERBALE DI SOPRALLUOGO IN CANTIERE</string>
+    <string name="pdf_acta_subtitulo">Supervisione tecnica e audit del cantiere</string>
+    <string name="pdf_dictamen_titulo">VALUTAZIONE TECNICA E OSSERVAZIONI IN CAMPO</string>
+    <string name="pdf_sin_observaciones_visita">Nessuna osservazione registrata durante questo sopralluogo.</string>
+    <string name="pdf_evidencia_titulo">PROVE FOTOGRAFICHE ALLEGATE</string>
+    <string name="pdf_informe_titulo">RAPPORTO ESECUTIVO SULLO STATO DI AVANZAMENTO DEL CANTIERE</string>
+    <string name="pdf_informe_subtitulo">Supervisione tecnica, controllo del cronoprogramma e audit fotografico</string>
+    <string name="pdf_aviso_tareas">Questo rapporto include le attività del cantiere.</string>
+    <string name="pdf_cronograma_titulo">STATO DEL CRONOPROGRAMMA E CONTROLLO DELLE ATTIVITÀ</string>
+    <string name="pdf_sin_tareas">Nessuna attività registrata nel cronoprogramma.</string>
+    <string name="pdf_desglose_titulo">PIANO DEI LAVORI E DETTAGLIO DELLE ATTIVITÀ</string>
+    <string name="pdf_historial_titulo">STORICO DEI SOPRALLUOGHI E AUDIT IN CAMPO</string>
+    <string name="pdf_sin_relevamientos">Questo cantiere non ha ancora rilievi in campo.</string>
+    <string name="pdf_anexo_titulo">APPENDICE FOTOGRAFICA — PROVE TECNICHE IN CANTIERE</string>
+    <string name="pdf_anexo_subtitulo">Registro fotografico dei rilievi, geolocalizzazione e valutazioni tecniche</string>
+    <string name="pdf_constancia">Il presente rapporto costituisce prova tecnica della supervisione dei lavori ispezionati in cantiere alle date indicate.</string>
+    <string name="pdf_emitido">Emesso: %1$s</string>
+    <string name="pdf_obra">Cantiere</string>
+    <string name="pdf_cliente">Committente / Cliente</string>
+    <string name="pdf_direccion">Indirizzo</string>
+    <string name="pdf_fecha_visita">Data del sopralluogo</string>
+    <string name="pdf_sin_asignar">Non assegnata</string>
+    <string name="pdf_no_especificado">Non specificato</string>
+    <string name="pdf_no_especificada">Non specificata</string>
+    <string name="pdf_ubicacion_gps">Posizione GPS</string>
+    <string name="pdf_gps_georreferenciado">%1$s (georeferenziato)</string>
+    <string name="pdf_gps_no_registrada">Non registrata in cantiere</string>
+    <string name="pdf_tarea_asociada">Attività collegata</string>
+    <string name="pdf_proxima_visita_programada">Prossimo sopralluogo programmato</string>
+    <string name="pdf_estado_obra">Stato del cantiere</string>
+    <string name="pdf_fecha_inicio">Data di inizio</string>
+    <string name="pdf_ultima_inspeccion">Ultimo rilievo</string>
+    <string name="pdf_sin_visitas">Nessun sopralluogo registrato</string>
+    <string name="pdf_proxima_inspeccion">Prossimo rilievo</string>
+    <string name="pdf_total">TOTALE</string>
+    <string name="pdf_completadas">COMPLETATE</string>
+    <string name="pdf_pendientes">IN SOSPESO</string>
+    <string name="pdf_atrasadas">IN RITARDO</string>
+    <string name="pdf_avance">%1$d%% di avanzamento fisico</string>
+    <string name="pdf_continuacion">Rapporto tecnico: %1$s (continua)</string>
+    <string name="pdf_col_tarea">Attività</string>
+    <string name="pdf_col_categoria">Categoria</string>
+    <string name="pdf_col_plazo">Scadenza</string>
+    <string name="pdf_col_estado">Stato</string>
+    <string name="pdf_plazo_fin">Fine: %1$s</string>
+    <string name="pdf_plazo_inicio">Inizio: %1$s</string>
+    <string name="pdf_col_fecha">Data</string>
+    <string name="pdf_col_observaciones">Osservazioni e riscontri</string>
+    <string name="pdf_col_evidencia">Prove</string>
+    <string name="pdf_col_proxima">Prossimo sopralluogo</string>
+    <string name="pdf_sin_notas">Nessuna nota</string>
+    <string name="pdf_foto_adjunta">📷 Allegata</string>
+    <string name="pdf_registro_foto">REGISTRO FOTOGRAFICO IN CAMPO N. %1$d</string>
+    <string name="pdf_fecha_captura">Data di acquisizione: %1$s</string>
+    <string name="pdf_tarea_vinculada">Attività collegata: %1$s</string>
+    <string name="pdf_gps_no_georreferenciado">GPS: non georeferenziato in cantiere</string>
+    <string name="pdf_sin_observaciones_captura">Nessuna osservazione aggiuntiva registrata al momento dell\'acquisizione di questa prova.</string>
+    <string name="pdf_foto_no_disponible">Foto non disponibile</string>
+    <string name="pdf_dictamen_label">Valutazione tecnica e osservazioni:</string>
+    <string name="pdf_firma_profesional">Firma del professionista responsabile</string>
+    <string name="pdf_firma_comitente">Approvazione del committente / capocantiere</string>
+    <string name="pdf_pie">ObraTrack — Documento di supervisione tecnica e audit del cantiere. Pagina %1$d</string>
+</resources>

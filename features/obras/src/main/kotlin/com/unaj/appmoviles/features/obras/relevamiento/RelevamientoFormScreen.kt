@@ -628,7 +628,7 @@ fun RelevamientoFormScreen(
                                     ) {
                                         Icon(Icons.Default.Clear, contentDescription = null, modifier = Modifier.size(18.dp))
                                         Spacer(Modifier.width(8.dp))
-                                        Text(context.getString(R.string.obras_borrar_ubicacion))
+                                        Text(stringResource(R.string.obras_borrar_ubicacion))
                                     }
                                 }
                             )
@@ -652,11 +652,11 @@ fun RelevamientoFormScreen(
                                 if (isCapturingLocation) {
                                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                                     Spacer(Modifier.width(8.dp))
-                                    Text(context.getString(R.string.obras_capturando_ubicacion))
+                                    Text(stringResource(R.string.obras_capturando_ubicacion))
                                 } else {
                                     Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text(if (latitud != null) context.getString(R.string.obras_actualizar_ubicacion) else context.getString(R.string.obras_capturar_ubicacion))
+                                    Text(if (latitud != null) stringResource(R.string.obras_actualizar_ubicacion) else stringResource(R.string.obras_capturar_ubicacion))
                                 }
                             }
 
@@ -667,7 +667,7 @@ fun RelevamientoFormScreen(
                             ) {
                                 Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text(context.getString(R.string.obras_ajustar_en_mapa))
+                                Text(stringResource(R.string.obras_ajustar_en_mapa))
                             }
                         }
 

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Barra inferior (Home y Agenda) -->
+    <string name="nav_inicio">Home</string>
+    <string name="nav_obras">Cantieri</string>
+    <string name="nav_agenda">Agenda</string>
+    <string name="nav_perfil">Profilo</string>
+
+    <!-- Comunes -->
+    <string name="volver">Indietro</string>
+    <string name="cancelar">Annulla</string>
+    <string name="ver">Vedi</string>
+    <string name="sin_direccion">Nessun indirizzo specificato</string>
+    <string name="visita_para_hoy">🔔 SOPRALLUOGO OGGI</string>
+
+    <!-- Home -->
+    <string name="home_saludo">Ciao, %1$s</string>
+    <string name="home_subtitulo">Cosa vuoi fare oggi?</string>
+    <string name="home_recordatorios_titulo">Promemoria dei sopralluoghi</string>
+    <string name="home_probar_demo">Prova la demo</string>
+    <plurals name="home_visitas_atrasadas">
+        <item quantity="one">⚠️ %d sopralluogo in ritardo</item>
+        <item quantity="other">⚠️ %d sopralluoghi in ritardo</item>
+    </plurals>
+    <string name="home_visitas_atrasadas_detalle">Nella tua agenda ci sono rilievi in cantiere in sospeso</string>
+    <string name="home_ver_agenda">Vedi agenda</string>
+    <string name="home_relevar_ahora">Rileva ora</string>
+    <string name="home_accion_mis_obras">I miei cantieri</string>
+    <string name="home_accion_mis_obras_detalle">Visualizza e gestisci</string>
+    <string name="home_accion_agenda">Agenda</string>
+    <string name="home_accion_agenda_hoy">%1$d per oggi</string>
+    <string name="home_accion_agenda_detalle">Itinerario dei sopralluoghi</string>
+    <string name="home_accion_nuevo_relevamiento">Nuovo rilievo in cantiere</string>
+    <string name="home_accion_nuevo_relevamiento_detalle">Foto, note tecniche e geolocalizzazione</string>
+    <string name="home_accion_obras_publicas">Esplora i cantieri pubblici</string>
+    <string name="home_accion_obras_publicas_detalle">Vedi i cantieri condivisi da altri utenti</string>
+    <string name="home_relevamientos_recientes">Rilievi recenti</string>
+    <string name="home_ver_todos">Vedi tutti</string>
+    <string name="home_sin_relevamientos">Non hai rilievi recenti.</string>
+    <string name="home_foto_relevamiento">Foto del rilievo</string>
+
+    <!-- Agenda de visitas -->
+    <string name="agenda_titulo">Agenda dei sopralluoghi</string>
+    <string name="agenda_subtitulo">Itinerario e controllo tecnico in cantiere</string>
+    <string name="agenda_guardar_fecha">Salva data</string>
+    <string name="agenda_quitar_fecha">Rimuovi data</string>
+    <string name="agenda_filtro_todas">Tutti</string>
+    <string name="agenda_filtro_urgentes_y_hoy">🚨 Urgenti e oggi</string>
+    <string name="agenda_filtro_esta_semana">📅 Questa settimana</string>
+    <string name="agenda_filtro_proximas">⏳ Prossimi</string>
+    <string name="agenda_filtro_sin_programar">⚠️ Non programmati</string>
+    <string name="agenda_vacio_titulo">Nessun sopralluogo per questo filtro</string>
+    <string name="agenda_vacio_descripcion">Sei in pari, oppure seleziona \'Tutti\' per vedere l\'itinerario completo.</string>
+    <string name="agenda_metrica_hoy">Oggi</string>
+    <string name="agenda_metrica_atrasadas">In ritardo</string>
+    <string name="agenda_metrica_esta_semana">Questa settimana</string>
+    <string name="agenda_metrica_sin_fecha">Senza data</string>
+    <plurals name="agenda_badge_atrasada">
+        <item quantity="one">🚨 IN RITARDO (%d GIORNO)</item>
+        <item quantity="other">🚨 IN RITARDO (%d GIORNI)</item>
+    </plurals>
+    <plurals name="agenda_badge_esta_semana">
+        <item quantity="one">📅 TRA %1$d GIORNO (%2$s)</item>
+        <item quantity="other">📅 TRA %1$d GIORNI (%2$s)</item>
+    </plurals>
+    <plurals name="agenda_badge_sin_fecha">
+        <item quantity="one">⚠️ SENZA DATA (%d GIORNO SENZA RILIEVO)</item>
+        <item quantity="other">⚠️ SENZA DATA (%d GIORNI SENZA RILIEVO)</item>
+    </plurals>
+    <string name="agenda_ver_obra">Vedi cantiere</string>
+    <string name="agenda_cliente">Cliente: %1$s</string>
+    <string name="agenda_ultimo_relevamiento">Ultimo rilievo: %1$s</string>
+    <string name="agenda_relevar">Rileva</string>
+    <string name="agenda_mapa">Mappa</string>
+    <string name="agenda_cambiar">Cambia</string>
+    <string name="agenda_agendar">Programma</string>
+    <string name="agenda_visita_programada">Sopralluogo programmato per %1$s</string>
+    <string name="agenda_visita_cancelada">Prossimo sopralluogo annullato per %1$s</string>
+    <string name="agenda_error_programar">Impossibile programmare il sopralluogo: %1$s</string>
+
+    <!-- Selección de obra -->
+    <string name="obra_seleccion_titulo">Seleziona cantiere</string>
+    <string name="obra_seleccion_instruccion">Scegli il cantiere a cui aggiungere il nuovo rilievo.</string>
+    <string name="obra_seleccion_vacia">Non hai cantieri disponibili.</string>
+
+    <!-- Textos por defecto -->
+    <string name="home_usuario">Utente</string>
+    <string name="home_obra_desconocida">Cantiere sconosciuto</string>
+</resources>

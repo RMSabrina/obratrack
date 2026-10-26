@@ -194,6 +194,12 @@ fun ProfileScreen(
                                 label = { Text(stringResource(R.string.auth_idioma_ingles)) },
                                 modifier = Modifier.weight(1f)
                             )
+                            FilterChip(
+                                selected = state.selectedLanguage == AppLanguage.ITALIAN,
+                                onClick = { onLanguageChange(AppLanguage.ITALIAN) },
+                                label = { Text(stringResource(R.string.auth_idioma_italiano)) },
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
                 }

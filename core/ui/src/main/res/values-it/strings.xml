@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_invalid_email">Email non valida</string>
+    <string name="error_password_too_short">Minimo 6 caratteri</string>
+    <string name="error_blank_name">Inserisci il tuo nome</string>
+    <string name="error_invalid_credentials">Email o password errata</string>
+    <string name="error_email_in_use">Esiste già un account con questa email</string>
+    <string name="error_network">Nessuna connessione. Controlla internet</string>
+    <string name="error_recent_login_required">Per sicurezza, conferma la tua password attuale per continuare</string>
+    <string name="error_email_not_verified">Controlla la tua email e verifica il tuo account prima di accedere.</string>
+    <string name="error_unknown">Si è verificato un errore imprevisto</string>
+    <string name="error_timeout">Impossibile confermare l\'eliminazione. Controlla la connessione e riprova</string>
+    <string name="error_fallo_parcial">Impossibile eliminare completamente, riprova</string>
+    <string name="error_google_config">Errore di configurazione di Google Sign-In</string>
+    <string name="error_google_failed">Impossibile accedere con Google</string>
+    <string name="error_google_no_accounts">Nessun account Google disponibile su questo dispositivo</string>
+    <string name="error_obra_nombre">Inserisci il nome del cantiere</string>
+    <string name="error_obra_cliente">Inserisci il nome del cliente</string>
+    <string name="error_obra_direccion">Inserisci l\'indirizzo del cantiere</string>
+    <string name="error_obra_not_found">Cantiere non trovato</string>
+    <string name="error_obra_forbidden">Non hai il permesso di modificare questo cantiere</string>
+    <string name="error_relevamiento_nota">Inserisci le note del rilievo</string>
+    <string name="error_relevamiento_fecha">Seleziona la data del rilievo</string>
+    <string name="error_relevamiento_not_found">Rilievo non trovato</string>
+    <string name="error_relevamiento_forbidden">Non hai il permesso di modificare questo rilievo</string>
+    <string name="error_relevamiento_imagen_grande">L\'immagine supera il limite di 5 MB</string>
+    <string name="error_tarea_titulo">Inserisci il titolo dell\'attività</string>
+    <string name="error_tarea_fechas_incompletas">Scegli entrambe le date o nessuna</string>
+    <string name="error_tarea_fecha_fin_anterior">La data di fine non può essere precedente alla data di inizio</string>
+    <string name="error_tarea_not_found">Attività non trovata</string>
+    <string name="error_tarea_forbidden">Non hai il permesso di modificare questa attività</string>
+    <string name="error_tarea_demasiados_vinculados">L\'attività ha troppi rilievi collegati per essere eliminata in una sola volta</string>
+    <string name="error_tarea_timeout">Operazione scaduta. Controlla la connessione e riprova</string>
+
+    <!-- UI Map Strings -->
+    <string name="ui_map_title_default">Posizione geografica</string>
+    <string name="ui_map_coordinates_format">Coordinate: Lat %1$.5f, Lng %2$.5f</string>
+    <string name="ui_map_open_in_google_maps">Apri in Google Maps</string>
+    <string name="ui_map_no_location">Nessuna posizione geografica registrata.</string>
+    <string name="ui_map_error_loading_help">Se la mappa non si carica, controlla la connessione a internet.</string>
+    <string name="ui_map_picker_title">Seleziona la posizione</string>
+    <string name="ui_map_picker_confirm">Conferma la posizione</string>
+    <string name="ui_map_picker_cancel">Annulla</string>
+    <string name="ui_map_picker_instructions">Tocca la mappa per posizionare il segnaposto</string>
+
+    <!-- Búsqueda -->
+    <string name="ui_buscar_placeholder">Cerca...</string>
+    <string name="ui_buscar">Cerca</string>
+    <string name="ui_filtros">Filtri</string>
+</resources>
