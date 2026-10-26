@@ -47,4 +47,9 @@
     <string name="auth_correo_reenviado">Email inviata di nuovo</string>
     <string name="auth_ocultar_password">Nascondi password</string>
     <string name="auth_mostrar_password">Mostra password</string>
+    <string name="auth_aviso_titulo">Promemoria dei sopralluoghi</string>
+    <string name="auth_aviso_al_momento">All\'ora esatta</string>
+    <string name="auth_aviso_15_min">15 minuti prima</string>
+    <string name="auth_aviso_1_hora">1 ora prima</string>
+    <string name="auth_aviso_1_dia">1 giorno prima</string>
 </resources>

@@ -9,8 +9,13 @@
     <string name="notif_demo_mensaje">Tenés una visita técnica programada para hoy en \'Edificio Mitre\'. Tocá para inspeccionar los relevamientos pendientes.</string>
     <string name="notif_visita_atrasada_titulo">⚠️ Visita atrasada: %1$s</string>
     <string name="notif_visita_atrasada_mensaje">La visita planificada para %1$s está pendiente de relevamiento.</string>
-    <string name="notif_visita_hoy_titulo">🔔 Visita técnica hoy: %1$s</string>
-    <string name="notif_visita_hoy_mensaje">Tenés inspección técnica programada para las próximas horas en %1$s.</string>
+    <string name="notif_aviso_titulo">🔔 Visita en obra: %1$s</string>
+    <string name="notif_aviso_hoy_con_hora">Visita hoy a las %1$s en %2$s.</string>
+    <string name="notif_aviso_hoy_sin_hora">Visita programada para hoy en %1$s.</string>
+    <string name="notif_aviso_manana_con_hora">Visita mañana a las %1$s en %2$s.</string>
+    <string name="notif_aviso_manana_sin_hora">Visita programada para mañana en %1$s.</string>
+    <string name="notif_aviso_otro_dia_con_hora">Visita el %1$s a las %2$s en %3$s.</string>
+    <string name="notif_aviso_otro_dia_sin_hora">Visita programada para el %1$s en %2$s.</string>
     <string name="notif_sin_relevamientos_titulo">⚠️ Obra sin relevamientos: %1$s</string>
     <plurals name="notif_sin_relevamientos_mensaje">
         <item quantity="one">La obra para \'%1$s\' lleva %2$d día sin visitas registradas.</item>

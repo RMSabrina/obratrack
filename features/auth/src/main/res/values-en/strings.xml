@@ -47,4 +47,9 @@
     <string name="auth_correo_reenviado">Email resent</string>
     <string name="auth_ocultar_password">Hide password</string>
     <string name="auth_mostrar_password">Show password</string>
+    <string name="auth_aviso_titulo">Visit reminders</string>
+    <string name="auth_aviso_al_momento">At the time</string>
+    <string name="auth_aviso_15_min">15 minutes before</string>
+    <string name="auth_aviso_1_hora">1 hour before</string>
+    <string name="auth_aviso_1_dia">1 day before</string>
 </resources>

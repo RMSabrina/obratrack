@@ -5,16 +5,26 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.unaj.appmoviles.obratrack.MainActivity
 import com.unaj.appmoviles.obratrack.R
+import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
+import java.util.Locale
 
 object NotificationHelper {
 
     const val CHANNEL_ID = "obratrack_reminders"
+
+    /** Contexto con el idioma elegido en la app; el de una notificación no lo recibe de ninguna Activity. */
+    fun contextoLocalizado(context: Context, language: AppLanguage): Context {
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(Locale.forLanguageTag(language.code))
+        return context.createConfigurationContext(config)
+    }
 
     fun createNotificationChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

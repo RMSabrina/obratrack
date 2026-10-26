@@ -29,6 +29,7 @@ fun ProfileRoute(
         onClearMessage = viewModel::clearMessage,
         onClearError = viewModel::clearError,
         onLanguageChange = viewModel::onLanguageChange,
+        onAnticipacionChange = viewModel::onAnticipacionChange,
         onBack = onBack,
         onLogout = onLogout
     )

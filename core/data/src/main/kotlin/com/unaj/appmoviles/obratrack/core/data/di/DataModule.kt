@@ -53,4 +53,9 @@ abstract class DataModule {
     abstract fun bindLanguagePreferencesRepository(
         impl: com.unaj.appmoviles.obratrack.core.data.repository.LanguagePreferencesRepositoryImpl
     ): com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
+
+    @Binds
+    abstract fun bindAvisoPreferencesRepository(
+        impl: com.unaj.appmoviles.obratrack.core.data.repository.AvisoPreferencesRepositoryImpl
+    ): com.unaj.appmoviles.obratrack.core.domain.repository.AvisoPreferencesRepository
 }

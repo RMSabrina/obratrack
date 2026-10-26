@@ -9,8 +9,13 @@
     <string name="notif_demo_mensaje">You have a site visit scheduled today at \'Edificio Mitre\'. Tap to review pending inspections.</string>
     <string name="notif_visita_atrasada_titulo">⚠️ Overdue visit: %1$s</string>
     <string name="notif_visita_atrasada_mensaje">The visit planned for %1$s is pending inspection.</string>
-    <string name="notif_visita_hoy_titulo">🔔 Site visit today: %1$s</string>
-    <string name="notif_visita_hoy_mensaje">You have a site inspection scheduled in the next few hours at %1$s.</string>
+    <string name="notif_aviso_titulo">🔔 Site visit: %1$s</string>
+    <string name="notif_aviso_hoy_con_hora">Visit today at %1$s at %2$s.</string>
+    <string name="notif_aviso_hoy_sin_hora">Visit scheduled for today at %1$s.</string>
+    <string name="notif_aviso_manana_con_hora">Visit tomorrow at %1$s at %2$s.</string>
+    <string name="notif_aviso_manana_sin_hora">Visit scheduled for tomorrow at %1$s.</string>
+    <string name="notif_aviso_otro_dia_con_hora">Visit on %1$s at %2$s at %3$s.</string>
+    <string name="notif_aviso_otro_dia_sin_hora">Visit scheduled for %1$s at %2$s.</string>
     <string name="notif_sin_relevamientos_titulo">⚠️ Project without inspections: %1$s</string>
     <plurals name="notif_sin_relevamientos_mensaje">
         <item quantity="one">The project for \'%1$s\' has gone %2$d day without recorded visits.</item>

@@ -18,7 +18,9 @@ import com.unaj.appmoviles.obratrack.R
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import kotlinx.coroutines.flow.firstOrNull
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoFechaVisita
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoVisitaConHora
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.estadoFechaVisita
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.estadoVisitaConHora
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toFechaCalendario
 import java.time.Clock
 import java.time.LocalDate
@@ -47,24 +49,21 @@ class RelevamientoReminderWorker @AssistedInject constructor(
         for (obra in obras) {
             val proxima = obra.proximaVisita
             if (proxima != null) {
-                val estado = estadoFechaVisita(proxima.toFechaCalendario(), hoy)
-                if (estado !is EstadoFechaVisita.Proxima) {
-                    val atrasada = estado is EstadoFechaVisita.Atrasada
-                    val title = if (atrasada) {
-                        applicationContext.getString(R.string.notif_visita_atrasada_titulo, obra.nombre)
-                    } else {
-                        applicationContext.getString(R.string.notif_visita_hoy_titulo, obra.nombre)
-                    }
-                    val msg = if (atrasada) {
-                        applicationContext.getString(R.string.notif_visita_atrasada_mensaje, obra.cliente)
-                    } else {
-                        applicationContext.getString(R.string.notif_visita_hoy_mensaje, obra.direccion)
-                    }
+                val fecha = proxima.toFechaCalendario()
+                val hora = obra.horaVisita
+                // Con hora vence al pasar la hora; sin hora, al terminar el día.
+                val atrasada = if (hora != null) {
+                    estadoVisitaConHora(fecha, hora, clock) is EstadoVisitaConHora.Atrasada
+                } else {
+                    estadoFechaVisita(fecha, hoy) is EstadoFechaVisita.Atrasada
+                }
+                // El aviso previo a la visita lo da AvisoVisitaWorker; este solo informa las atrasadas.
+                if (atrasada) {
                     NotificationHelper.showNotification(
                         applicationContext,
                         obra.id.hashCode(),
-                        title,
-                        msg
+                        applicationContext.getString(R.string.notif_visita_atrasada_titulo, obra.nombre),
+                        applicationContext.getString(R.string.notif_visita_atrasada_mensaje, obra.cliente)
                     )
                     notifiedCount++
                     continue

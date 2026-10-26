@@ -18,7 +18,9 @@ import kotlinx.coroutines.launch
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.unaj.appmoviles.auth.R
+import com.unaj.appmoviles.obratrack.core.domain.model.AnticipacionAviso
 import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
+import com.unaj.appmoviles.obratrack.core.domain.repository.AvisoPreferencesRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
 import javax.inject.Inject
 
@@ -29,7 +31,8 @@ class ProfileViewModel @Inject constructor(
     private val changePasswordUseCase: ChangePasswordUseCase,
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val reauthenticateUseCase: ReauthenticateUseCase,
-    private val languagePreferencesRepository: LanguagePreferencesRepository
+    private val languagePreferencesRepository: LanguagePreferencesRepository,
+    private val avisoPreferencesRepository: AvisoPreferencesRepository
 ) : ViewModel() {
 
     private val internalState = MutableStateFlow(ProfileUiState())
@@ -37,8 +40,9 @@ class ProfileViewModel @Inject constructor(
     val uiState: StateFlow<ProfileUiState> = combine(
         observeSessionUseCase(),
         languagePreferencesRepository.observeLanguage(),
+        avisoPreferencesRepository.observeAnticipacion(),
         internalState
-    ) { sessionUser, language, state ->
+    ) { sessionUser, language, anticipacion, state ->
         val nameInputToUse = if (state.nameInput.isEmpty() && sessionUser != null) {
             sessionUser.name
         } else {
@@ -48,6 +52,7 @@ class ProfileViewModel @Inject constructor(
             user = sessionUser,
             nameInput = nameInputToUse,
             selectedLanguage = language,
+            selectedAnticipacion = anticipacion,
             isLoading = sessionUser == null && state.error == null
         )
     }.stateIn(
@@ -59,6 +64,12 @@ class ProfileViewModel @Inject constructor(
     fun onLanguageChange(language: AppLanguage) {
         viewModelScope.launch {
             languagePreferencesRepository.setLanguage(language)
+        }
+    }
+
+    fun onAnticipacionChange(anticipacion: AnticipacionAviso) {
+        viewModelScope.launch {
+            avisoPreferencesRepository.setAnticipacion(anticipacion)
         }
     }
 

@@ -58,13 +58,16 @@ import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
 import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.auth.R
+import com.unaj.appmoviles.obratrack.core.domain.model.AnticipacionAviso
 import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ProfileScreen(
     state: ProfileUiState,
@@ -81,6 +84,7 @@ fun ProfileScreen(
     onClearMessage: () -> Unit,
     onClearError: () -> Unit,
     onLanguageChange: (AppLanguage) -> Unit,
+    onAnticipacionChange: (AnticipacionAviso) -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
@@ -200,6 +204,39 @@ fun ProfileScreen(
                                 label = { Text(stringResource(R.string.auth_idioma_italiano)) },
                                 modifier = Modifier.weight(1f)
                             )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Anticipación del aviso de visitas
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text(
+                            text = stringResource(R.string.auth_aviso_titulo),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            AnticipacionAviso.entries.forEach { opcion ->
+                                FilterChip(
+                                    selected = state.selectedAnticipacion == opcion,
+                                    onClick = { onAnticipacionChange(opcion) },
+                                    label = { Text(stringResource(opcion.labelRes())) }
+                                )
+                            }
                         }
                     }
                 }
@@ -471,4 +508,11 @@ private fun ReAuthDialog(
             }
         }
     )
+}
+
+private fun AnticipacionAviso.labelRes(): Int = when (this) {
+    AnticipacionAviso.AL_MOMENTO -> R.string.auth_aviso_al_momento
+    AnticipacionAviso.MIN_15 -> R.string.auth_aviso_15_min
+    AnticipacionAviso.HORA_1 -> R.string.auth_aviso_1_hora
+    AnticipacionAviso.DIA_1 -> R.string.auth_aviso_1_dia
 }

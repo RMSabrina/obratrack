@@ -23,6 +23,8 @@ data class ProfileUiState(
     val showReAuthDialog: Boolean = false,
     val pendingAction: PendingAction = PendingAction.NONE,
     val selectedLanguage: com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage = com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage.SPANISH,
+    val selectedAnticipacion: com.unaj.appmoviles.obratrack.core.domain.model.AnticipacionAviso =
+        com.unaj.appmoviles.obratrack.core.domain.model.AnticipacionAviso.POR_DEFECTO,
     @StringRes val successMessage: Int? = null,
     val error: DomainError? = null
 )
