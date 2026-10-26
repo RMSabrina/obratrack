@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Barra inferior (Home y Agenda) -->
+    <string name="nav_inicio">Inicio</string>
+    <string name="nav_obras">Obras</string>
+    <string name="nav_agenda">Agenda</string>
+    <string name="nav_perfil">Perfil</string>
+
+    <!-- Comunes -->
+    <string name="volver">Volver</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="ver">Ver</string>
+    <string name="sin_direccion">Sin dirección especificada</string>
+    <string name="visita_para_hoy">🔔 VISITA PARA HOY</string>
+
+    <!-- Home -->
+    <string name="home_saludo">Hola, %1$s</string>
+    <string name="home_subtitulo">¿Qué querés hacer hoy?</string>
+    <string name="home_recordatorios_titulo">Recordatorios de visita</string>
+    <string name="home_probar_demo">Probar demo</string>
+    <plurals name="home_visitas_atrasadas">
+        <item quantity="one">⚠️ %d visita técnica atrasada</item>
+        <item quantity="other">⚠️ %d visitas técnicas atrasadas</item>
+    </plurals>
+    <string name="home_visitas_atrasadas_detalle">Hay inspecciones de obra pendientes en tu itinerario</string>
+    <string name="home_ver_agenda">Ver Agenda</string>
+    <string name="home_relevar_ahora">Relevar Ahora</string>
+    <string name="home_accion_mis_obras">Mis obras</string>
+    <string name="home_accion_mis_obras_detalle">Ver y gestionar</string>
+    <string name="home_accion_agenda">Agenda</string>
+    <string name="home_accion_agenda_hoy">%1$d para hoy</string>
+    <string name="home_accion_agenda_detalle">Itinerario de visitas</string>
+    <string name="home_accion_nuevo_relevamiento">Nuevo Relevamiento de Campo</string>
+    <string name="home_accion_nuevo_relevamiento_detalle">Fotografías, notas técnicas y geolocalización</string>
+    <string name="home_accion_obras_publicas">Explorar Obras Públicas</string>
+    <string name="home_accion_obras_publicas_detalle">Ver proyectos compartidos por otros usuarios</string>
+    <string name="home_relevamientos_recientes">Últimos relevamientos</string>
+    <string name="home_ver_todos">Ver todos</string>
+    <string name="home_sin_relevamientos">No tenés relevamientos recientes.</string>
+    <string name="home_foto_relevamiento">Foto relevamiento</string>
+
+    <!-- Agenda de visitas -->
+    <string name="agenda_titulo">Agenda de Visitas</string>
+    <string name="agenda_subtitulo">Itinerario y control técnico de campo</string>
+    <string name="agenda_guardar_fecha">Guardar Fecha</string>
+    <string name="agenda_quitar_fecha">Quitar fecha</string>
+    <string name="agenda_filtro_todas">Todas</string>
+    <string name="agenda_filtro_urgentes_y_hoy">🚨 Urgentes y Hoy</string>
+    <string name="agenda_filtro_esta_semana">📅 Esta semana</string>
+    <string name="agenda_filtro_proximas">⏳ Próximas</string>
+    <string name="agenda_filtro_sin_programar">⚠️ Sin programar</string>
+    <string name="agenda_vacio_titulo">No hay visitas para este filtro</string>
+    <string name="agenda_vacio_descripcion">Tenés todo al día o podés seleccionar \'Todas\' para ver el itinerario completo.</string>
+    <string name="agenda_metrica_hoy">Hoy</string>
+    <string name="agenda_metrica_atrasadas">Atrasadas</string>
+    <string name="agenda_metrica_esta_semana">Esta semana</string>
+    <string name="agenda_metrica_sin_fecha">Sin fecha</string>
+    <plurals name="agenda_badge_atrasada">
+        <item quantity="one">🚨 ATRASADA (%d DÍA)</item>
+        <item quantity="other">🚨 ATRASADA (%d DÍAS)</item>
+    </plurals>
+    <plurals name="agenda_badge_esta_semana">
+        <item quantity="one">📅 EN %1$d DÍA (%2$s)</item>
+        <item quantity="other">📅 EN %1$d DÍAS (%2$s)</item>
+    </plurals>
+    <plurals name="agenda_badge_sin_fecha">
+        <item quantity="one">⚠️ SIN FECHA (%d DÍA SIN RELEVAMIENTO)</item>
+        <item quantity="other">⚠️ SIN FECHA (%d DÍAS SIN RELEVAMIENTO)</item>
+    </plurals>
+    <string name="agenda_ver_obra">Ver Obra</string>
+    <string name="agenda_cliente">Cliente: %1$s</string>
+    <string name="agenda_ultimo_relevamiento">Último relevamiento: %1$s</string>
+    <string name="agenda_relevar">Relevar</string>
+    <string name="agenda_mapa">Mapa</string>
+    <string name="agenda_cambiar">Cambiar</string>
+    <string name="agenda_agendar">Agendar</string>
+    <string name="agenda_visita_programada">Visita técnica programada con éxito para %1$s</string>
+    <string name="agenda_visita_cancelada">Próxima visita cancelada para %1$s</string>
+    <string name="agenda_error_programar">Error al programar la visita: %1$s</string>
+</resources>

@@ -59,11 +59,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.unaj.appmoviles.features.home.components.RelevamientoCard
+import com.unaj.appmoviles.home.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 
@@ -121,13 +124,13 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     Text(
-                        text = "Hola, ${state.userName}",
+                        text = stringResource(R.string.home_saludo, state.userName),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "\u00bfQu\u00e9 quer\u00e9s hacer hoy?",
+                        text = stringResource(R.string.home_subtitulo),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 18.sp
@@ -162,7 +165,7 @@ fun HomeScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = "Recordatorios de visita",
+                                    text = stringResource(R.string.home_recordatorios_titulo),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -184,7 +187,7 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Probar demo",
+                                    text = stringResource(R.string.home_probar_demo),
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             }
@@ -224,13 +227,17 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "⚠️ ${state.totalVisitasAtrasadas} visita(s) técnica(s) atrasada(s)",
+                                        text = pluralStringResource(
+                                            R.plurals.home_visitas_atrasadas,
+                                            state.totalVisitasAtrasadas,
+                                            state.totalVisitasAtrasadas
+                                        ),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                     Text(
-                                        text = "Hay inspecciones de obra pendientes en tu itinerario",
+                                        text = stringResource(R.string.home_visitas_atrasadas_detalle),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f)
                                     )
@@ -265,7 +272,7 @@ fun HomeScreen(
                                         shape = RoundedCornerShape(6.dp)
                                     ) {
                                         Text(
-                                            text = "🔔 VISITA PARA HOY",
+                                            text = stringResource(R.string.visita_para_hoy),
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onPrimary,
@@ -273,7 +280,7 @@ fun HomeScreen(
                                         )
                                     }
                                     Text(
-                                        text = "Ver Agenda",
+                                        text = stringResource(R.string.home_ver_agenda),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
@@ -287,7 +294,7 @@ fun HomeScreen(
                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                     Text(
-                                        text = destacada.obra.direccion.ifBlank { "Sin dirección especificada" },
+                                        text = destacada.obra.direccion.ifBlank { stringResource(R.string.sin_direccion) },
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                                     )
@@ -307,7 +314,7 @@ fun HomeScreen(
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Relevar Ahora", style = MaterialTheme.typography.labelMedium)
+                                        Text(stringResource(R.string.home_relevar_ahora), style = MaterialTheme.typography.labelMedium)
                                     }
                                 }
                             }
@@ -321,8 +328,8 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         ActionCard(
-                            title = "Mis obras",
-                            subtitle = "Ver y gestionar",
+                            title = stringResource(R.string.home_accion_mis_obras),
+                            subtitle = stringResource(R.string.home_accion_mis_obras_detalle),
                             icon = Icons.Outlined.GridView,
                             onClick = onNavigateToObras,
                             modifier = Modifier.weight(1f),
@@ -330,8 +337,12 @@ fun HomeScreen(
                         )
                         
                         ActionCard(
-                            title = "Agenda",
-                            subtitle = if (state.totalVisitasHoy > 0) "${state.totalVisitasHoy} para hoy" else "Itinerario de visitas",
+                            title = stringResource(R.string.home_accion_agenda),
+                            subtitle = if (state.totalVisitasHoy > 0) {
+                                stringResource(R.string.home_accion_agenda_hoy, state.totalVisitasHoy)
+                            } else {
+                                stringResource(R.string.home_accion_agenda_detalle)
+                            },
                             icon = Icons.Outlined.CalendarMonth,
                             onClick = onNavigateToAgenda,
                             modifier = Modifier.weight(1f),
@@ -342,8 +353,8 @@ fun HomeScreen(
 
                 item {
                     ActionCard(
-                        title = "Nuevo Relevamiento de Campo",
-                        subtitle = "Fotografías, notas técnicas y geolocalización",
+                        title = stringResource(R.string.home_accion_nuevo_relevamiento),
+                        subtitle = stringResource(R.string.home_accion_nuevo_relevamiento_detalle),
                         icon = Icons.Outlined.CameraAlt,
                         onClick = onNavigateToObraSelection,
                         modifier = Modifier.fillMaxWidth(),
@@ -362,13 +373,13 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "\u00daltimos relevamientos",
+                            text = stringResource(R.string.home_relevamientos_recientes),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Ver todos",
+                            text = stringResource(R.string.home_ver_todos),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.clickable { onNavigateToObras() }
@@ -379,7 +390,7 @@ fun HomeScreen(
                 if (state.recientes.isEmpty()) {
                     item {
                         Text(
-                            text = "No ten\u00e9s relevamientos recientes.",
+                            text = stringResource(R.string.home_sin_relevamientos),
                             color = Color.Gray,
                             modifier = Modifier.padding(vertical = 16.dp)
                         )
@@ -496,13 +507,13 @@ fun BannerLocation(
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Explorar Obras Públicas",
+                    text = stringResource(R.string.home_accion_obras_publicas),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Ver proyectos compartidos por otros usuarios",
+                    text = stringResource(R.string.home_accion_obras_publicas_detalle),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
@@ -530,8 +541,8 @@ fun HomeBottomNavigation(
         NavigationBarItem(
             selected = true,
             onClick = { },
-            icon = { Icon(Icons.Outlined.Home, contentDescription = "Inicio") },
-            label = { Text("Inicio", fontWeight = FontWeight.Bold) },
+            icon = { Icon(Icons.Outlined.Home, contentDescription = stringResource(R.string.nav_inicio)) },
+            label = { Text(stringResource(R.string.nav_inicio), fontWeight = FontWeight.Bold) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -543,8 +554,8 @@ fun HomeBottomNavigation(
         NavigationBarItem(
             selected = false,
             onClick = onNavigateToObras,
-            icon = { Icon(Icons.Outlined.Business, contentDescription = "Obras") },
-            label = { Text("Obras") },
+            icon = { Icon(Icons.Outlined.Business, contentDescription = stringResource(R.string.nav_obras)) },
+            label = { Text(stringResource(R.string.nav_obras)) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -555,8 +566,8 @@ fun HomeBottomNavigation(
         NavigationBarItem(
             selected = false,
             onClick = onNavigateToAgenda,
-            icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = "Agenda") },
-            label = { Text("Agenda") },
+            icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = stringResource(R.string.nav_agenda)) },
+            label = { Text(stringResource(R.string.nav_agenda)) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -567,8 +578,8 @@ fun HomeBottomNavigation(
         NavigationBarItem(
             selected = false,
             onClick = onNavigateToProfile,
-            icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil") },
-            label = { Text("Perfil") },
+            icon = { Icon(Icons.Outlined.Person, contentDescription = stringResource(R.string.nav_perfil)) },
+            label = { Text(stringResource(R.string.nav_perfil)) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,

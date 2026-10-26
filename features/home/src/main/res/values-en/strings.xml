@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Barra inferior (Home y Agenda) -->
+    <string name="nav_inicio">Home</string>
+    <string name="nav_obras">Projects</string>
+    <string name="nav_agenda">Schedule</string>
+    <string name="nav_perfil">Profile</string>
+
+    <!-- Comunes -->
+    <string name="volver">Back</string>
+    <string name="cancelar">Cancel</string>
+    <string name="ver">View</string>
+    <string name="sin_direccion">No address specified</string>
+    <string name="visita_para_hoy">🔔 VISIT TODAY</string>
+
+    <!-- Home -->
+    <string name="home_saludo">Hello, %1$s</string>
+    <string name="home_subtitulo">What would you like to do today?</string>
+    <string name="home_recordatorios_titulo">Visit reminders</string>
+    <string name="home_probar_demo">Try demo</string>
+    <plurals name="home_visitas_atrasadas">
+        <item quantity="one">⚠️ %d overdue site visit</item>
+        <item quantity="other">⚠️ %d overdue site visits</item>
+    </plurals>
+    <string name="home_visitas_atrasadas_detalle">There are pending site inspections in your schedule</string>
+    <string name="home_ver_agenda">View schedule</string>
+    <string name="home_relevar_ahora">Inspect now</string>
+    <string name="home_accion_mis_obras">My projects</string>
+    <string name="home_accion_mis_obras_detalle">View and manage</string>
+    <string name="home_accion_agenda">Schedule</string>
+    <string name="home_accion_agenda_hoy">%1$d for today</string>
+    <string name="home_accion_agenda_detalle">Visit itinerary</string>
+    <string name="home_accion_nuevo_relevamiento">New Field Inspection</string>
+    <string name="home_accion_nuevo_relevamiento_detalle">Photos, technical notes and geolocation</string>
+    <string name="home_accion_obras_publicas">Explore Public Projects</string>
+    <string name="home_accion_obras_publicas_detalle">See projects shared by other users</string>
+    <string name="home_relevamientos_recientes">Recent inspections</string>
+    <string name="home_ver_todos">View all</string>
+    <string name="home_sin_relevamientos">You have no recent inspections.</string>
+    <string name="home_foto_relevamiento">Inspection photo</string>
+
+    <!-- Agenda de visitas -->
+    <string name="agenda_titulo">Visit Schedule</string>
+    <string name="agenda_subtitulo">Itinerary and technical field control</string>
+    <string name="agenda_guardar_fecha">Save date</string>
+    <string name="agenda_quitar_fecha">Remove date</string>
+    <string name="agenda_filtro_todas">All</string>
+    <string name="agenda_filtro_urgentes_y_hoy">🚨 Urgent and today</string>
+    <string name="agenda_filtro_esta_semana">📅 This week</string>
+    <string name="agenda_filtro_proximas">⏳ Upcoming</string>
+    <string name="agenda_filtro_sin_programar">⚠️ Unscheduled</string>
+    <string name="agenda_vacio_titulo">No visits for this filter</string>
+    <string name="agenda_vacio_descripcion">You\'re all caught up, or select \'All\' to see the full itinerary.</string>
+    <string name="agenda_metrica_hoy">Today</string>
+    <string name="agenda_metrica_atrasadas">Overdue</string>
+    <string name="agenda_metrica_esta_semana">This week</string>
+    <string name="agenda_metrica_sin_fecha">No date</string>
+    <plurals name="agenda_badge_atrasada">
+        <item quantity="one">🚨 OVERDUE (%d DAY)</item>
+        <item quantity="other">🚨 OVERDUE (%d DAYS)</item>
+    </plurals>
+    <plurals name="agenda_badge_esta_semana">
+        <item quantity="one">📅 IN %1$d DAY (%2$s)</item>
+        <item quantity="other">📅 IN %1$d DAYS (%2$s)</item>
+    </plurals>
+    <plurals name="agenda_badge_sin_fecha">
+        <item quantity="one">⚠️ NO DATE (%d DAY WITHOUT INSPECTION)</item>
+        <item quantity="other">⚠️ NO DATE (%d DAYS WITHOUT INSPECTION)</item>
+    </plurals>
+    <string name="agenda_ver_obra">View project</string>
+    <string name="agenda_cliente">Client: %1$s</string>
+    <string name="agenda_ultimo_relevamiento">Last inspection: %1$s</string>
+    <string name="agenda_relevar">Inspect</string>
+    <string name="agenda_mapa">Map</string>
+    <string name="agenda_cambiar">Change</string>
+    <string name="agenda_agendar">Schedule</string>
+    <string name="agenda_visita_programada">Site visit scheduled for %1$s</string>
+    <string name="agenda_visita_cancelada">Next visit canceled for %1$s</string>
+    <string name="agenda_error_programar">Could not schedule the visit: %1$s</string>
+</resources>

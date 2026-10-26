@@ -70,15 +70,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.home.R
 import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.ItemAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,8 +106,10 @@ fun AgendaScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(state.mensajeFeedback) {
-        state.mensajeFeedback?.let {
+    val feedbackTexto = state.mensajeFeedback?.let { feedbackTexto(it) }
+
+    LaunchedEffect(feedbackTexto) {
+        feedbackTexto?.let {
             snackbarHostState.showSnackbar(it)
             onClearFeedbackMessage()
         }
@@ -122,7 +128,7 @@ fun AgendaScreen(
                         onConfirmarReprogramacion(obra, pickerState.selectedDateMillis)
                     }
                 ) {
-                    Text("Guardar Fecha")
+                    Text(stringResource(R.string.agenda_guardar_fecha))
                 }
             },
             dismissButton = {
@@ -133,11 +139,11 @@ fun AgendaScreen(
                                 onConfirmarReprogramacion(obra, null)
                             }
                         ) {
-                            Text("Quitar fecha", color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error)
                         }
                     }
                     TextButton(onClick = onCancelarReprogramacion) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.cancelar))
                     }
                 }
             }
@@ -155,12 +161,12 @@ fun AgendaScreen(
                 title = {
                     Column {
                         Text(
-                            text = "Agenda de Visitas",
+                            text = stringResource(R.string.agenda_titulo),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Itinerario y control técnico de campo",
+                            text = stringResource(R.string.agenda_subtitulo),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -170,7 +176,7 @@ fun AgendaScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 }
@@ -225,7 +231,7 @@ fun AgendaScreen(
                                         FiltroAgenda.PROXIMAS -> state.items.count { it.categoria == CategoriaAgendaVisita.PROXIMAS }
                                         FiltroAgenda.SIN_PROGRAMAR -> state.totalSinProgramar
                                     }
-                                    Text("${filtro.label} ($count)")
+                                    Text("${stringResource(filtro.labelRes)} ($count)")
                                 },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -261,12 +267,12 @@ fun AgendaScreen(
                                     modifier = Modifier.size(48.dp)
                                 )
                                 Text(
-                                    text = "No hay visitas para este filtro",
+                                    text = stringResource(R.string.agenda_vacio_titulo),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Tenés todo al día o podés seleccionar 'Todas' para ver el itinerario completo.",
+                                    text = stringResource(R.string.agenda_vacio_descripcion),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -301,6 +307,13 @@ fun AgendaScreen(
 }
 
 @Composable
+private fun feedbackTexto(feedback: FeedbackAgenda): String = when (feedback) {
+    is FeedbackAgenda.VisitaProgramada -> stringResource(R.string.agenda_visita_programada, feedback.obraNombre)
+    is FeedbackAgenda.VisitaCancelada -> stringResource(R.string.agenda_visita_cancelada, feedback.obraNombre)
+    is FeedbackAgenda.ErrorAlProgramar -> stringResource(R.string.agenda_error_programar, feedback.error.asMessage())
+}
+
+@Composable
 fun ResumenAgendaHeader(
     totalHoy: Int,
     totalVencidas: Int,
@@ -313,28 +326,28 @@ fun ResumenAgendaHeader(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         MetricaAgendaCard(
-            label = "Hoy",
+            label = stringResource(R.string.agenda_metrica_hoy),
             valor = totalHoy.toString(),
             colorFondo = if (totalHoy > 0) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
             colorTexto = if (totalHoy > 0) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         MetricaAgendaCard(
-            label = "Atrasadas",
+            label = stringResource(R.string.agenda_metrica_atrasadas),
             valor = totalVencidas.toString(),
             colorFondo = if (totalVencidas > 0) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surface,
             colorTexto = if (totalVencidas > 0) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         MetricaAgendaCard(
-            label = "Esta semana",
+            label = stringResource(R.string.agenda_metrica_esta_semana),
             valor = totalEstaSemana.toString(),
             colorFondo = MaterialTheme.colorScheme.surface,
             colorTexto = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         MetricaAgendaCard(
-            label = "Sin fecha",
+            label = stringResource(R.string.agenda_metrica_sin_fecha),
             valor = totalSinProgramar.toString(),
             colorFondo = if (totalSinProgramar > 0) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surface,
             colorTexto = if (totalSinProgramar > 0) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
@@ -396,12 +409,22 @@ fun AgendaVisitaCard(
         CategoriaAgendaVisita.SIN_PROGRAMAR -> MaterialTheme.colorScheme.tertiary
     }
 
+    val fechaProgramada = item.fechaProgramadaMillis?.let { formatFecha(it) }.orEmpty()
     val badgeText = when (item.categoria) {
-        CategoriaAgendaVisita.URGENTE_VENCIDA -> "🚨 ATRASADA (${Math.abs(item.diasDiferencia)} DÍAS)"
-        CategoriaAgendaVisita.HOY -> "🔔 VISITA PARA HOY"
-        CategoriaAgendaVisita.ESTA_SEMANA -> "📅 EN ${item.diasDiferencia} DÍAS (${item.fechaProgramadaMillis?.let { formatFecha(it) }})"
-        CategoriaAgendaVisita.PROXIMAS -> "⏳ ${item.fechaProgramadaMillis?.let { formatFecha(it) }}"
-        CategoriaAgendaVisita.SIN_PROGRAMAR -> "⚠️ SIN FECHA (${item.diasSinVisita ?: 0} DÍAS SIN RELEVAMIENTO)"
+        CategoriaAgendaVisita.URGENTE_VENCIDA -> {
+            val dias = Math.abs(item.diasDiferencia).toInt()
+            pluralStringResource(R.plurals.agenda_badge_atrasada, dias, dias)
+        }
+        CategoriaAgendaVisita.HOY -> stringResource(R.string.visita_para_hoy)
+        CategoriaAgendaVisita.ESTA_SEMANA -> {
+            val dias = item.diasDiferencia.toInt()
+            pluralStringResource(R.plurals.agenda_badge_esta_semana, dias, dias, fechaProgramada)
+        }
+        CategoriaAgendaVisita.PROXIMAS -> "⏳ $fechaProgramada"
+        CategoriaAgendaVisita.SIN_PROGRAMAR -> {
+            val dias = (item.diasSinVisita ?: 0L).toInt()
+            pluralStringResource(R.plurals.agenda_badge_sin_fecha, dias, dias)
+        }
     }
 
     Card(
@@ -440,7 +463,7 @@ fun AgendaVisitaCard(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "Ver Obra",
+                        text = stringResource(R.string.agenda_ver_obra),
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
@@ -456,7 +479,7 @@ fun AgendaVisitaCard(
                 )
                 if (item.obra.cliente.isNotBlank()) {
                     Text(
-                        text = "Cliente: ${item.obra.cliente}",
+                        text = stringResource(R.string.agenda_cliente, item.obra.cliente),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -475,7 +498,7 @@ fun AgendaVisitaCard(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = item.obra.direccion.ifBlank { "Sin dirección especificada" },
+                    text = item.obra.direccion.ifBlank { stringResource(R.string.sin_direccion) },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -497,7 +520,7 @@ fun AgendaVisitaCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "Último relevamiento: ${formatFecha(ultima)}",
+                        text = stringResource(R.string.agenda_ultimo_relevamiento, formatFecha(ultima)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline
                     )
@@ -527,7 +550,7 @@ fun AgendaVisitaCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Relevar",
+                        text = stringResource(R.string.agenda_relevar),
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
@@ -545,7 +568,7 @@ fun AgendaVisitaCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Mapa",
+                        text = stringResource(R.string.agenda_mapa),
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
@@ -563,7 +586,7 @@ fun AgendaVisitaCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (item.fechaProgramadaMillis != null) "Cambiar" else "Agendar",
+                        text = stringResource(if (item.fechaProgramadaMillis != null) R.string.agenda_cambiar else R.string.agenda_agendar),
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
@@ -585,8 +608,8 @@ fun AgendaBottomNavigation(
         NavigationBarItem(
             selected = false,
             onClick = onNavigateToHome,
-            icon = { Icon(Icons.Outlined.Home, contentDescription = "Inicio") },
-            label = { Text("Inicio") },
+            icon = { Icon(Icons.Outlined.Home, contentDescription = stringResource(R.string.nav_inicio)) },
+            label = { Text(stringResource(R.string.nav_inicio)) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -597,8 +620,8 @@ fun AgendaBottomNavigation(
         NavigationBarItem(
             selected = false,
             onClick = onNavigateToObras,
-            icon = { Icon(Icons.Outlined.Business, contentDescription = "Obras") },
-            label = { Text("Obras") },
+            icon = { Icon(Icons.Outlined.Business, contentDescription = stringResource(R.string.nav_obras)) },
+            label = { Text(stringResource(R.string.nav_obras)) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -609,8 +632,8 @@ fun AgendaBottomNavigation(
         NavigationBarItem(
             selected = true,
             onClick = { },
-            icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = "Agenda") },
-            label = { Text("Agenda", fontWeight = FontWeight.Bold) },
+            icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = stringResource(R.string.nav_agenda)) },
+            label = { Text(stringResource(R.string.nav_agenda), fontWeight = FontWeight.Bold) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -622,8 +645,8 @@ fun AgendaBottomNavigation(
         NavigationBarItem(
             selected = false,
             onClick = onNavigateToProfile,
-            icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil") },
-            label = { Text("Perfil") },
+            icon = { Icon(Icons.Outlined.Person, contentDescription = stringResource(R.string.nav_perfil)) },
+            label = { Text(stringResource(R.string.nav_perfil)) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,

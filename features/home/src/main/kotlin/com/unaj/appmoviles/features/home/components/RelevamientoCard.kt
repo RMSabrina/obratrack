@@ -26,11 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.home.RelevamientoReciente
+import com.unaj.appmoviles.home.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -57,7 +59,7 @@ fun RelevamientoCard(
             if (foto != null) {
                 AsyncImage(
                     model = foto,
-                    contentDescription = "Foto relevamiento",
+                    contentDescription = stringResource(R.string.home_foto_relevamiento),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(80.dp)
@@ -116,7 +118,7 @@ fun RelevamientoCard(
             
             Icon(
                 imageVector = Icons.Default.ChevronRight,
-                contentDescription = "Ver",
+                contentDescription = stringResource(R.string.ver),
                 tint = Color.Gray
             )
         }

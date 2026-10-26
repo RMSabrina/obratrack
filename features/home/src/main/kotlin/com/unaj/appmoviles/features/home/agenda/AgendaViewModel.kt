@@ -2,7 +2,6 @@ package com.unaj.appmoviles.features.home.agenda
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveAgendaVisitasUseCase
@@ -30,7 +29,7 @@ class AgendaViewModel @Inject constructor(
     private val filtroFlow = MutableStateFlow(FiltroAgenda.TODAS)
     private val obraParaReprogramarFlow = MutableStateFlow<Obra?>(null)
     private val isUpdatingFlow = MutableStateFlow(false)
-    private val feedbackMessageFlow = MutableStateFlow<String?>(null)
+    private val feedbackMessageFlow = MutableStateFlow<FeedbackAgenda?>(null)
 
     val uiState: StateFlow<AgendaUiState> = observeSessionUseCase()
         .flatMapLatest { user ->
@@ -76,18 +75,8 @@ class AgendaViewModel @Inject constructor(
         viewModelScope.launch {
             isUpdatingFlow.value = true
             obraParaReprogramarFlow.value = null
-            when (val res = scheduleVisitaUseCase(obra.userId, obra, nuevoMillis)) {
-                is AppResult.Success -> {
-                    feedbackMessageFlow.value = if (nuevoMillis != null) {
-                        "Visita técnica programada con éxito para ${obra.nombre}"
-                    } else {
-                        "Próxima visita cancelada para ${obra.nombre}"
-                    }
-                }
-                is AppResult.Error -> {
-                    feedbackMessageFlow.value = "Error al programar la visita: ${res.error}"
-                }
-            }
+            val res = scheduleVisitaUseCase(obra.userId, obra, nuevoMillis)
+            feedbackMessageFlow.value = feedbackDeReprogramacion(obra.nombre, nuevoMillis, res)
             isUpdatingFlow.value = false
         }
     }
