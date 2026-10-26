@@ -196,4 +196,33 @@
     <string name="relevamiento_form_programar_proxima">Programar próxima visita</string>
     <string name="relevamiento_form_nota">Nota u Observaciones</string>
     <string name="relevamiento_form_nota_placeholder">Escribe una descripción del avance o problema...</string>
+
+    <!-- Diálogos de borrado y cuerpo de los detalles -->
+    <string name="obra_eliminar_titulo">Eliminar Obra</string>
+    <string name="obra_eliminar_confirmacion">¿Eliminar Obra y todos sus relevamientos, tareas y suscriptores? Esta acción no se puede deshacer.</string>
+    <string name="obra_eliminar">Eliminar obra</string>
+    <string name="obra_no_encontrada">No encontramos esa obra</string>
+    <string name="obra_publica_no_encontrada">No encontramos esta obra o ya no es pública.</string>
+    <string name="obra_fechas">Fechas</string>
+    <string name="obra_fecha_inicio">Inicio: %1$s</string>
+    <string name="obra_ultima_visita">Última visita: %1$s</string>
+    <string name="obra_proxima_visita">Próxima visita</string>
+    <string name="obra_proxima_visita_fecha">Próxima visita: %1$s</string>
+    <string name="obra_proxima_visita_atrasada">Próxima visita: %1$s (Atrasada)</string>
+    <string name="ver_en_mapa">Ver en el mapa</string>
+    <string name="relevamiento_eliminar_titulo">Eliminar Relevamiento</string>
+    <string name="relevamiento_eliminar_confirmacion">¿Eliminar este relevamiento? Esta acción no se puede deshacer.</string>
+    <string name="relevamiento_eliminar">Eliminar relevamiento</string>
+    <string name="relevamiento_no_encontrado">No pudimos encontrar este relevamiento</string>
+    <string name="relevamiento_detalle_cliente">Cliente: %1$s</string>
+    <string name="relevamiento_detalle_fotografia">Fotografía del relevamiento</string>
+    <string name="relevamiento_detalle_sin_foto">Sin fotografía adjunta</string>
+    <string name="relevamiento_detalle_observaciones">Observaciones de la visita</string>
+    <string name="relevamiento_detalle_fecha">Fecha de visita: %1$s</string>
+    <string name="relevamiento_detalle_proxima">Próxima visita planificada: %1$s</string>
+    <string name="relevamiento_detalle_sin_notas">Sin notas registradas.</string>
+    <string name="relevamiento_detalle_ubicacion">Ubicación del Relevamiento</string>
+    <string name="tarea_registrar_evidencia">Registrar evidencia con foto</string>
+    <string name="tarea_foto_evidencia">Foto evidencia</string>
+    <string name="tarea_sin_nota">Sin nota descriptiva</string>
 </resources>

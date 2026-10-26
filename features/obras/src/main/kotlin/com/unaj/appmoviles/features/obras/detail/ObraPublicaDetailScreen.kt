@@ -92,7 +92,7 @@ fun ObraPublicaDetailScreen(
             state.isLoading -> LoadingContent(Modifier.padding(padding))
             obra == null -> {
                 Text(
-                    text = state.error?.message ?: "No encontramos esta obra o ya no es pública.",
+                    text = state.error?.message ?: stringResource(R.string.obra_publica_no_encontrada),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier
                         .padding(padding)
@@ -185,7 +185,7 @@ private fun RelevamientoPublicoCard(relevamiento: Relevamiento, onClick: () -> U
             relevamiento.fotoUrl?.let { url ->
                 AsyncImage(
                     model = url,
-                    contentDescription = "Foto del relevamiento",
+                    contentDescription = stringResource(R.string.relevamiento_form_foto),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp)
@@ -199,7 +199,7 @@ private fun RelevamientoPublicoCard(relevamiento: Relevamiento, onClick: () -> U
                     )
                     context.startActivity(Intent(Intent.ACTION_VIEW, geo))
                 }) {
-                    Text("Ver en mapa")
+                    Text(stringResource(R.string.ver_en_mapa))
                 }
             }
         }

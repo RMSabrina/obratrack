@@ -201,8 +201,8 @@ fun ObraDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { if (!state.isDeleting) showDeleteDialog = false },
-            title = { Text("Eliminar Obra") },
-            text = { Text("¿Eliminar Obra y todos sus relevamientos, tareas y suscriptores? Esta acción no se puede deshacer.") },
+            title = { Text(stringResource(R.string.obra_eliminar_titulo)) },
+            text = { Text(stringResource(R.string.obra_eliminar_confirmacion)) },
             confirmButton = {
                 TextButton(
                     enabled = !state.isDeleting,
@@ -211,7 +211,7 @@ fun ObraDetailScreen(
                         onDeleteObra()
                     }
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.eliminar), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
@@ -219,7 +219,7 @@ fun ObraDetailScreen(
                     enabled = !state.isDeleting,
                     onClick = { showDeleteDialog = false }
                 ) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancelar))
                 }
             }
         )
@@ -260,7 +260,7 @@ fun ObraDetailScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Eliminar obra",
+                                contentDescription = stringResource(R.string.obra_eliminar),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -270,7 +270,7 @@ fun ObraDetailScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Editar obra"
+                                contentDescription = stringResource(R.string.obras_editar_obra)
                             )
                         }
                     }
@@ -296,7 +296,7 @@ fun ObraDetailScreen(
             state.isLoading -> LoadingContent(Modifier.padding(padding))
             obra == null -> {
                 Text(
-                    text = state.error?.asMessage() ?: "No encontramos esa obra",
+                    text = state.error?.asMessage() ?: stringResource(R.string.obra_no_encontrada),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier
                         .padding(padding)
@@ -643,38 +643,35 @@ private fun ObraHeaderCard(obra: Obra, modifier: Modifier = Modifier) {
             InfoRow(
                 icon = Icons.Default.Person,
                 text = obra.cliente,
-                contentDescription = "Cliente"
+                contentDescription = stringResource(R.string.obra_form_cliente)
             )
             InfoRow(
                 icon = Icons.Default.Place,
                 text = obra.direccion,
-                contentDescription = "Dirección"
+                contentDescription = stringResource(R.string.obra_form_direccion)
             )
 
-            val fechas = buildString {
-                append("Inicio: ${formatFecha(obra.fechaInicio)}")
-                val visita = obra.ultimaVisita
-                if (visita != null) {
-                    append(" · Última visita: ${formatFecha(visita)}")
-                }
-            }
+            val inicio = stringResource(R.string.obra_fecha_inicio, formatFecha(obra.fechaInicio))
+            val fechas = obra.ultimaVisita?.let { visita ->
+                inicio + " · " + stringResource(R.string.obra_ultima_visita, formatFecha(visita))
+            } ?: inicio
             InfoRow(
                 icon = Icons.Default.DateRange,
                 text = fechas,
-                contentDescription = "Fechas"
+                contentDescription = stringResource(R.string.obra_fechas)
             )
 
             obra.proximaVisita?.let { proxima ->
                 val isPast = proxima < System.currentTimeMillis()
                 val proximaTexto = if (isPast) {
-                    "Próxima visita: " + formatFecha(proxima) + " (Atrasada)"
+                    stringResource(R.string.obra_proxima_visita_atrasada, formatFecha(proxima))
                 } else {
-                    "Próxima visita: " + formatFecha(proxima)
+                    stringResource(R.string.obra_proxima_visita_fecha, formatFecha(proxima))
                 }
                 InfoRow(
                     icon = if (isPast) Icons.Default.Warning else Icons.Default.Alarm,
                     text = proximaTexto,
-                    contentDescription = "Próxima visita"
+                    contentDescription = stringResource(R.string.obra_proxima_visita)
                 )
             }
         }
@@ -701,7 +698,7 @@ private fun RelevamientoCard(
             relevamiento.fotoUrl?.let { url ->
                 AsyncImage(
                     model = url,
-                    contentDescription = "Foto del relevamiento",
+                    contentDescription = stringResource(R.string.relevamiento_form_foto),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -742,7 +739,7 @@ private fun RelevamientoCard(
                             contentDescription = null,
                             modifier = Modifier.padding(end = 4.dp)
                         )
-                        Text("Ver en el mapa")
+                        Text(stringResource(R.string.ver_en_mapa))
                     }
                 }
             }

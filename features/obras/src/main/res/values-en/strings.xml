@@ -195,4 +195,33 @@
     <string name="relevamiento_form_programar_proxima">Schedule next visit</string>
     <string name="relevamiento_form_nota">Notes or observations</string>
     <string name="relevamiento_form_nota_placeholder">Describe the progress or issue...</string>
+
+    <!-- Diálogos de borrado y cuerpo de los detalles -->
+    <string name="obra_eliminar_titulo">Delete project</string>
+    <string name="obra_eliminar_confirmacion">Delete the project and all its inspections, tasks and subscribers? This action cannot be undone.</string>
+    <string name="obra_eliminar">Delete project</string>
+    <string name="obra_no_encontrada">We couldn\'t find that project</string>
+    <string name="obra_publica_no_encontrada">We couldn\'t find this project, or it\'s no longer public.</string>
+    <string name="obra_fechas">Dates</string>
+    <string name="obra_fecha_inicio">Start: %1$s</string>
+    <string name="obra_ultima_visita">Last visit: %1$s</string>
+    <string name="obra_proxima_visita">Next visit</string>
+    <string name="obra_proxima_visita_fecha">Next visit: %1$s</string>
+    <string name="obra_proxima_visita_atrasada">Next visit: %1$s (Overdue)</string>
+    <string name="ver_en_mapa">View on map</string>
+    <string name="relevamiento_eliminar_titulo">Delete inspection</string>
+    <string name="relevamiento_eliminar_confirmacion">Delete this inspection? This action cannot be undone.</string>
+    <string name="relevamiento_eliminar">Delete inspection</string>
+    <string name="relevamiento_no_encontrado">We couldn\'t find this inspection</string>
+    <string name="relevamiento_detalle_cliente">Client: %1$s</string>
+    <string name="relevamiento_detalle_fotografia">Inspection photo</string>
+    <string name="relevamiento_detalle_sin_foto">No photo attached</string>
+    <string name="relevamiento_detalle_observaciones">Visit notes</string>
+    <string name="relevamiento_detalle_fecha">Visit date: %1$s</string>
+    <string name="relevamiento_detalle_proxima">Next planned visit: %1$s</string>
+    <string name="relevamiento_detalle_sin_notas">No notes recorded.</string>
+    <string name="relevamiento_detalle_ubicacion">Inspection location</string>
+    <string name="tarea_registrar_evidencia">Record photo evidence</string>
+    <string name="tarea_foto_evidencia">Evidence photo</string>
+    <string name="tarea_sin_nota">No description</string>
 </resources>

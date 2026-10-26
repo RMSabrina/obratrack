@@ -152,8 +152,8 @@ fun RelevamientoDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { if (!state.isDeleting) showDeleteDialog = false },
-            title = { Text("Eliminar Relevamiento") },
-            text = { Text("¿Eliminar este relevamiento? Esta acción no se puede deshacer.") },
+            title = { Text(stringResource(R.string.relevamiento_eliminar_titulo)) },
+            text = { Text(stringResource(R.string.relevamiento_eliminar_confirmacion)) },
             confirmButton = {
                 TextButton(
                     enabled = !state.isDeleting,
@@ -162,7 +162,7 @@ fun RelevamientoDetailScreen(
                         onDeleteRelevamiento()
                     }
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.eliminar), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
@@ -170,7 +170,7 @@ fun RelevamientoDetailScreen(
                     enabled = !state.isDeleting,
                     onClick = { showDeleteDialog = false }
                 ) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancelar))
                 }
             }
         )
@@ -206,7 +206,7 @@ fun RelevamientoDetailScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Eliminar relevamiento",
+                                contentDescription = stringResource(R.string.relevamiento_eliminar),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -214,7 +214,7 @@ fun RelevamientoDetailScreen(
                             onClick = { if (!state.isDeleting) onEditRelevamiento(relevamiento) },
                             enabled = !state.isDeleting
                         ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Editar relevamiento")
+                            Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.relevamiento_form_editar))
                         }
                     }
                 }
@@ -225,7 +225,7 @@ fun RelevamientoDetailScreen(
                 ExtendedFloatingActionButton(
                     onClick = { onEditRelevamiento(relevamiento) },
                     icon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                    text = { Text("Editar relevamiento") }
+                    text = { Text(stringResource(R.string.relevamiento_form_editar)) }
                 )
             }
         }
@@ -241,7 +241,7 @@ fun RelevamientoDetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = state.error?.asMessage() ?: "No pudimos encontrar este relevamiento",
+                        text = state.error?.asMessage() ?: stringResource(R.string.relevamiento_no_encontrado),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -282,7 +282,7 @@ fun RelevamientoDetailScreen(
                                 if (obra.cliente.isNotBlank()) {
                                     InfoRow(
                                         icon = Icons.Default.Person,
-                                        text = "Cliente: " + obra.cliente
+                                        text = stringResource(R.string.relevamiento_detalle_cliente, obra.cliente)
                                     )
                                 }
                                 if (obra.direccion.isNotBlank()) {
@@ -301,7 +301,7 @@ fun RelevamientoDetailScreen(
                             if (!relevamiento.fotoUrl.isNullOrBlank()) {
                                 AsyncImage(
                                     model = relevamiento.fotoUrl,
-                                    contentDescription = "Fotografía del relevamiento",
+                                    contentDescription = stringResource(R.string.relevamiento_detalle_fotografia),
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -324,7 +324,7 @@ fun RelevamientoDetailScreen(
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "Sin fotografía adjunta",
+                                        text = stringResource(R.string.relevamiento_detalle_sin_foto),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -340,24 +340,24 @@ fun RelevamientoDetailScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "Observaciones de la visita",
+                                text = stringResource(R.string.relevamiento_detalle_observaciones),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                             InfoRow(
                                 icon = Icons.Default.DateRange,
-                                text = "Fecha de visita: " + formatFecha(relevamiento.fecha)
+                                text = stringResource(R.string.relevamiento_detalle_fecha, formatFecha(relevamiento.fecha))
                             )
                             relevamiento.proximaVisita?.let { proxima ->
                                 InfoRow(
                                     icon = Icons.Default.AddAlert,
-                                    text = "Próxima visita planificada: " + formatFecha(proxima)
+                                    text = stringResource(R.string.relevamiento_detalle_proxima, formatFecha(proxima))
                                 )
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = if (relevamiento.nota.isBlank()) "Sin notas registradas." else relevamiento.nota,
+                                text = relevamiento.nota.ifBlank { stringResource(R.string.relevamiento_detalle_sin_notas) },
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -368,7 +368,7 @@ fun RelevamientoDetailScreen(
                     MapPreviewCard(
                         latitud = relevamiento.ubicacion?.latitud,
                         longitud = relevamiento.ubicacion?.longitud,
-                        title = "Ubicación del Relevamiento"
+                        title = stringResource(R.string.relevamiento_detalle_ubicacion)
                     )
 
                     Spacer(modifier = Modifier.height(48.dp))

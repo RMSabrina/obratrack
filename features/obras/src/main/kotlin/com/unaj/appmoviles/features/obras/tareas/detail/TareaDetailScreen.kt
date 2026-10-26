@@ -235,7 +235,7 @@ fun TareaDetailScreen(
                 ) {
                     Icon(Icons.Default.AddAPhoto, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Registrar evidencia con foto")
+                    Text(stringResource(R.string.tarea_registrar_evidencia))
                 }
 
                 // Reabrir una tarea completada se hace editándola.
@@ -409,7 +409,7 @@ private fun RelevamientosVinculadosSeccion(
                         if (!relevamiento.fotoUrl.isNullOrBlank()) {
                             AsyncImage(
                                 model = relevamiento.fotoUrl,
-                                contentDescription = "Foto evidencia",
+                                contentDescription = stringResource(R.string.tarea_foto_evidencia),
                                 modifier = Modifier
                                     .size(60.dp)
                                     .clip(RoundedCornerShape(8.dp)),
@@ -441,7 +441,7 @@ private fun RelevamientosVinculadosSeccion(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = relevamiento.nota.ifBlank { "Sin nota descriptiva" },
+                                text = relevamiento.nota.ifBlank { stringResource(R.string.tarea_sin_nota) },
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
