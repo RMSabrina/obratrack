@@ -86,7 +86,7 @@ fun RelevamientoCard(
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = reciente.obraNombre,
+                    text = reciente.obraNombre ?: stringResource(R.string.home_obra_desconocida),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,

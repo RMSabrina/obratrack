@@ -82,4 +82,8 @@
     <string name="obra_seleccion_titulo">Select Project</string>
     <string name="obra_seleccion_instruccion">Choose the project to add the new inspection to.</string>
     <string name="obra_seleccion_vacia">You have no projects available.</string>
+
+    <!-- Textos por defecto -->
+    <string name="home_usuario">User</string>
+    <string name="home_obra_desconocida">Unknown project</string>
 </resources>

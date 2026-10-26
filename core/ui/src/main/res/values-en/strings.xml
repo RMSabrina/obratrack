@@ -42,4 +42,9 @@
     <string name="ui_map_picker_confirm">Confirm location</string>
     <string name="ui_map_picker_cancel">Cancel</string>
     <string name="ui_map_picker_instructions">Tap on the map to place the pin</string>
+
+    <!-- Búsqueda -->
+    <string name="ui_buscar_placeholder">Search...</string>
+    <string name="ui_buscar">Search</string>
+    <string name="ui_filtros">Filters</string>
 </resources>

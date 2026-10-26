@@ -44,16 +44,7 @@ class HomeViewModel @Inject constructor(
                         emit(emptyList())
                     }
                 ) { obras, relevamientos, agendaItems ->
-                    val recientes = relevamientos
-                        .sortedByDescending { it.fecha }
-                        .take(3)
-                        .map { rel ->
-                            val obra = obras.find { it.id == rel.obraId }
-                            RelevamientoReciente(
-                                relevamiento = rel,
-                                obraNombre = obra?.nombre ?: "Obra desconocida"
-                            )
-                        }
+                    val recientes = relevamientosRecientes(relevamientos, obras)
 
                     val visitasHoy = agendaItems.count { it.categoria == CategoriaAgendaVisita.HOY }
                     val visitasAtrasadas = agendaItems.count { it.categoria == CategoriaAgendaVisita.URGENTE_VENCIDA }
@@ -63,7 +54,7 @@ class HomeViewModel @Inject constructor(
                         
                     HomeUiState(
                         isLoading = false,
-                        userName = user.name.ifBlank { "Usuario" },
+                        userName = user.name,
                         obras = obras,
                         recientes = recientes,
                         proximaVisitaDestacada = destacada,
@@ -72,7 +63,7 @@ class HomeViewModel @Inject constructor(
                     )
                 }.catch { e ->
                     Log.e("HomeViewModel", "Error general en Home", e)
-                    emit(HomeUiState(isLoading = false, userName = user.name.ifBlank { "Usuario" }))
+                    emit(HomeUiState(isLoading = false, userName = user.name))
                 }
             }
         }

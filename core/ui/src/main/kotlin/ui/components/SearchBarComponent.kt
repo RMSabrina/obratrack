@@ -13,7 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.unaj.appmoviles.obratrack.core.ui.R
 
 @Composable
 fun SearchBarComponent(
@@ -21,7 +23,7 @@ fun SearchBarComponent(
     onQueryChange: (String) -> Unit,
     onFilterClick: () -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String = "Buscar..."
+    placeholder: String = stringResource(R.string.ui_buscar_placeholder)
 ) {
     OutlinedTextField(
         value = query,
@@ -31,14 +33,14 @@ fun SearchBarComponent(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Buscar"
+                contentDescription = stringResource(R.string.ui_buscar)
             )
         },
         trailingIcon = {
             IconButton(onClick = onFilterClick) {
                 Icon(
                     imageVector = Icons.Default.FilterList,
-                    contentDescription = "Filtros"
+                    contentDescription = stringResource(R.string.ui_filtros)
                 )
             }
         },

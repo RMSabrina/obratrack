@@ -82,4 +82,8 @@
     <string name="obra_seleccion_titulo">Seleccionar Obra</string>
     <string name="obra_seleccion_instruccion">Elegí a qué obra querés agregar el nuevo relevamiento.</string>
     <string name="obra_seleccion_vacia">No tenés obras disponibles.</string>
+
+    <!-- Textos por defecto -->
+    <string name="home_usuario">Usuario</string>
+    <string name="home_obra_desconocida">Obra desconocida</string>
 </resources>

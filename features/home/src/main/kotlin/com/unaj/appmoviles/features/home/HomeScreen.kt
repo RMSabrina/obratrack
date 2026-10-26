@@ -124,7 +124,10 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     Text(
-                        text = stringResource(R.string.home_saludo, state.userName),
+                        text = stringResource(
+                            R.string.home_saludo,
+                            state.userName.ifBlank { stringResource(R.string.home_usuario) }
+                        ),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
