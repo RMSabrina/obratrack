@@ -16,5 +16,7 @@ data class ObraDto(
     val ultimaVisitaMillis: Long?,
     val latitud: Double? = null,
     val longitud: Double? = null,
-    val proximaVisitaMillis: Long? = null
+    val proximaVisitaMillis: Long? = null,
+    /** Minutos desde la medianoche de la próxima visita; los documentos anteriores no lo tienen (null). */
+    val horaVisita: Int? = null
 )

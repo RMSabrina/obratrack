@@ -288,4 +288,14 @@
     <string name="pdf_firma_profesional">Signature of the responsible professional</string>
     <string name="pdf_firma_comitente">Owner / foreman approval</string>
     <string name="pdf_pie">ObraTrack — Technical site supervision and audit document. Page %1$d</string>
+
+    <!-- Hora de la visita -->
+    <string name="relevamiento_form_hora_visita_titulo">Visit time</string>
+    <string name="relevamiento_form_hora_visita_agregar">Add time (optional)</string>
+    <string name="relevamiento_form_hora_visita_cambiar">Change time</string>
+    <string name="relevamiento_form_hora_visita_programada">Time: %1$s</string>
+    <string name="relevamiento_form_hora_visita_quitar">Remove time</string>
+    <string name="relevamiento_detalle_proxima_hora">Next planned visit: %1$s at %2$s</string>
+    <string name="obra_proxima_visita_fecha_hora">Next visit: %1$s at %2$s</string>
+    <string name="obra_proxima_visita_atrasada_hora">Next visit: %1$s at %2$s (Overdue)</string>
 </resources>

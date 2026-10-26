@@ -288,4 +288,14 @@
     <string name="pdf_firma_profesional">Firma del professionista responsabile</string>
     <string name="pdf_firma_comitente">Approvazione del committente / capocantiere</string>
     <string name="pdf_pie">ObraTrack — Documento di supervisione tecnica e audit del cantiere. Pagina %1$d</string>
+
+    <!-- Hora de la visita -->
+    <string name="relevamiento_form_hora_visita_titulo">Orario del sopralluogo</string>
+    <string name="relevamiento_form_hora_visita_agregar">Aggiungi l\'orario (facoltativo)</string>
+    <string name="relevamiento_form_hora_visita_cambiar">Cambia l\'orario</string>
+    <string name="relevamiento_form_hora_visita_programada">Orario: %1$s</string>
+    <string name="relevamiento_form_hora_visita_quitar">Rimuovi l\'orario</string>
+    <string name="relevamiento_detalle_proxima_hora">Prossimo sopralluogo previsto: %1$s alle %2$s</string>
+    <string name="obra_proxima_visita_fecha_hora">Prossimo sopralluogo: %1$s alle %2$s</string>
+    <string name="obra_proxima_visita_atrasada_hora">Prossimo sopralluogo: %1$s alle %2$s (in ritardo)</string>
 </resources>

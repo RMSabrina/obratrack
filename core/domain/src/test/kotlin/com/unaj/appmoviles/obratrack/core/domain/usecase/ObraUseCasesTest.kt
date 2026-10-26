@@ -120,6 +120,8 @@ private class FakeObraRepository : ObraRepository {
         lastDraft = draft
         return AppResult.Success(draft.toObra(id = obraId))
     }
+    override suspend fun setProximaVisita(obraId: String, proximaVisita: Long?, horaVisita: Int?): AppResult<Unit> =
+    AppResult.Success(Unit)
 
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> = AppResult.Success(true)
     override suspend fun delete(obraId: String): AppResult<Unit> = AppResult.Success(Unit)

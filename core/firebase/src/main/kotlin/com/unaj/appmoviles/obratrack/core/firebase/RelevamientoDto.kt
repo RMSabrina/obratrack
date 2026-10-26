@@ -14,6 +14,8 @@ data class RelevamientoDto(
     val latitud: Double? = null,
     val longitud: Double? = null,
     val proximaVisitaMillis: Long? = null,
+    /** Minutos desde la medianoche; los documentos anteriores no lo tienen y se leen como null. */
+    val horaVisita: Int? = null,
     /** Campo opcional: los documentos anteriores a la Etapa 4 no lo tienen y se leen como null. */
     val tareaId: String? = null
 )

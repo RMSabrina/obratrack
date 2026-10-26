@@ -2,6 +2,7 @@ package com.unaj.appmoviles.features.obras
 
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toFechaCalendario
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toMillisCalendario
+import android.content.Context
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -24,3 +25,10 @@ fun millisUtcToLocalDate(millis: Long): LocalDate = millis.toFechaCalendario()
 
 /** Inversa de [millisUtcToLocalDate], para preseleccionar una fecha en el DatePicker. */
 fun LocalDate.toMillisUtc(): Long = toMillisCalendario()
+
+/** Hora de una visita (minutos desde la medianoche) con el formato 12/24 h del dispositivo. */
+fun formatHora(context: Context, minutos: Int): String {
+    val formato = android.text.format.DateFormat.getTimeFormat(context)
+    formato.timeZone = TimeZone.getTimeZone("UTC")
+    return formato.format(Date(minutos * 60_000L))
+}

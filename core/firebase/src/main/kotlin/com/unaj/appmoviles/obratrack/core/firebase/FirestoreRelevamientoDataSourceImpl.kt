@@ -100,6 +100,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
                 update(obraRef, FIELD_ULTIMA_VISITA, Timestamp(Date(ultimaVisita)))
                 if (stored.proximaVisitaMillis != null) {
                     update(obraRef, FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis)))
+                    update(obraRef, FIELD_HORA_VISITA, valorOpcionalParaMerge(stored.horaVisita))
                 }
             }.commit().await()
 
@@ -137,11 +138,15 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
                 FIELD_TAREA_ID to valorTareaIdParaMerge(stored.tareaId),
                 FIELD_FOTO_URL to valorOpcionalParaMerge(stored.fotoUrl),
                 FIELD_UBICACION to ubicacionParaMerge(stored.latitud, stored.longitud),
-                FIELD_PROXIMA_VISITA to valorOpcionalParaMerge(stored.proximaVisitaMillis?.let { Timestamp(Date(it)) })
+                FIELD_PROXIMA_VISITA to valorOpcionalParaMerge(stored.proximaVisitaMillis?.let { Timestamp(Date(it)) }),
+                FIELD_HORA_VISITA to valorOpcionalParaMerge(stored.horaVisita)
             )
             ref.set(campos, SetOptions.merge()).await()
             if (stored.proximaVisitaMillis != null) {
-                obraRef.update(FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis))).await()
+                obraRef.update(
+                    FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis)),
+                    FIELD_HORA_VISITA, valorOpcionalParaMerge(stored.horaVisita)
+                ).await()
             }
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
@@ -165,6 +170,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             map[FIELD_UBICACION] = GeoPoint(latitud, longitud)
         }
         proximaVisitaMillis?.let { map[FIELD_PROXIMA_VISITA] = Timestamp(Date(it)) }
+        horaVisita?.let { map[FIELD_HORA_VISITA] = it }
         tareaId?.let { map[FIELD_TAREA_ID] = it }
         return map
     }
@@ -182,6 +188,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             latitud = geo?.latitude,
             longitud = geo?.longitude,
             proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time,
+            horaVisita = getLong(FIELD_HORA_VISITA)?.toInt(),
             tareaId = getString(FIELD_TAREA_ID)
         )
     }
@@ -208,8 +215,21 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             latitud = geo?.latitude,
             longitud = geo?.longitude,
             proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time,
+            horaVisita = getLong(FIELD_HORA_VISITA)?.toInt(),
             tareaId = getString(FIELD_TAREA_ID)
         )
+    }
+
+    override suspend fun getByObra(obraId: String): FirebaseResult<List<RelevamientoDto>> {
+        return try {
+            if (auth.uid == null) return FirebaseResult.Error(RelevamientoForbiddenException())
+            val snapshot = relevamientos(obraId).get(Source.SERVER).await()
+            FirebaseResult.Success(snapshot.documents.mapNotNull { it.toRelevamientoDto(obraId) })
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
     }
 
     override suspend fun delete(obraId: String, relevamientoId: String): FirebaseResult<Unit> {
@@ -255,6 +275,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
         const val FIELD_UBICACION = "ubicacion"
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
         const val FIELD_PROXIMA_VISITA = "proximaVisita"
+        const val FIELD_HORA_VISITA = "horaVisita"
         const val FIELD_TAREA_ID = RELEVAMIENTO_FIELD_TAREA_ID
     }
 }

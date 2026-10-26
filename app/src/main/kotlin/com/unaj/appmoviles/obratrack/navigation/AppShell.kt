@@ -296,6 +296,7 @@ fun AppShell(onLogout: () -> Unit) {
                                 latitud = relevamiento.ubicacion?.latitud,
                                 longitud = relevamiento.ubicacion?.longitud,
                                 proximaVisita = relevamiento.proximaVisita,
+                                horaVisita = relevamiento.horaVisita,
                                 tareaId = relevamiento.tareaId
                             )
                         )
@@ -313,6 +314,7 @@ fun AppShell(onLogout: () -> Unit) {
                         latitud = destination.latitud,
                         longitud = destination.longitud,
                         proximaVisita = destination.proximaVisita,
+                        horaVisita = destination.horaVisita,
                         tareaId = destination.tareaId
                     ),
                     onBack = ::goBack,

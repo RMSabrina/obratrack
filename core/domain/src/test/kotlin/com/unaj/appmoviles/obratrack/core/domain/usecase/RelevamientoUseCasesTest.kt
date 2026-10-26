@@ -7,6 +7,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.CreateRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.UpdateRelevamientoUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.SincronizarProximaVisitaObraUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
@@ -47,7 +48,7 @@ class RelevamientoUseCasesTest {
     @Test
     fun update_rechazaNotaVacia_yNoLlamaAlRepositorio() = runBlocking {
         val repository = FakeRelevamientoRepository()
-        val result = UpdateRelevamientoUseCase(repository)("uid", "obra-1", "rel-1", draft(nota = ""))
+        val result = UpdateRelevamientoUseCase(repository, SincronizarProximaVisitaObraUseCase(repository, FakeBaseObraRepository()))("uid", "obra-1", "rel-1", draft(nota = ""))
 
         assertEquals(RelevamientoError.NotaVacia, (result as AppResult.Error).error)
         assertEquals(0, repository.updateCalls)
@@ -105,6 +106,7 @@ private class FakeRelevamientoRepository : RelevamientoRepository {
             )
         )
     }
+    override suspend fun getByObra(obraId: String): AppResult<List<Relevamiento>> = AppResult.Success(emptyList())
 
     override suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit> = AppResult.Success(Unit)
     override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> = AppResult.Success(Unit)

@@ -59,6 +59,7 @@ class RelevamientoRepositoryImplTest {
             actualizados += dto
             return FirebaseResult.Success(dto)
         }
+    override suspend fun getByObra(obraId: String): FirebaseResult<List<RelevamientoDto>> = FirebaseResult.Success(emptyList())
 
         override suspend fun delete(obraId: String, relevamientoId: String): FirebaseResult<Unit> =
             FirebaseResult.Success(Unit)

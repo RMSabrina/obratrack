@@ -65,6 +65,7 @@ data class RelevamientoFormDestination(
     val latitud: Double? = null,
     val longitud: Double? = null,
     val proximaVisita: Long? = null,
+    val horaVisita: Int? = null,
     val tareaId: String? = null
 ) : NavKey
 

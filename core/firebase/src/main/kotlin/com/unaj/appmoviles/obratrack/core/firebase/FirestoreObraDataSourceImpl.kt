@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.Source
@@ -95,7 +96,12 @@ class FirestoreObraDataSourceImpl @Inject constructor(
             if (snapshot.getString(FIELD_USER_ID) != userId) {
                 return FirebaseResult.Error(ObraForbiddenException())
             }
-            ref.update(dto.toUpdateMap()).await()
+            // Si cambia la fecha de la próxima visita, la hora guardada ya no corresponde: se borra.
+            val fechaActual = snapshot.getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
+            val cambiaFecha = dto.proximaVisitaMillis != null && dto.proximaVisitaMillis != fechaActual
+            val campos = dto.toUpdateMap().toMutableMap<String, Any>()
+            if (cambiaFecha) campos[FIELD_HORA_VISITA] = FieldValue.delete()
+            ref.update(campos).await()
             FirebaseResult.Success(
                 dto.copy(
                     id = obraId,
@@ -103,6 +109,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
                     fechaInicioMillis = snapshot.getTimestamp(FIELD_FECHA_INICIO)?.toDate()?.time
                         ?: dto.fechaInicioMillis,
                     ultimaVisitaMillis = snapshot.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
+                    horaVisita = if (cambiaFecha) null else snapshot.getLong(FIELD_HORA_VISITA)?.toInt(),
                 )
             )
         } catch (e: CancellationException) {
@@ -163,7 +170,8 @@ class FirestoreObraDataSourceImpl @Inject constructor(
             ultimaVisitaMillis = getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
             latitud = geo?.latitude,
             longitud = geo?.longitude,
-            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
+            proximaVisitaMillis = getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time,
+            horaVisita = getLong(FIELD_HORA_VISITA)?.toInt()
         )
     }
 
@@ -176,6 +184,26 @@ class FirestoreObraDataSourceImpl @Inject constructor(
                 .get(Source.SERVER)
                 .await()
             FirebaseResult.Success(!querySnapshot.isEmpty)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
+    }
+
+    override suspend fun setProximaVisita(
+        obraId: String,
+        proximaVisitaMillis: Long?,
+        horaVisita: Int?
+    ): FirebaseResult<Unit> {
+        return try {
+            if (auth.uid == null) return FirebaseResult.Error(ObraForbiddenException())
+            // Sin próxima visita se borran los campos (no se guarda null).
+            firestore.collection(COLLECTION).document(obraId).update(
+                FIELD_PROXIMA_VISITA, proximaVisitaMillis?.let { Timestamp(Date(it)) } ?: FieldValue.delete(),
+                FIELD_HORA_VISITA, horaVisita ?: FieldValue.delete()
+            ).await()
+            FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -233,6 +261,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
         const val FIELD_ULTIMA_VISITA = "ultimaVisita"
         const val FIELD_UBICACION = "ubicacion"
         const val FIELD_PROXIMA_VISITA = "proximaVisita"
+        const val FIELD_HORA_VISITA = "horaVisita"
         const val ESTADO_ACTIVA = "activa"
     }
 }

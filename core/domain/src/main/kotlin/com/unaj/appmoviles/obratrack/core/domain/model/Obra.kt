@@ -11,5 +11,7 @@ data class Obra(
     val fechaInicio: Long,
     val ultimaVisita: Long?,
     val ubicacion: Ubicacion? = null,
-    val proximaVisita: Long? = null
+    val proximaVisita: Long? = null,
+    /** Minutos desde la medianoche (0..1439) de [proximaVisita]; null = sin hora. */
+    val horaVisita: Int? = null
 )

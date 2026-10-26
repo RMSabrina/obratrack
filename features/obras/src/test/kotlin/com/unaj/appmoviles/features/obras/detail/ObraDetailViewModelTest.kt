@@ -121,8 +121,8 @@ class ObraDetailViewModelTest {
 
     private fun diaUtc(dia: LocalDate): Long = dia.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
-    private suspend fun proximaVisitaAtrasada(dia: LocalDate): Boolean {
-        val obra = obraDe(DUENO.id, publica = true).copy(proximaVisita = diaUtc(dia))
+    private suspend fun proximaVisitaAtrasada(dia: LocalDate, horaVisita: Int? = null): Boolean {
+        val obra = obraDe(DUENO.id, publica = true).copy(proximaVisita = diaUtc(dia), horaVisita = horaVisita)
         val viewModel = crearViewModel(obra = obra)
         testDispatcher.scheduler.advanceUntilIdle()
         return viewModel.uiState.value.proximaVisitaAtrasada
@@ -132,6 +132,13 @@ class ObraDetailViewModelTest {
     fun proximaVisita_hoy_noEstaAtrasada_aunqueLaMedianocheUtcYaPaso() = runTest {
         // "Hoy" es el 21 en Buenos Aires (22:00 locales); la medianoche UTC del 21 ya quedó atrás.
         assertFalse(proximaVisitaAtrasada(LocalDate.of(2026, 10, 21)))
+    }
+
+    @Test
+    fun proximaVisitaConHora_hoy_vencePasadaLaHora() = runTest {
+        // Son las 22:00 del 21 en Buenos Aires.
+        assertTrue(proximaVisitaAtrasada(LocalDate.of(2026, 10, 21), horaVisita = 21 * 60 + 59))
+        assertFalse(proximaVisitaAtrasada(LocalDate.of(2026, 10, 21), horaVisita = 22 * 60 + 30))
     }
 
     @Test

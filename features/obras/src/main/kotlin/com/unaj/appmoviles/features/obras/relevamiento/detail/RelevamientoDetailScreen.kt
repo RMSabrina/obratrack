@@ -59,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.features.obras.formatHora
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
@@ -352,7 +353,13 @@ fun RelevamientoDetailScreen(
                             relevamiento.proximaVisita?.let { proxima ->
                                 InfoRow(
                                     icon = Icons.Default.AddAlert,
-                                    text = stringResource(R.string.relevamiento_detalle_proxima, formatFecha(proxima))
+                                    text = relevamiento.horaVisita?.let { hora ->
+                                        stringResource(
+                                            R.string.relevamiento_detalle_proxima_hora,
+                                            formatFecha(proxima),
+                                            formatHora(LocalContext.current, hora)
+                                        )
+                                    } ?: stringResource(R.string.relevamiento_detalle_proxima, formatFecha(proxima))
                                 )
                             }
                             Spacer(modifier = Modifier.height(4.dp))

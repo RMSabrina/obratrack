@@ -16,6 +16,7 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseC
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.CreateRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.UpdateRelevamientoUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.SincronizarProximaVisitaObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareasUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -86,7 +87,10 @@ class RelevamientoFormViewModelTest {
     ) = RelevamientoFormViewModel(
         observeSession = ObserveSessionUseCase(FakeAuthRepository(user)),
         createRelevamiento = CreateRelevamientoUseCase(relevamientoRepo),
-        updateRelevamiento = UpdateRelevamientoUseCase(relevamientoRepo),
+        updateRelevamiento = UpdateRelevamientoUseCase(
+            relevamientoRepo,
+            SincronizarProximaVisitaObraUseCase(relevamientoRepo, FakeObraRepository(obraDe(DUENO.id, publica = true)))
+        ),
         observeObra = ObserveObraUseCase(FakeObraRepository(obraDe(DUENO.id, publica = true))),
         observeTareas = ObserveTareasUseCase(tareaRepo),
         obraId = OBRA_ID,

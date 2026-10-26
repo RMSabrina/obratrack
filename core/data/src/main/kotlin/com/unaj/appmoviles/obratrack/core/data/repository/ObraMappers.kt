@@ -1,5 +1,6 @@
 package com.unaj.appmoviles.obratrack.core.data.repository
 
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.horaVisitaValida
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
@@ -26,7 +27,8 @@ fun ObraDto.toDomain(): Obra {
         fechaInicio = fechaInicioMillis,
         ultimaVisita = ultimaVisitaMillis,
         ubicacion = if (lat != null && lon != null) Ubicacion(lat, lon) else null,
-        proximaVisita = proximaVisitaMillis
+        proximaVisita = proximaVisitaMillis,
+        horaVisita = if (proximaVisitaMillis != null) horaVisitaValida(horaVisita) else null
     )
 }
 

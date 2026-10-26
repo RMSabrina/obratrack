@@ -289,4 +289,14 @@
     <string name="pdf_firma_profesional">Firma del Profesional Responsable</string>
     <string name="pdf_firma_comitente">Conformidad Comitente / Capataz</string>
     <string name="pdf_pie">ObraTrack — Documento de supervisión y auditoría técnica de obra. Pág. %1$d</string>
+
+    <!-- Hora de la visita -->
+    <string name="relevamiento_form_hora_visita_titulo">Hora de la visita</string>
+    <string name="relevamiento_form_hora_visita_agregar">Agregar hora (opcional)</string>
+    <string name="relevamiento_form_hora_visita_cambiar">Cambiar hora</string>
+    <string name="relevamiento_form_hora_visita_programada">Hora: %1$s</string>
+    <string name="relevamiento_form_hora_visita_quitar">Quitar hora</string>
+    <string name="relevamiento_detalle_proxima_hora">Próxima visita prevista: %1$s a las %2$s</string>
+    <string name="obra_proxima_visita_fecha_hora">Próxima visita: %1$s a las %2$s</string>
+    <string name="obra_proxima_visita_atrasada_hora">Próxima visita: %1$s a las %2$s (Atrasada)</string>
 </resources>

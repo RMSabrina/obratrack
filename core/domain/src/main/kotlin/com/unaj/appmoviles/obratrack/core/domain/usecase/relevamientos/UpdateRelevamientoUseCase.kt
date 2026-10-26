@@ -7,7 +7,8 @@ import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoReposito
 import javax.inject.Inject
 
 class UpdateRelevamientoUseCase @Inject constructor(
-    private val relevamientoRepository: RelevamientoRepository
+    private val relevamientoRepository: RelevamientoRepository,
+    private val sincronizarProximaVisita: SincronizarProximaVisitaObraUseCase
 ) {
     suspend operator fun invoke(
         userId: String,
@@ -18,6 +19,12 @@ class UpdateRelevamientoUseCase @Inject constructor(
     ): AppResult<Relevamiento> {
         val normalized = draft.normalized()
         normalized.validationError()?.let { return AppResult.Error(it) }
-        return relevamientoRepository.update(userId, obraId, relevamientoId, normalized, photo)
+        val result = relevamientoRepository.update(userId, obraId, relevamientoId, normalized, photo)
+        // Sin próxima visita propia, la de la obra puede venir de otro relevamiento (o de ninguno).
+        if (result is AppResult.Success && normalized.proximaVisita == null) {
+            val sync = sincronizarProximaVisita(obraId)
+            if (sync is AppResult.Error) return sync
+        }
+        return result
     }
 }

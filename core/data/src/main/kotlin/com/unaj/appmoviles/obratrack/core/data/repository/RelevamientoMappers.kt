@@ -1,5 +1,6 @@
 package com.unaj.appmoviles.obratrack.core.data.repository
 
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.horaVisitaValida
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
@@ -26,6 +27,7 @@ fun RelevamientoDto.toDomain(): Relevamiento = Relevamiento(
         if (lat != null && lng != null) Ubicacion(lat, lng) else null
     },
     proximaVisita = proximaVisitaMillis,
+    horaVisita = if (proximaVisitaMillis != null) horaVisitaValida(horaVisita) else null,
     // Sin campo (relevamientos anteriores a la Etapa 4) o vacío: sin tarea vinculada.
     tareaId = tareaId?.takeIf { it.isNotBlank() }
 )
@@ -40,6 +42,7 @@ fun RelevamientoDraft.toDto(userId: String, obraId: String): RelevamientoDto = R
     latitud = ubicacion?.latitud,
     longitud = ubicacion?.longitud,
     proximaVisitaMillis = proximaVisita,
+    horaVisita = if (proximaVisita != null) horaVisitaValida(horaVisita) else null,
     tareaId = tareaId?.takeIf { it.isNotBlank() }
 )
 

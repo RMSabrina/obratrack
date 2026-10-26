@@ -9,8 +9,10 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.DeleteObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoFechaVisita
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoVisitaConHora
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.estadoFechaVisita
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.estadoVisitaConHora
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toFechaCalendario
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareasUseCase
@@ -71,8 +73,14 @@ class ObraDetailViewModel @AssistedInject constructor(
                     val esDueno = obra?.userId == user.id
                     // tareas == null: no se pudieron leer; el resumen se oculta.
                     val resumenTareas = if (esDueno) tareas?.resumen(LocalDate.now(clock)) else null
-                    val proximaVisitaAtrasada = obra?.proximaVisita?.let {
-                        estadoFechaVisita(it.toFechaCalendario(), LocalDate.now(clock)) is EstadoFechaVisita.Atrasada
+                    val proximaVisitaAtrasada = obra?.proximaVisita?.let { proxima ->
+                        val fecha = proxima.toFechaCalendario()
+                        val hora = obra.horaVisita
+                        if (hora != null) {
+                            estadoVisitaConHora(fecha, hora, clock) is EstadoVisitaConHora.Atrasada
+                        } else {
+                            estadoFechaVisita(fecha, LocalDate.now(clock)) is EstadoFechaVisita.Atrasada
+                        }
                     } ?: false
                     val current = _uiState.value
                     if (current.isDeleting) {

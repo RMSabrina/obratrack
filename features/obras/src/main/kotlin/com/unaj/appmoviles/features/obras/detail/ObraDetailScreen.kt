@@ -70,6 +70,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.features.obras.formatHora
 import com.unaj.appmoviles.features.obras.label
 import com.unaj.appmoviles.features.obras.tareas.cronograma.CronogramaRoute
 import com.unaj.appmoviles.features.obras.tareas.list.TareasListRoute
@@ -663,10 +664,14 @@ private fun ObraHeaderCard(obra: Obra, proximaVisitaAtrasada: Boolean, modifier:
 
             obra.proximaVisita?.let { proxima ->
                 val isPast = proximaVisitaAtrasada
-                val proximaTexto = if (isPast) {
-                    stringResource(R.string.obra_proxima_visita_atrasada, formatFecha(proxima))
-                } else {
-                    stringResource(R.string.obra_proxima_visita_fecha, formatFecha(proxima))
+                val hora = obra.horaVisita?.let { formatHora(LocalContext.current, it) }
+                val proximaTexto = when {
+                    hora != null && isPast ->
+                        stringResource(R.string.obra_proxima_visita_atrasada_hora, formatFecha(proxima), hora)
+                    hora != null ->
+                        stringResource(R.string.obra_proxima_visita_fecha_hora, formatFecha(proxima), hora)
+                    isPast -> stringResource(R.string.obra_proxima_visita_atrasada, formatFecha(proxima))
+                    else -> stringResource(R.string.obra_proxima_visita_fecha, formatFecha(proxima))
                 }
                 InfoRow(
                     icon = if (isPast) Icons.Default.Warning else Icons.Default.Alarm,

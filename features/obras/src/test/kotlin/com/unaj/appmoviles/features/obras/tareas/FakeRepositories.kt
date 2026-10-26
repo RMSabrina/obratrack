@@ -64,6 +64,8 @@ class FakeObraRepository(obra: Obra?) : ObraRepository {
         this.obra.map { it?.takeIf { o -> o.id == obraId && o.publica } }
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> = TODO()
+    override suspend fun setProximaVisita(obraId: String, proximaVisita: Long?, horaVisita: Int?): AppResult<Unit> =
+        AppResult.Success(Unit)
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> = TODO()
     override suspend fun delete(obraId: String): AppResult<Unit> = TODO()
     override suspend fun deleteAllSuscriptoresByObra(obraId: String): AppResult<Unit> = TODO()
@@ -115,6 +117,7 @@ class FakeRelevamientoRepository(relevamientos: List<Relevamiento> = emptyList()
         updated += relevamientoId to draft
         return AppResult.Success(draft.toRelevamiento(relevamientoId, obraId, userId))
     }
+    override suspend fun getByObra(obraId: String): AppResult<List<Relevamiento>> = AppResult.Success(emptyList())
     override suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit> = TODO()
     override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> = TODO()
 }

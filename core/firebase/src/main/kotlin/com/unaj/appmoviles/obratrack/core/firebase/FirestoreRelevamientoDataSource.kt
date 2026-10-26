@@ -9,6 +9,7 @@ interface FirestoreRelevamientoDataSource {
     fun observeByTarea(obraId: String, tareaId: String): Flow<List<RelevamientoDto>>
     suspend fun create(dto: RelevamientoDto, photo: ByteArray? = null): FirebaseResult<RelevamientoDto>
     suspend fun update(userId: String, dto: RelevamientoDto, photo: ByteArray? = null): FirebaseResult<RelevamientoDto>
+    suspend fun getByObra(obraId: String): FirebaseResult<List<RelevamientoDto>>
     suspend fun delete(obraId: String, relevamientoId: String): FirebaseResult<Unit>
     suspend fun deleteAllByObra(obraId: String): FirebaseResult<Unit>
 }

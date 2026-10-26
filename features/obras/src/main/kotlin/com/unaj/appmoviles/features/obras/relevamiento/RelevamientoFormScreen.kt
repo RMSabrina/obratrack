@@ -35,6 +35,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.HORA_VISITA_POR_DEFECTO_MINUTOS
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.CameraAlt
@@ -95,6 +100,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import kotlinx.coroutines.launch
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.features.obras.formatHora
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.obras.R
@@ -115,6 +121,7 @@ data class RelevamientoFormInitial(
     val latitud: Double? = null,
     val longitud: Double? = null,
     val proximaVisita: Long? = null,
+    val horaVisita: Int? = null,
     val tareaId: String? = null
 )
 
@@ -169,6 +176,8 @@ fun RelevamientoFormScreen(
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var proximaVisita by rememberSaveable { mutableStateOf(initial.proximaVisita) }
     var showProximaVisitaPicker by rememberSaveable { mutableStateOf(false) }
+    var horaVisita by rememberSaveable { mutableStateOf(initial.horaVisita) }
+    var showHoraPicker by rememberSaveable { mutableStateOf(false) }
     var fotoLocal by rememberSaveable { mutableStateOf<String?>(null) }
     var fotoRemota by rememberSaveable { mutableStateOf(initial.fotoUrl) }
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
@@ -316,6 +325,30 @@ fun RelevamientoFormScreen(
         }
     }
 
+    if (showHoraPicker) {
+        val inicial = horaVisita ?: HORA_VISITA_POR_DEFECTO_MINUTOS
+        val timeState = rememberTimePickerState(
+            initialHour = inicial / 60,
+            initialMinute = inicial % 60,
+            is24Hour = android.text.format.DateFormat.is24HourFormat(context)
+        )
+        AlertDialog(
+            onDismissRequest = { showHoraPicker = false },
+            title = { Text(stringResource(R.string.relevamiento_form_hora_visita_titulo)) },
+            text = { TimePicker(state = timeState) },
+            confirmButton = {
+                TextButton(onClick = {
+                    horaVisita = timeState.hour * 60 + timeState.minute
+                    showHoraPicker = false
+                    onInputChanged()
+                }) { Text(stringResource(R.string.aceptar)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showHoraPicker = false }) { Text(stringResource(R.string.cancelar)) }
+            }
+        )
+    }
+
     val mensajeGuardadoContinuar = stringResource(R.string.relevamiento_form_guardado_continuar)
     LaunchedEffect(state) {
         if (state is RelevamientoFormUiState.SavedAndContinue) {
@@ -365,7 +398,7 @@ fun RelevamientoFormScreen(
                                 val lng = longitud
                                 val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
                                 onSave(
-                                    RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
+                                    RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita, horaVisita = horaVisita),
                                     bytes,
                                     true
                                 )
@@ -396,7 +429,7 @@ fun RelevamientoFormScreen(
                                     val lng = longitud
                                     val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
                                     onSave(
-                                        RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
+                                        RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita, horaVisita = horaVisita),
                                         bytes,
                                         false
                                     )
@@ -424,7 +457,7 @@ fun RelevamientoFormScreen(
                             val lng = longitud
                             val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
                             onSave(
-                                RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita),
+                                RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita, horaVisita = horaVisita),
                                 bytes,
                                 false
                             )
@@ -738,6 +771,7 @@ fun RelevamientoFormScreen(
                             IconButton(
                                 onClick = {
                                     proximaVisita = null
+                                    horaVisita = null
                                     onInputChanged()
                                 }
                             ) {
@@ -755,6 +789,39 @@ fun RelevamientoFormScreen(
                             Icon(Icons.Default.EditCalendar, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.relevamiento_form_cambiar_proxima))
+                        }
+                        horaVisita?.let { hora ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.relevamiento_form_hora_visita_programada, formatHora(context, hora)),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                IconButton(onClick = { horaVisita = null; onInputChanged() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = stringResource(R.string.relevamiento_form_hora_visita_quitar),
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                        OutlinedButton(
+                            onClick = { showHoraPicker = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Schedule, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                stringResource(
+                                    if (horaVisita != null) R.string.relevamiento_form_hora_visita_cambiar
+                                    else R.string.relevamiento_form_hora_visita_agregar
+                                )
+                            )
                         }
                     } else {
                         Text(
