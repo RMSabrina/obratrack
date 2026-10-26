@@ -55,6 +55,7 @@
     <string name="agenda_metrica_atrasadas">Overdue</string>
     <string name="agenda_metrica_esta_semana">This week</string>
     <string name="agenda_metrica_sin_fecha">No date</string>
+    <string name="agenda_badge_atrasada_hoy">🚨 OVERDUE (TODAY)</string>
     <plurals name="agenda_badge_atrasada">
         <item quantity="one">🚨 OVERDUE (%d DAY)</item>
         <item quantity="other">🚨 OVERDUE (%d DAYS)</item>

@@ -77,6 +77,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.features.obras.formatHora
 import com.unaj.appmoviles.home.R
 import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.ItemAgendaVisita
@@ -409,13 +410,19 @@ fun AgendaVisitaCard(
         CategoriaAgendaVisita.SIN_PROGRAMAR -> MaterialTheme.colorScheme.tertiary
     }
 
+    val context = LocalContext.current
+    val horaTexto = item.obra.horaVisita?.takeIf { item.fechaProgramadaMillis != null }?.let { formatHora(context, it) }
     val fechaProgramada = item.fechaProgramadaMillis?.let { formatFecha(it) }.orEmpty()
+        .let { if (horaTexto != null) "$it · $horaTexto" else it }
     val badgeText = when (item.categoria) {
         CategoriaAgendaVisita.URGENTE_VENCIDA -> {
             val dias = Math.abs(item.diasDiferencia).toInt()
-            pluralStringResource(R.plurals.agenda_badge_atrasada, dias, dias)
+            // Atrasada con hora pero del mismo día: no son "0 días".
+            val base = if (dias == 0) stringResource(R.string.agenda_badge_atrasada_hoy)
+                else pluralStringResource(R.plurals.agenda_badge_atrasada, dias, dias)
+            base + (horaTexto?.let { " · $it" } ?: "")
         }
-        CategoriaAgendaVisita.HOY -> stringResource(R.string.visita_para_hoy)
+        CategoriaAgendaVisita.HOY -> stringResource(R.string.visita_para_hoy) + (horaTexto?.let { " · $it" } ?: "")
         CategoriaAgendaVisita.ESTA_SEMANA -> {
             val dias = item.diasDiferencia.toInt()
             pluralStringResource(R.plurals.agenda_badge_esta_semana, dias, dias, fechaProgramada)

@@ -124,6 +124,48 @@ class AgendaVisitasUseCasesTest {
         assertEquals("Torre Norte", updatedDraft?.nombre)
     }
 
+    @Test
+    fun observeAgenda_mismoDia_ordenaPorHora() = runBlocking {
+        fun obra(id: String, hora: Int?) = Obra(
+            id = id, userId = "u1", nombre = id, cliente = "C", direccion = "D", publica = false,
+            estado = EstadoObra.ACTIVA, fechaInicio = 1000L, ultimaVisita = null,
+            proximaVisita = localDateToUtcMillis(baseDate.plusDays(3)), horaVisita = hora
+        )
+        val repo = object : FakeBaseObraRepository() {
+            override fun observe(userId: String): Flow<List<Obra>> =
+                flowOf(listOf(obra("tarde", 15 * 60), obra("temprano", 8 * 60), obra("sinHora", null)))
+        }
+
+        val items = ObserveAgendaVisitasUseCase(repo, clock)("u1").first()
+
+        assertEquals(listOf("temprano", "sinHora", "tarde"), items.map { it.obra.id })
+    }
+
+    private fun categoriaDe(hora: Int?): Pair<CategoriaAgendaVisita, Long> = runBlocking {
+        val obra = obraConVisita(localDateToUtcMillis(baseDate), hora)
+        val repo = object : FakeBaseObraRepository() {
+            override fun observe(userId: String): Flow<List<Obra>> = flowOf(listOf(obra))
+        }
+        // El reloj marca las 22:00 del 24/10 en Buenos Aires.
+        val item = ObserveAgendaVisitasUseCase(repo, clock)("u1").first().single()
+        item.categoria to item.diasDiferencia
+    }
+
+    @Test
+    fun observeAgenda_visitaDeHoyConHoraPasada_estaAtrasadaYNoEsCeroDias() {
+        assertEquals(CategoriaAgendaVisita.URGENTE_VENCIDA to 0L, categoriaDe(20 * 60 + 30))
+    }
+
+    @Test
+    fun observeAgenda_visitaDeHoyConHoraFutura_siguePendienteHoy() {
+        assertEquals(CategoriaAgendaVisita.HOY to 0L, categoriaDe(23 * 60))
+    }
+
+    @Test
+    fun observeAgenda_visitaDeHoySinHora_siguePendienteHastaQueTerminaElDia() {
+        assertEquals(CategoriaAgendaVisita.HOY to 0L, categoriaDe(null))
+    }
+
     private fun obraConVisita(proxima: Long?, hora: Int?) = Obra(
         id = "o1", userId = "u1", nombre = "Torre", cliente = "C", direccion = "D", publica = false,
         estado = EstadoObra.ACTIVA, fechaInicio = 1000L, ultimaVisita = null, proximaVisita = proxima, horaVisita = hora

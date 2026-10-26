@@ -55,6 +55,7 @@
     <string name="agenda_metrica_atrasadas">Atrasadas</string>
     <string name="agenda_metrica_esta_semana">Esta semana</string>
     <string name="agenda_metrica_sin_fecha">Sin fecha</string>
+    <string name="agenda_badge_atrasada_hoy">🚨 ATRASADA (HOY)</string>
     <plurals name="agenda_badge_atrasada">
         <item quantity="one">🚨 ATRASADA (%d DÍA)</item>
         <item quantity="other">🚨 ATRASADA (%d DÍAS)</item>

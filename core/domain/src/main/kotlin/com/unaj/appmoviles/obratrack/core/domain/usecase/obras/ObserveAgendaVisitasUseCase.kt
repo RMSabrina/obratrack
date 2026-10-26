@@ -26,16 +26,29 @@ class ObserveAgendaVisitasUseCase @Inject constructor(
                 compareBy(
                     { it.categoria.ordinal },
                     { it.fechaProgramadaMillis ?: Long.MAX_VALUE },
+                    // En un mismo día, primero la visita más temprana (sin hora cuenta como la hora por defecto).
+                    { it.obra.horaVisita ?: HORA_VISITA_POR_DEFECTO_MINUTOS },
                     { -(it.diasSinVisita ?: 0L) }
                 )
             )
         }
     }
 
+    /** Con hora, la visita vence al pasar la hora (hoy mismo); sin hora, al terminar el día. */
+    private fun estadoDeLaVisita(fecha: LocalDate, hora: Int?, today: LocalDate): EstadoFechaVisita {
+        if (hora == null) return estadoFechaVisita(fecha, today)
+        return when (val estado = estadoVisitaConHora(fecha, hora, clock)) {
+            EstadoVisitaConHora.Atrasada ->
+                EstadoFechaVisita.Atrasada(ChronoUnit.DAYS.between(fecha, today).coerceAtLeast(0L))
+            EstadoVisitaConHora.Hoy -> EstadoFechaVisita.Hoy
+            is EstadoVisitaConHora.Proxima -> EstadoFechaVisita.Proxima(estado.dias)
+        }
+    }
+
     private fun buildAgendaItem(obra: Obra, today: LocalDate): ItemAgendaVisita? {
         val proxima = obra.proximaVisita
         if (proxima != null) {
-            val estado = estadoFechaVisita(proxima.toFechaCalendario(), today)
+            val estado = estadoDeLaVisita(proxima.toFechaCalendario(), horaVisitaValida(obra.horaVisita), today)
             val (cat, diff) = when (estado) {
                 is EstadoFechaVisita.Atrasada -> CategoriaAgendaVisita.URGENTE_VENCIDA to -estado.dias
                 EstadoFechaVisita.Hoy -> CategoriaAgendaVisita.HOY to 0L

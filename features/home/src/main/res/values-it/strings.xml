@@ -55,6 +55,7 @@
     <string name="agenda_metrica_atrasadas">In ritardo</string>
     <string name="agenda_metrica_esta_semana">Questa settimana</string>
     <string name="agenda_metrica_sin_fecha">Senza data</string>
+    <string name="agenda_badge_atrasada_hoy">🚨 IN RITARDO (OGGI)</string>
     <plurals name="agenda_badge_atrasada">
         <item quantity="one">🚨 IN RITARDO (%d GIORNO)</item>
         <item quantity="other">🚨 IN RITARDO (%d GIORNI)</item>
