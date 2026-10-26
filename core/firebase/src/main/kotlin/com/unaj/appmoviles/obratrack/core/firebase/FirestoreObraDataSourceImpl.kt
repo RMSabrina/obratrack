@@ -101,6 +101,12 @@ class FirestoreObraDataSourceImpl @Inject constructor(
             val cambiaFecha = dto.proximaVisitaMillis != null && dto.proximaVisitaMillis != fechaActual
             val campos = dto.toUpdateMap().toMutableMap<String, Any>()
             if (cambiaFecha) campos[FIELD_HORA_VISITA] = FieldValue.delete()
+            // Sin próxima visita en el borrador, se quitan fecha y hora guardadas (nunca un null explícito).
+            val quitaVisita = dto.proximaVisitaMillis == null
+            if (quitaVisita) {
+                campos[FIELD_PROXIMA_VISITA] = FieldValue.delete()
+                campos[FIELD_HORA_VISITA] = FieldValue.delete()
+            }
             ref.update(campos).await()
             FirebaseResult.Success(
                 dto.copy(
@@ -109,7 +115,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
                     fechaInicioMillis = snapshot.getTimestamp(FIELD_FECHA_INICIO)?.toDate()?.time
                         ?: dto.fechaInicioMillis,
                     ultimaVisitaMillis = snapshot.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
-                    horaVisita = if (cambiaFecha) null else snapshot.getLong(FIELD_HORA_VISITA)?.toInt(),
+                    horaVisita = if (cambiaFecha || quitaVisita) null else snapshot.getLong(FIELD_HORA_VISITA)?.toInt(),
                 )
             )
         } catch (e: CancellationException) {
