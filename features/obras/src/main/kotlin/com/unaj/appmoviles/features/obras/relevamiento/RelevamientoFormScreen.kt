@@ -183,7 +183,7 @@ fun RelevamientoFormScreen(
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
     var longitud by rememberSaveable { mutableStateOf(initial.longitud) }
     var showMapPicker by rememberSaveable { mutableStateOf(false) }
-    var ubicacionMensaje by rememberSaveable { mutableStateOf<String?>(null) }
+    var ubicacionMensaje by rememberSaveable { mutableStateOf<Int?>(null) }
     var isCapturingLocation by remember { mutableStateOf(false) }
     var cancellationTokenSource by remember { mutableStateOf<CancellationTokenSource?>(null) }
 
@@ -270,7 +270,7 @@ fun RelevamientoFormScreen(
                 isCapturingLocation = false
                 cancellationTokenSource = null
                 if (ubicacion == null) {
-                    ubicacionMensaje = context.getString(R.string.obras_error_ubicacion_no_disponible)
+                    ubicacionMensaje = R.string.obras_error_ubicacion_no_disponible
                 } else {
                     latitud = ubicacion.latitud
                     longitud = ubicacion.longitud
@@ -278,7 +278,7 @@ fun RelevamientoFormScreen(
             }
         } else {
             isCapturingLocation = false
-            ubicacionMensaje = context.getString(R.string.obras_error_permiso_ubicacion)
+            ubicacionMensaje = R.string.obras_error_permiso_ubicacion
         }
     }
     
@@ -721,7 +721,7 @@ fun RelevamientoFormScreen(
                         if (ubicacionMensaje != null) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = ubicacionMensaje!!,
+                                text = stringResource(ubicacionMensaje!!),
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall
                             )
