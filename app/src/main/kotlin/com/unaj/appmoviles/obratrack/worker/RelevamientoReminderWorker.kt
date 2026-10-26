@@ -14,6 +14,7 @@ import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
+import com.unaj.appmoviles.obratrack.R
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.concurrent.TimeUnit
@@ -42,11 +43,15 @@ class RelevamientoReminderWorker @AssistedInject constructor(
             if (proxima != null) {
                 val diff = proxima - now
                 if (diff < oneDayMillis) {
-                    val title = if (diff < 0) "⚠️ Visita atrasada: " else "🔔 Visita técnica hoy: "
-                    val msg = if (diff < 0) {
-                        "La visita planificada para  está pendiente de relevamiento."
+                    val title = if (diff < 0) {
+                        applicationContext.getString(R.string.notif_visita_atrasada_titulo, obra.nombre)
                     } else {
-                        "Tenés inspección técnica programada para las próximas horas en ."
+                        applicationContext.getString(R.string.notif_visita_hoy_titulo, obra.nombre)
+                    }
+                    val msg = if (diff < 0) {
+                        applicationContext.getString(R.string.notif_visita_atrasada_mensaje, obra.cliente)
+                    } else {
+                        applicationContext.getString(R.string.notif_visita_hoy_mensaje, obra.direccion)
                     }
                     NotificationHelper.showNotification(
                         applicationContext,
@@ -65,8 +70,13 @@ class RelevamientoReminderWorker @AssistedInject constructor(
                 val diffSinVisita = now - ultima
                 if (diffSinVisita >= sevenDaysMillis) {
                     val diasSinVisita = diffSinVisita / oneDayMillis
-                    val title = "⚠️ Obra sin relevamientos: "
-                    val msg = "La obra para '' lleva  días sin visitas registradas."
+                    val title = applicationContext.getString(R.string.notif_sin_relevamientos_titulo, obra.nombre)
+                    val msg = applicationContext.resources.getQuantityString(
+                        R.plurals.notif_sin_relevamientos_mensaje,
+                        diasSinVisita.toInt(),
+                        obra.cliente,
+                        diasSinVisita
+                    )
                     NotificationHelper.showNotification(
                         applicationContext,
                         obra.id.hashCode() + 1,

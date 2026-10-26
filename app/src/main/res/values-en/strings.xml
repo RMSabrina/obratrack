@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ObraTrack</string>
+
+    <!-- Notificaciones -->
+    <string name="notif_canal_nombre">ObraTrack reminders</string>
+    <string name="notif_canal_descripcion">Automatic alerts for site visits and pending inspections</string>
+    <string name="notif_demo_titulo">🔔 Visit reminder</string>
+    <string name="notif_demo_mensaje">You have a site visit scheduled today at \'Edificio Mitre\'. Tap to review pending inspections.</string>
+    <string name="notif_visita_atrasada_titulo">⚠️ Overdue visit: %1$s</string>
+    <string name="notif_visita_atrasada_mensaje">The visit planned for %1$s is pending inspection.</string>
+    <string name="notif_visita_hoy_titulo">🔔 Site visit today: %1$s</string>
+    <string name="notif_visita_hoy_mensaje">You have a site inspection scheduled in the next few hours at %1$s.</string>
+    <string name="notif_sin_relevamientos_titulo">⚠️ Project without inspections: %1$s</string>
+    <plurals name="notif_sin_relevamientos_mensaje">
+        <item quantity="one">The project for \'%1$s\' has gone %2$d day without recorded visits.</item>
+        <item quantity="other">The project for \'%1$s\' has gone %2$d days without recorded visits.</item>
+    </plurals>
 </resources>

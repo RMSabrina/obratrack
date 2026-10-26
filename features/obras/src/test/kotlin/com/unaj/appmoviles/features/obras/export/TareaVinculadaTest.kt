@@ -13,17 +13,17 @@ class TareaVinculadaTest {
 
     @Test
     fun sinTareaId_omiteLaLinea() {
-        assertNull(tareaVinculadaTexto(null, tareas))
-        assertNull(tareaVinculadaTexto("", tareas))
+        assertNull(tareaVinculadaTitulo(null, tareas))
+        assertNull(tareaVinculadaTitulo("", tareas))
     }
 
     @Test
     fun tareaInexistente_omiteLaLinea() {
-        assertNull(tareaVinculadaTexto("borrada", tareas))
+        assertNull(tareaVinculadaTitulo("borrada", tareas))
     }
 
     @Test
     fun tareaExistente_muestraSuTitulo() {
-        assertEquals("Tarea Vinculada: Instalación eléctrica", tareaVinculadaTexto("t1", tareas))
+        assertEquals("Instalación eléctrica", tareaVinculadaTitulo("t1", tareas))
     }
 }

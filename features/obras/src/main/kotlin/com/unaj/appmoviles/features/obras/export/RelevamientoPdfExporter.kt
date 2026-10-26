@@ -20,6 +20,9 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.features.obras.labelRes
+import com.unaj.appmoviles.features.obras.tareas.labelRes
+import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
@@ -77,14 +80,15 @@ object RelevamientoPdfExporter {
             currentY = drawHeader(
                 context = context,
                 canvas = canvas,
-                title = "ACTA TÉCNICA DE RELEVAMIENTO",
-                subtitle = "Supervisión y Auditoría Técnica de Obra",
+                title = context.getString(R.string.pdf_acta_titulo),
+                subtitle = context.getString(R.string.pdf_acta_subtitulo),
                 startY = currentY,
                 contentWidth = contentWidth
             )
 
             // 2. TABLA DE METADATOS DE VISITA
             currentY = drawRelevamientoMetaTable(
+                context = context,
                 canvas = canvas,
                 obra = obra,
                 relevamiento = relevamiento,
@@ -101,7 +105,7 @@ object RelevamientoPdfExporter {
                 textSize = 14f
                 isFakeBoldText = true
             }
-            canvas.drawText("DICTAMEN TÉCNICO Y OBSERVACIONES DE CAMPO", PADDING, currentY, titlePaint)
+            canvas.drawText(context.getString(R.string.pdf_dictamen_titulo), PADDING, currentY, titlePaint)
             currentY += 14f
 
             val notePaint = TextPaint().apply {
@@ -109,7 +113,7 @@ object RelevamientoPdfExporter {
                 textSize = 11.5f
             }
             val textLayout = StaticLayout(
-                relevamiento.nota.ifBlank { "Sin observaciones registradas durante esta visita técnica." },
+                relevamiento.nota.ifBlank { context.getString(R.string.pdf_sin_observaciones_visita) },
                 notePaint,
                 contentWidth - 24,
                 Layout.Alignment.ALIGN_NORMAL,
@@ -147,14 +151,14 @@ object RelevamientoPdfExporter {
                     // Check if it fits on page 1, else create new page
                     val maxImgHeight = 220f
                     if (currentY + maxImgHeight + 100f > PAGE_HEIGHT - PADDING) {
-                        drawFooter(canvas, 1)
+                        drawFooter(context, canvas, 1)
                         pdfDocument.finishPage(currentPage)
                         currentPage = pdfDocument.startPage(pageInfo)
                         canvas = currentPage.canvas
                         currentY = PADDING
                     }
 
-                    canvas.drawText("EVIDENCIA FOTOGRÁFICA ADJUNTA", PADDING, currentY, titlePaint)
+                    canvas.drawText(context.getString(R.string.pdf_evidencia_titulo), PADDING, currentY, titlePaint)
                     currentY += 14f
 
                     val scale = minOf(contentWidth.toFloat() / bitmap.width, maxImgHeight / bitmap.height)
@@ -177,15 +181,15 @@ object RelevamientoPdfExporter {
 
             // 5. CONSTANCIA Y FIRMAS
             if (currentY + 100f > PAGE_HEIGHT - PADDING - 40f) {
-                drawFooter(canvas, 1)
+                drawFooter(context, canvas, 1)
                 pdfDocument.finishPage(currentPage)
                 currentPage = pdfDocument.startPage(pageInfo)
                 canvas = currentPage.canvas
                 currentY = PADDING
             }
 
-            drawSignatures(canvas, currentY, contentWidth)
-            drawFooter(canvas, 1)
+            drawSignatures(context, canvas, currentY, contentWidth)
+            drawFooter(context, canvas, 1)
             pdfDocument.finishPage(currentPage)
 
             // Guardar en cacheDir y retornar Uri con FileProvider
@@ -203,6 +207,7 @@ object RelevamientoPdfExporter {
     }
 
     private class PdfPageManager(
+        val context: Context,
         private val pdfDocument: PdfDocument,
         private val obraNombre: String
     ) {
@@ -215,19 +220,19 @@ object RelevamientoPdfExporter {
 
         fun ensureSpace(neededHeight: Float, contentWidth: Int) {
             if (currentY + neededHeight > PAGE_HEIGHT - PADDING - 40f) {
-                drawFooter(canvas, pageNumber)
+                drawFooter(context, canvas, pageNumber)
                 pdfDocument.finishPage(currentPage)
                 pageNumber++
                 pageInfo = PdfDocument.PageInfo.Builder(PAGE_WIDTH, PAGE_HEIGHT, pageNumber).create()
                 currentPage = pdfDocument.startPage(pageInfo)
                 canvas = currentPage.canvas
                 currentY = PADDING
-                currentY = drawContinuationHeader(canvas, obraNombre, currentY, contentWidth)
+                currentY = drawContinuationHeader(context, canvas, obraNombre, currentY, contentWidth)
             }
         }
 
         fun finish() {
-            drawFooter(canvas, pageNumber)
+            drawFooter(context, canvas, pageNumber)
             pdfDocument.finishPage(currentPage)
         }
     }
@@ -243,15 +248,15 @@ object RelevamientoPdfExporter {
         var pdfDocument: PdfDocument? = null
         try {
             pdfDocument = PdfDocument()
-            val pageManager = PdfPageManager(pdfDocument, obra.nombre)
+            val pageManager = PdfPageManager(context, pdfDocument, obra.nombre)
             val contentWidth = (PAGE_WIDTH - (PADDING * 2)).toInt()
 
             // 1. HEADER (Página 1)
             pageManager.currentY = drawHeader(
                 context = context,
                 canvas = pageManager.canvas,
-                title = "INFORME EJECUTIVO DE AVANCE DE OBRA",
-                subtitle = "Supervisión técnica, control de cronograma y auditoría fotográfica",
+                title = context.getString(R.string.pdf_informe_titulo),
+                subtitle = context.getString(R.string.pdf_informe_subtitulo),
                 startY = pageManager.currentY,
                 contentWidth = contentWidth
             )
@@ -262,7 +267,7 @@ object RelevamientoPdfExporter {
                 textSize = 9.5f
             }
             pageManager.canvas.drawText(
-                "Este informe incluye las tareas de la obra.",
+                context.getString(R.string.pdf_aviso_tareas),
                 PADDING,
                 pageManager.currentY,
                 avisoPaint
@@ -271,6 +276,7 @@ object RelevamientoPdfExporter {
 
             // 2. DATOS GENERALES DE LA OBRA
             pageManager.currentY = drawObraMetaTable(
+                context = context,
                 canvas = pageManager.canvas,
                 obra = obra,
                 startY = pageManager.currentY,
@@ -286,12 +292,13 @@ object RelevamientoPdfExporter {
                 textSize = 13f
                 isFakeBoldText = true
             }
-            pageManager.canvas.drawText("ESTADO DE CRONOGRAMA Y CONTROL DE TAREAS", PADDING, pageManager.currentY, titlePaint)
+            pageManager.canvas.drawText(context.getString(R.string.pdf_cronograma_titulo), PADDING, pageManager.currentY, titlePaint)
             pageManager.currentY += 14f
 
             val totalTareas = (resumenTareas?.completadas ?: 0) + (resumenTareas?.pendientes ?: 0)
             if (resumenTareas != null && totalTareas > 0) {
                 pageManager.currentY = drawCronogramaSummaryCards(
+                    context = context,
                     canvas = pageManager.canvas,
                     resumen = resumenTareas,
                     startY = pageManager.currentY,
@@ -302,7 +309,7 @@ object RelevamientoPdfExporter {
                     color = textMuted
                     textSize = 10f
                 }
-                pageManager.canvas.drawText("No hay tareas registradas en el cronograma.", PADDING, pageManager.currentY, emptyPaint)
+                pageManager.canvas.drawText(context.getString(R.string.pdf_sin_tareas), PADDING, pageManager.currentY, emptyPaint)
                 pageManager.currentY += 18f
             }
 
@@ -311,7 +318,7 @@ object RelevamientoPdfExporter {
             // 4. DESGLOSE DEL PLAN DE TRABAJO (SI HAY TAREAS)
             if (tareas.isNotEmpty()) {
                 pageManager.ensureSpace(80f, contentWidth)
-                pageManager.canvas.drawText("DESGLOSE DEL PLAN DE TRABAJO Y TAREAS", PADDING, pageManager.currentY, titlePaint)
+                pageManager.canvas.drawText(context.getString(R.string.pdf_desglose_titulo), PADDING, pageManager.currentY, titlePaint)
                 pageManager.currentY += 14f
 
                 pageManager.currentY = drawTareasTable(
@@ -324,7 +331,7 @@ object RelevamientoPdfExporter {
 
             // 5. HISTORIAL DE RELEVAMIENTOS TÉCNICOS
             pageManager.ensureSpace(80f, contentWidth)
-            pageManager.canvas.drawText("HISTORIAL DE VISITAS Y AUDITORÍA DE CAMPO", PADDING, pageManager.currentY, titlePaint)
+            pageManager.canvas.drawText(context.getString(R.string.pdf_historial_titulo), PADDING, pageManager.currentY, titlePaint)
             pageManager.currentY += 14f
 
             if (relevamientos.isEmpty()) {
@@ -332,7 +339,7 @@ object RelevamientoPdfExporter {
                     color = textMuted
                     textSize = 10f
                 }
-                pageManager.canvas.drawText("Esta obra todavía no registra relevamientos de campo.", PADDING, pageManager.currentY, emptyPaint)
+                pageManager.canvas.drawText(context.getString(R.string.pdf_sin_relevamientos), PADDING, pageManager.currentY, emptyPaint)
                 pageManager.currentY += 24f
             } else {
                 pageManager.currentY = drawRelevamientosTable(
@@ -352,14 +359,14 @@ object RelevamientoPdfExporter {
                     textSize = 14f
                     isFakeBoldText = true
                 }
-                pageManager.canvas.drawText("ANEXO FOTOGRÁFICO — EVIDENCIAS TÉCNICAS EN TERRENO", PADDING, pageManager.currentY, anexoTitlePaint)
+                pageManager.canvas.drawText(context.getString(R.string.pdf_anexo_titulo), PADDING, pageManager.currentY, anexoTitlePaint)
                 pageManager.currentY += 14f
 
                 val anexoSubPaint = TextPaint().apply {
                     color = textMuted
                     textSize = 9.5f
                 }
-                pageManager.canvas.drawText("Registro fotográfico de inspección, georreferenciación y dictámenes técnicos de obra", PADDING, pageManager.currentY, anexoSubPaint)
+                pageManager.canvas.drawText(context.getString(R.string.pdf_anexo_subtitulo), PADDING, pageManager.currentY, anexoSubPaint)
                 pageManager.currentY += 16f
 
                 relevamientosConFoto.forEachIndexed { index, rel ->
@@ -382,14 +389,14 @@ object RelevamientoPdfExporter {
                 textAlign = Paint.Align.CENTER
             }
             pageManager.canvas.drawText(
-                "El presente informe reviste carácter de constancia técnica de supervisión de los trabajos relevados en campo en las fechas indicadas.",
+                context.getString(R.string.pdf_constancia),
                 PAGE_WIDTH / 2f,
                 pageManager.currentY + 10f,
                 disclaimerPaint
             )
             pageManager.currentY += 20f
 
-            drawSignatures(pageManager.canvas, pageManager.currentY, contentWidth)
+            drawSignatures(context, pageManager.canvas, pageManager.currentY, contentWidth)
             pageManager.finish()
 
             val file = File(context.cacheDir, "informe_obra_${obra.nombre.replace(" ", "_")}.pdf")
@@ -442,7 +449,7 @@ object RelevamientoPdfExporter {
             textSize = 10f
             textAlign = Paint.Align.RIGHT
         }
-        canvas.drawText("Emitido: $fechaEmision", PADDING + contentWidth, y + 26f, datePaint)
+        canvas.drawText(context.getString(R.string.pdf_emitido, fechaEmision), PADDING + contentWidth, y + 26f, datePaint)
 
         y += 56f
 
@@ -475,6 +482,7 @@ object RelevamientoPdfExporter {
     }
 
     private fun drawRelevamientoMetaTable(
+        context: Context,
         canvas: Canvas,
         obra: Obra?,
         relevamiento: Relevamiento,
@@ -512,28 +520,29 @@ object RelevamientoPdfExporter {
             y += rowHeight
         }
 
-        drawRow("Obra", obra?.nombre ?: "Sin asignar")
-        drawRow("Comitente / Cliente", obra?.cliente ?: "No especificado")
-        drawRow("Dirección", obra?.direccion ?: "No especificada")
-        drawRow("Fecha de Visita", formatFecha(relevamiento.fecha))
+        drawRow(context.getString(R.string.pdf_obra), obra?.nombre ?: context.getString(R.string.pdf_sin_asignar))
+        drawRow(context.getString(R.string.pdf_cliente), obra?.cliente ?: context.getString(R.string.pdf_no_especificado))
+        drawRow(context.getString(R.string.pdf_direccion), obra?.direccion ?: context.getString(R.string.pdf_no_especificada))
+        drawRow(context.getString(R.string.pdf_fecha_visita), formatFecha(relevamiento.fecha))
 
         val gpsText = relevamiento.ubicacion?.let {
-            String.format(Locale.US, "%.5f, %.5f (Georreferenciado)", it.latitud, it.longitud)
-        } ?: "No registrada en campo"
-        drawRow("Ubicación GPS", gpsText)
+            context.getString(R.string.pdf_gps_georreferenciado, String.format(Locale.US, "%.5f, %.5f", it.latitud, it.longitud))
+        } ?: context.getString(R.string.pdf_gps_no_registrada)
+        drawRow(context.getString(R.string.pdf_ubicacion_gps), gpsText)
 
         if (!tareaTitulo.isNullOrBlank()) {
-            drawRow("Tarea Asociada", tareaTitulo)
+            drawRow(context.getString(R.string.pdf_tarea_asociada), tareaTitulo)
         }
 
         relevamiento.proximaVisita?.let {
-            drawRow("Próxima Visita Programada", formatFecha(it))
+            drawRow(context.getString(R.string.pdf_proxima_visita_programada), formatFecha(it))
         }
 
         return y
     }
 
     private fun drawObraMetaTable(
+        context: Context,
         canvas: Canvas,
         obra: Obra,
         startY: Float,
@@ -569,21 +578,22 @@ object RelevamientoPdfExporter {
             y += rowHeight
         }
 
-        drawRow("Obra", obra.nombre)
-        drawRow("Comitente / Cliente", obra.cliente)
-        drawRow("Dirección", obra.direccion)
-        drawRow("Estado de Obra", obra.estado.name)
-        drawRow("Fecha de Inicio", formatFecha(obra.fechaInicio))
-        drawRow("Última Inspección", obra.ultimaVisita?.let { formatFecha(it) } ?: "Sin visitas registradas")
+        drawRow(context.getString(R.string.pdf_obra), obra.nombre)
+        drawRow(context.getString(R.string.pdf_cliente), obra.cliente)
+        drawRow(context.getString(R.string.pdf_direccion), obra.direccion)
+        drawRow(context.getString(R.string.pdf_estado_obra), context.getString(obra.estado.labelRes()))
+        drawRow(context.getString(R.string.pdf_fecha_inicio), formatFecha(obra.fechaInicio))
+        drawRow(context.getString(R.string.pdf_ultima_inspeccion), obra.ultimaVisita?.let { formatFecha(it) } ?: context.getString(R.string.pdf_sin_visitas))
 
         obra.proximaVisita?.let {
-            drawRow("Próxima Inspección", formatFecha(it))
+            drawRow(context.getString(R.string.pdf_proxima_inspeccion), formatFecha(it))
         }
 
         return y
     }
 
     private fun drawCronogramaSummaryCards(
+        context: Context,
         canvas: Canvas,
         resumen: ResumenTareas,
         startY: Float,
@@ -595,10 +605,10 @@ object RelevamientoPdfExporter {
 
         val totalTareas = resumen.completadas + resumen.pendientes
         val cards = listOf(
-            Triple("TOTAL", "$totalTareas", primaryNavy),
-            Triple("COMPLETADAS", "${resumen.completadas}", successGreen),
-            Triple("PENDIENTES", "${resumen.pendientes}", primaryNavy),
-            Triple("ATRASADAS", "${resumen.atrasadas}", if (resumen.atrasadas > 0) alertRed else textMuted)
+            Triple(context.getString(R.string.pdf_total), "$totalTareas", primaryNavy),
+            Triple(context.getString(R.string.pdf_completadas), "${resumen.completadas}", successGreen),
+            Triple(context.getString(R.string.pdf_pendientes), "${resumen.pendientes}", primaryNavy),
+            Triple(context.getString(R.string.pdf_atrasadas), "${resumen.atrasadas}", if (resumen.atrasadas > 0) alertRed else textMuted)
         )
 
         val cardBgPaint = Paint().apply {
@@ -637,7 +647,7 @@ object RelevamientoPdfExporter {
 
         // Barra de avance porcentual
         val pct = if (totalTareas > 0) (resumen.completadas.toFloat() / totalTareas) else 0f
-        val pctText = "${(pct * 100).toInt()}% de avance físico"
+        val pctText = context.getString(R.string.pdf_avance, (pct * 100).toInt())
 
         val pctPaint = TextPaint().apply {
             color = textDark
@@ -666,6 +676,7 @@ object RelevamientoPdfExporter {
     }
 
     private fun drawContinuationHeader(
+        context: Context,
         canvas: Canvas,
         obraNombre: String,
         startY: Float,
@@ -686,7 +697,7 @@ object RelevamientoPdfExporter {
             isFakeBoldText = true
             textAlign = Paint.Align.RIGHT
         }
-        canvas.drawText("Informe Técnico: $obraNombre (Continuación)", PADDING + contentWidth, y + 12f, docTitlePaint)
+        canvas.drawText(context.getString(R.string.pdf_continuacion, obraNombre), PADDING + contentWidth, y + 12f, docTitlePaint)
         y += 18f
 
         val linePaint = Paint().apply {
@@ -720,10 +731,10 @@ object RelevamientoPdfExporter {
         }
 
         pageManager.canvas.drawRect(PADDING, pageManager.currentY, PADDING + contentWidth, pageManager.currentY + 18f, thBg)
-        pageManager.canvas.drawText("Tarea", PADDING + 6f, pageManager.currentY + 13f, thPaint)
-        pageManager.canvas.drawText("Categoría", PADDING + colTitulo + 6f, pageManager.currentY + 13f, thPaint)
-        pageManager.canvas.drawText("Plazo", PADDING + colTitulo + colCat + 6f, pageManager.currentY + 13f, thPaint)
-        pageManager.canvas.drawText("Estado", PADDING + colTitulo + colCat + colFechas + 6f, pageManager.currentY + 13f, thPaint)
+        pageManager.canvas.drawText(pageManager.context.getString(R.string.pdf_col_tarea), PADDING + 6f, pageManager.currentY + 13f, thPaint)
+        pageManager.canvas.drawText(pageManager.context.getString(R.string.pdf_col_categoria), PADDING + colTitulo + 6f, pageManager.currentY + 13f, thPaint)
+        pageManager.canvas.drawText(pageManager.context.getString(R.string.pdf_col_plazo), PADDING + colTitulo + colCat + 6f, pageManager.currentY + 13f, thPaint)
+        pageManager.canvas.drawText(pageManager.context.getString(R.string.pdf_col_estado), PADDING + colTitulo + colCat + colFechas + 6f, pageManager.currentY + 13f, thPaint)
         pageManager.currentY += 18f
 
         val tdPaint = TextPaint().apply {
@@ -739,13 +750,13 @@ object RelevamientoPdfExporter {
             pageManager.ensureSpace(rowHeight, contentWidth)
             val y = pageManager.currentY
             val titStr = if (tarea.titulo.length > 34) tarea.titulo.take(32) + "..." else tarea.titulo
-            val catStr = tarea.categoria.name.lowercase().replaceFirstChar { it.uppercase() }
+            val catStr = pageManager.context.getString(tarea.categoria.labelRes())
             val inicio = tarea.fechaInicio
             val fin = tarea.fechaFin
             val plazoStr = when {
                 inicio != null && fin != null -> "${formatFecha(inicio)} - ${formatFecha(fin)}"
-                fin != null -> "Fin: ${formatFecha(fin)}"
-                inicio != null -> "Ini: ${formatFecha(inicio)}"
+                fin != null -> pageManager.context.getString(R.string.pdf_plazo_fin, formatFecha(fin))
+                inicio != null -> pageManager.context.getString(R.string.pdf_plazo_inicio, formatFecha(inicio))
                 else -> "-"
             }
 
@@ -753,11 +764,12 @@ object RelevamientoPdfExporter {
             pageManager.canvas.drawText(catStr, PADDING + colTitulo + 6f, y + 14f, tdPaint)
             pageManager.canvas.drawText(plazoStr, PADDING + colTitulo + colCat + 6f, y + 14f, tdPaint)
 
-            val (badgeBg, badgeText, badgeLabel) = when (tarea.estado) {
-                EstadoTarea.COMPLETADA -> Triple(chipBgCompletada, chipTextCompletada, "Completada")
-                EstadoTarea.EN_CURSO -> Triple(chipBgEnCurso, chipTextEnCurso, "En curso")
-                EstadoTarea.PENDIENTE -> Triple(chipBgPending, chipTextPending, "Pendiente")
+            val (badgeBg, badgeText) = when (tarea.estado) {
+                EstadoTarea.COMPLETADA -> chipBgCompletada to chipTextCompletada
+                EstadoTarea.EN_CURSO -> chipBgEnCurso to chipTextEnCurso
+                EstadoTarea.PENDIENTE -> chipBgPending to chipTextPending
             }
+            val badgeLabel = pageManager.context.getString(tarea.estado.labelRes())
             val badgeX = PADDING + colTitulo + colCat + colFechas + 4f
             val badgeRect = RectF(badgeX, y + 3f, badgeX + colEstado - 8f, y + 17f)
             val badgePaint = Paint().apply {
@@ -802,10 +814,10 @@ object RelevamientoPdfExporter {
         }
 
         pageManager.canvas.drawRect(PADDING, pageManager.currentY, PADDING + contentWidth, pageManager.currentY + 18f, thBg)
-        pageManager.canvas.drawText("Fecha", PADDING + 6f, pageManager.currentY + 13f, thPaint)
-        pageManager.canvas.drawText("Observaciones y Hallazgos", PADDING + colFecha + 6f, pageManager.currentY + 13f, thPaint)
-        pageManager.canvas.drawText("Evidencia", PADDING + colFecha + colObs + 6f, pageManager.currentY + 13f, thPaint)
-        pageManager.canvas.drawText("Próx. Visita", PADDING + colFecha + colObs + colFoto + 6f, pageManager.currentY + 13f, thPaint)
+        pageManager.canvas.drawText(pageManager.context.getString(R.string.pdf_col_fecha), PADDING + 6f, pageManager.currentY + 13f, thPaint)
+        pageManager.canvas.drawText(pageManager.context.getString(R.string.pdf_col_observaciones), PADDING + colFecha + 6f, pageManager.currentY + 13f, thPaint)
+        pageManager.canvas.drawText(pageManager.context.getString(R.string.pdf_col_evidencia), PADDING + colFecha + colObs + 6f, pageManager.currentY + 13f, thPaint)
+        pageManager.canvas.drawText(pageManager.context.getString(R.string.pdf_col_proxima), PADDING + colFecha + colObs + colFoto + 6f, pageManager.currentY + 13f, thPaint)
         pageManager.currentY += 18f
 
         val tdPaint = TextPaint().apply {
@@ -821,8 +833,8 @@ object RelevamientoPdfExporter {
             pageManager.ensureSpace(rowHeight, contentWidth)
             val y = pageManager.currentY
             val fechaStr = formatFecha(rel.fecha)
-            val obsStr = if (rel.nota.length > 50) rel.nota.take(47) + "..." else rel.nota.ifBlank { "Sin notas" }
-            val fotoStr = if (!rel.fotoUrl.isNullOrBlank()) "📷 Adjunta" else "-"
+            val obsStr = if (rel.nota.length > 50) rel.nota.take(47) + "..." else rel.nota.ifBlank { pageManager.context.getString(R.string.pdf_sin_notas) }
+            val fotoStr = if (!rel.fotoUrl.isNullOrBlank()) pageManager.context.getString(R.string.pdf_foto_adjunta) else "-"
             val proxStr = rel.proximaVisita?.let { formatFecha(it) } ?: "-"
 
             pageManager.canvas.drawText(fechaStr, PADDING + 6f, y + 15f, tdPaint)
@@ -850,14 +862,14 @@ object RelevamientoPdfExporter {
         val rightColWidth = contentWidth - photoBoxWidth - 24f
         val rightColLeft = PADDING + photoBoxWidth + 16f
 
-        val titleText = "REGISTRO FOTOGRÁFICO DE CAMPO #${index + 1}"
-        val fechaText = "Fecha de Captura: ${formatFecha(relevamiento.fecha)}"
-        val tareaText = tareaVinculadaTexto(relevamiento.tareaId, tareas)
+        val titleText = context.getString(R.string.pdf_registro_foto, index + 1)
+        val fechaText = context.getString(R.string.pdf_fecha_captura, formatFecha(relevamiento.fecha))
+        val tareaText = tareaVinculadaTitulo(relevamiento.tareaId, tareas)?.let { context.getString(R.string.pdf_tarea_vinculada, it) }
         val gpsText = relevamiento.ubicacion?.let {
             String.format(Locale.US, "GPS: %.5f, %.5f", it.latitud, it.longitud)
-        } ?: "GPS: No georreferenciado en campo"
+        } ?: context.getString(R.string.pdf_gps_no_georreferenciado)
 
-        val noteText = relevamiento.nota.ifBlank { "Sin observaciones adicionales registradas durante la captura de esta evidencia." }
+        val noteText = relevamiento.nota.ifBlank { context.getString(R.string.pdf_sin_observaciones_captura) }
 
         val notePaint = TextPaint().apply {
             color = textDark
@@ -925,7 +937,7 @@ object RelevamientoPdfExporter {
                 textSize = 9.5f
                 textAlign = Paint.Align.CENTER
             }
-            pageManager.canvas.drawText("Fotografía no disponible", photoFrameRect.centerX(), photoFrameRect.centerY() + 3f, emptyPhotoPaint)
+            pageManager.canvas.drawText(context.getString(R.string.pdf_foto_no_disponible), photoFrameRect.centerX(), photoFrameRect.centerY() + 3f, emptyPhotoPaint)
         }
 
         // Metadatos y notas técnicas en la columna derecha
@@ -959,7 +971,7 @@ object RelevamientoPdfExporter {
             textSize = 9f
             isFakeBoldText = true
         }
-        pageManager.canvas.drawText("Dictamen y Observación Técnica:", rightColLeft, curTextY, dictamenLabelPaint)
+        pageManager.canvas.drawText(context.getString(R.string.pdf_dictamen_label), rightColLeft, curTextY, dictamenLabelPaint)
         curTextY += 8f
 
         pageManager.canvas.save()
@@ -970,7 +982,7 @@ object RelevamientoPdfExporter {
         pageManager.currentY += cardHeight + 14f
     }
 
-    private fun drawSignatures(canvas: Canvas, y: Float, contentWidth: Int) {
+    private fun drawSignatures(context: Context, canvas: Canvas, y: Float, contentWidth: Int) {
         val signWidth = 180f
         val linePaint = Paint().apply {
             color = textDark
@@ -985,22 +997,22 @@ object RelevamientoPdfExporter {
         // Firma Profesional
         val left1 = PADDING + 20f
         canvas.drawLine(left1, y + 40f, left1 + signWidth, y + 40f, linePaint)
-        canvas.drawText("Firma del Profesional Responsable", left1 + (signWidth / 2f), y + 54f, signTextPaint)
+        canvas.drawText(context.getString(R.string.pdf_firma_profesional), left1 + (signWidth / 2f), y + 54f, signTextPaint)
 
         // Firma Comitente
         val left2 = PADDING + contentWidth - signWidth - 20f
         canvas.drawLine(left2, y + 40f, left2 + signWidth, y + 40f, linePaint)
-        canvas.drawText("Conformidad Comitente / Capataz", left2 + (signWidth / 2f), y + 54f, signTextPaint)
+        canvas.drawText(context.getString(R.string.pdf_firma_comitente), left2 + (signWidth / 2f), y + 54f, signTextPaint)
     }
 
-    private fun drawFooter(canvas: Canvas, pageNumber: Int) {
+    private fun drawFooter(context: Context, canvas: Canvas, pageNumber: Int) {
         val footerPaint = TextPaint().apply {
             color = textMuted
             textSize = 9f
             textAlign = Paint.Align.CENTER
         }
         canvas.drawText(
-            "ObraTrack — Documento de supervisión y auditoría técnica de obra. Pág. $pageNumber",
+            context.getString(R.string.pdf_pie, pageNumber),
             PAGE_WIDTH / 2f,
             PAGE_HEIGHT - 20f,
             footerPaint

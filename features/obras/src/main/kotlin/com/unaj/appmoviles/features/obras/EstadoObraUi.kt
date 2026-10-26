@@ -1,5 +1,6 @@
 package com.unaj.appmoviles.features.obras
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.obras.R
@@ -17,11 +18,12 @@ fun estadoObraFromStorage(value: String): EstadoObra = when (value) {
     else -> EstadoObra.ACTIVA
 }
 
+@StringRes
+fun EstadoObra.labelRes(): Int = when (this) {
+    EstadoObra.ACTIVA -> R.string.estado_obra_activa
+    EstadoObra.PAUSADA -> R.string.estado_obra_pausada
+    EstadoObra.FINALIZADA -> R.string.estado_obra_finalizada
+}
+
 @Composable
-fun EstadoObra.label(): String = stringResource(
-    when (this) {
-        EstadoObra.ACTIVA -> R.string.estado_obra_activa
-        EstadoObra.PAUSADA -> R.string.estado_obra_pausada
-        EstadoObra.FINALIZADA -> R.string.estado_obra_finalizada
-    }
-)
+fun EstadoObra.label(): String = stringResource(labelRes())

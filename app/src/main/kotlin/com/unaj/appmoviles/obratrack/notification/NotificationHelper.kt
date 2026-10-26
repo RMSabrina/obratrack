@@ -15,17 +15,15 @@ import com.unaj.appmoviles.obratrack.R
 object NotificationHelper {
 
     const val CHANNEL_ID = "obratrack_reminders"
-    private const val CHANNEL_NAME = "Recordatorios de ObraTrack"
-    private const val CHANNEL_DESC = "Avisos automáticos de visitas técnicas y relevamientos pendientes"
 
     fun createNotificationChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                CHANNEL_NAME,
+                context.getString(R.string.notif_canal_nombre),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = CHANNEL_DESC
+                description = context.getString(R.string.notif_canal_descripcion)
                 enableVibration(true)
             }
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -79,8 +77,8 @@ object NotificationHelper {
         showNotification(
             context = context,
             notificationId = 1001,
-            title = "🔔 Recordatorio de Visita",
-            message = "Tenés una visita técnica programada para hoy en 'Edificio Mitre'. Tocá para inspeccionar los relevamientos pendientes."
+            title = context.getString(R.string.notif_demo_titulo),
+            message = context.getString(R.string.notif_demo_mensaje)
         )
     }
 }
