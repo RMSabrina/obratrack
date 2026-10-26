@@ -220,18 +220,6 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
         )
     }
 
-    override suspend fun getByObra(obraId: String): FirebaseResult<List<RelevamientoDto>> {
-        return try {
-            if (auth.uid == null) return FirebaseResult.Error(RelevamientoForbiddenException())
-            val snapshot = relevamientos(obraId).get(Source.SERVER).await()
-            FirebaseResult.Success(snapshot.documents.mapNotNull { it.toRelevamientoDto(obraId) })
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            FirebaseResult.Error(e)
-        }
-    }
-
     override suspend fun delete(obraId: String, relevamientoId: String): FirebaseResult<Unit> {
         return try {
             if (auth.uid == null) return FirebaseResult.Error(RelevamientoForbiddenException())

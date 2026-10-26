@@ -5,12 +5,9 @@ import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoReposito
 import javax.inject.Inject
 
 class DeleteRelevamientoUseCase @Inject constructor(
-    private val relevamientoRepository: RelevamientoRepository,
-    private val sincronizarProximaVisita: SincronizarProximaVisitaObraUseCase
+    private val relevamientoRepository: RelevamientoRepository
 ) {
     suspend operator fun invoke(obraId: String, relevamientoId: String): AppResult<Unit> {
-        val res = relevamientoRepository.delete(obraId, relevamientoId)
-        if (res is AppResult.Error) return res
-        return sincronizarProximaVisita(obraId)
+        return relevamientoRepository.delete(obraId, relevamientoId)
     }
 }

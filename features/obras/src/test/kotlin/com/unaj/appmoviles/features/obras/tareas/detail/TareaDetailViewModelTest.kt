@@ -19,7 +19,6 @@ import com.unaj.appmoviles.obratrack.core.domain.model.User
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosDeTareaUseCase
-import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.SincronizarProximaVisitaObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.DeleteTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.UpdateTareaUseCase
@@ -88,10 +87,7 @@ class TareaDetailViewModelTest {
         observeTarea = ObserveTareaUseCase(repo),
         observeRelevamientosDeTarea = ObserveRelevamientosDeTareaUseCase(relevamientoRepo),
         updateTarea = UpdateTareaUseCase(repo),
-        deleteTarea = DeleteTareaUseCase(
-            repo,
-            SincronizarProximaVisitaObraUseCase(relevamientoRepo, FakeObraRepository(obraDe(DUENO.id, publica = true)))
-        ),
+        deleteTarea = DeleteTareaUseCase(repo),
         clock = clock
     )
 

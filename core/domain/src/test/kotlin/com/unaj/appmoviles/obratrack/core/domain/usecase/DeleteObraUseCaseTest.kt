@@ -229,8 +229,6 @@ open class FakeObraRepo(
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> = error("Not needed")
     override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> = error("Not needed")
 
-    override suspend fun setProximaVisita(obraId: String, proximaVisita: Long?, horaVisita: Int?): AppResult<Unit> =
-        AppResult.Success(Unit)
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> {
         existsCalls++
         return existsResult
@@ -260,8 +258,6 @@ open class FakeRelevamientoRepo(
     override fun observeByTarea(obraId: String, tareaId: String): Flow<List<Relevamiento>> = emptyFlow()
     override suspend fun create(userId: String, obraId: String, draft: RelevamientoDraft, photo: ByteArray?): AppResult<Relevamiento> = error("Not needed")
     override suspend fun update(userId: String, obraId: String, relevamientoId: String, draft: RelevamientoDraft, photo: ByteArray?): AppResult<Relevamiento> = error("Not needed")
-    override suspend fun getByObra(obraId: String): AppResult<List<Relevamiento>> = AppResult.Success(emptyList())
-
     override suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit> {
         deleteCalls++
         return deleteResult

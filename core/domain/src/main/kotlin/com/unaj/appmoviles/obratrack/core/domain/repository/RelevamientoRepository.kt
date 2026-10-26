@@ -25,7 +25,6 @@ interface RelevamientoRepository {
         photo: ByteArray? = null
     ): AppResult<Relevamiento>
     /** Lectura única desde el servidor (no desde caché). */
-    suspend fun getByObra(obraId: String): AppResult<List<Relevamiento>>
     suspend fun delete(obraId: String, relevamientoId: String): AppResult<Unit>
     suspend fun deleteAllByObra(obraId: String): AppResult<Unit>
 }

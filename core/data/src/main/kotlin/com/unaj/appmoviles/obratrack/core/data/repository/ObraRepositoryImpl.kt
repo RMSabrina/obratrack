@@ -47,13 +47,6 @@ class ObraRepositoryImpl @Inject constructor(
         return remoteDataSource.update(userId, obraId, dto).toAppResult()
     }
 
-    override suspend fun setProximaVisita(obraId: String, proximaVisita: Long?, horaVisita: Int?): AppResult<Unit> {
-        return when (val res = remoteDataSource.setProximaVisita(obraId, proximaVisita, horaVisita)) {
-            is FirebaseResult.Success -> AppResult.Success(Unit)
-            is FirebaseResult.Error -> AppResult.Error(res.exception.toObraError())
-        }
-    }
-
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> {
         return when (val res = remoteDataSource.existsAndOwnedByCurrentUser(obraId)) {
             is FirebaseResult.Success -> AppResult.Success(res.data)

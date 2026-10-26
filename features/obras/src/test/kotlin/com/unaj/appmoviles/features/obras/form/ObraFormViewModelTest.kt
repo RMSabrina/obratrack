@@ -44,8 +44,6 @@ class ObraFormViewModelTest {
             AppResult.Success(obraDe(userId))
         override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> =
             AppResult.Success(obraDe(userId))
-        override suspend fun setProximaVisita(obraId: String, proximaVisita: Long?, horaVisita: Int?): AppResult<Unit> =
-            AppResult.Success(Unit)
         override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> =
             AppResult.Success(true)
         override suspend fun delete(obraId: String): AppResult<Unit> = AppResult.Success(Unit)

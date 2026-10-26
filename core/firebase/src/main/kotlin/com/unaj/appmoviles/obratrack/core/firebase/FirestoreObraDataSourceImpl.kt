@@ -197,26 +197,6 @@ class FirestoreObraDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun setProximaVisita(
-        obraId: String,
-        proximaVisitaMillis: Long?,
-        horaVisita: Int?
-    ): FirebaseResult<Unit> {
-        return try {
-            if (auth.uid == null) return FirebaseResult.Error(ObraForbiddenException())
-            // Sin próxima visita se borran los campos (no se guarda null).
-            firestore.collection(COLLECTION).document(obraId).update(
-                FIELD_PROXIMA_VISITA, proximaVisitaMillis?.let { Timestamp(Date(it)) } ?: FieldValue.delete(),
-                FIELD_HORA_VISITA, horaVisita ?: FieldValue.delete()
-            ).await()
-            FirebaseResult.Success(Unit)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            FirebaseResult.Error(e)
-        }
-    }
-
     override suspend fun delete(obraId: String): FirebaseResult<Unit> {
         return try {
             if (auth.uid == null) return FirebaseResult.Error(ObraForbiddenException())

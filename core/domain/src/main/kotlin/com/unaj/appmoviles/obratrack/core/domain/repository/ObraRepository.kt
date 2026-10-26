@@ -13,7 +13,6 @@ interface ObraRepository {
     suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra>
     suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra>
     /** Con null en [proximaVisita] borra la próxima visita y su hora de la obra. */
-    suspend fun setProximaVisita(obraId: String, proximaVisita: Long?, horaVisita: Int?): AppResult<Unit>
     suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean>
     suspend fun delete(obraId: String): AppResult<Unit>
     suspend fun deleteAllSuscriptoresByObra(obraId: String): AppResult<Unit>
