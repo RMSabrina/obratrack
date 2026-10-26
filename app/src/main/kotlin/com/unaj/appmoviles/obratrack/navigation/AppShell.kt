@@ -210,7 +210,8 @@ fun AppShell(onLogout: () -> Unit) {
                                 publica = obra.publica,
                                 latitud = obra.ubicacion?.latitud,
                                 longitud = obra.ubicacion?.longitud,
-                                proximaVisita = obra.proximaVisita
+                                proximaVisita = obra.proximaVisita,
+                                horaVisita = obra.horaVisita
                             )
                         )
                     },
@@ -287,7 +288,8 @@ fun AppShell(onLogout: () -> Unit) {
                         publica = destination.publica,
                         latitud = destination.latitud,
                         longitud = destination.longitud,
-                        proximaVisita = destination.proximaVisita
+                        proximaVisita = destination.proximaVisita,
+                        horaVisita = destination.horaVisita
                     ),
                     onBack = ::goBack,
                     onSaved = ::goBack

@@ -96,17 +96,10 @@ class FirestoreObraDataSourceImpl @Inject constructor(
             if (snapshot.getString(FIELD_USER_ID) != userId) {
                 return FirebaseResult.Error(ObraForbiddenException())
             }
-            // Si cambia la fecha de la próxima visita, la hora guardada ya no corresponde: se borra.
-            val fechaActual = snapshot.getTimestamp(FIELD_PROXIMA_VISITA)?.toDate()?.time
-            val cambiaFecha = dto.proximaVisitaMillis != null && dto.proximaVisitaMillis != fechaActual
+            // Fecha y hora van juntas: sin fecha se borran ambas, sin hora se borra la hora (nunca un null explícito).
             val campos = dto.toUpdateMap().toMutableMap<String, Any>()
-            if (cambiaFecha) campos[FIELD_HORA_VISITA] = FieldValue.delete()
-            // Sin próxima visita en el borrador, se quitan fecha y hora guardadas (nunca un null explícito).
-            val quitaVisita = dto.proximaVisitaMillis == null
-            if (quitaVisita) {
-                campos[FIELD_PROXIMA_VISITA] = FieldValue.delete()
-                campos[FIELD_HORA_VISITA] = FieldValue.delete()
-            }
+            if (dto.proximaVisitaMillis == null) campos[FIELD_PROXIMA_VISITA] = FieldValue.delete()
+            if (dto.proximaVisitaMillis == null || dto.horaVisita == null) campos[FIELD_HORA_VISITA] = FieldValue.delete()
             ref.update(campos).await()
             FirebaseResult.Success(
                 dto.copy(
@@ -115,7 +108,6 @@ class FirestoreObraDataSourceImpl @Inject constructor(
                     fechaInicioMillis = snapshot.getTimestamp(FIELD_FECHA_INICIO)?.toDate()?.time
                         ?: dto.fechaInicioMillis,
                     ultimaVisitaMillis = snapshot.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
-                    horaVisita = if (cambiaFecha || quitaVisita) null else snapshot.getLong(FIELD_HORA_VISITA)?.toInt(),
                 )
             )
         } catch (e: CancellationException) {
@@ -140,6 +132,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
         }
         if (proximaVisitaMillis != null) {
             map[FIELD_PROXIMA_VISITA] = Timestamp(Date(proximaVisitaMillis))
+            if (horaVisita != null) map[FIELD_HORA_VISITA] = horaVisita
         }
         return map
     }
@@ -157,6 +150,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
         }
         if (proximaVisitaMillis != null) {
             map[FIELD_PROXIMA_VISITA] = Timestamp(Date(proximaVisitaMillis))
+            if (horaVisita != null) map[FIELD_HORA_VISITA] = horaVisita
         }
         return map
     }

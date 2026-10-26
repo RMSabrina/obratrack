@@ -44,7 +44,8 @@ fun ObraDraft.toDto(userId: String, fechaInicioMillis: Long): ObraDto = ObraDto(
     ultimaVisitaMillis = null,
     latitud = ubicacion?.latitud,
     longitud = ubicacion?.longitud,
-    proximaVisitaMillis = proximaVisita
+    proximaVisitaMillis = proximaVisita,
+    horaVisita = if (proximaVisita != null) horaVisitaValida(horaVisita) else null
 )
 
 fun Exception.toObraError(): ObraError = when (this) {

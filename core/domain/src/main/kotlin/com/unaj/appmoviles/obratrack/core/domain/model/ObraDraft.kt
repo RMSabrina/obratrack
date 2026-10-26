@@ -7,5 +7,6 @@ data class ObraDraft(
     val publica: Boolean,
     val estado: EstadoObra,
     val ubicacion: Ubicacion? = null,
-    val proximaVisita: Long? = null
+    val proximaVisita: Long? = null,
+    val horaVisita: Int? = null
 )

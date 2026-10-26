@@ -123,6 +123,45 @@ class AgendaVisitasUseCasesTest {
         assertEquals(newVisitDate, updatedDraft?.proximaVisita)
         assertEquals("Torre Norte", updatedDraft?.nombre)
     }
+
+    private fun obraConVisita(proxima: Long?, hora: Int?) = Obra(
+        id = "o1", userId = "u1", nombre = "Torre", cliente = "C", direccion = "D", publica = false,
+        estado = EstadoObra.ACTIVA, fechaInicio = 1000L, ultimaVisita = null, proximaVisita = proxima, horaVisita = hora
+    )
+
+    private fun borradorAlProgramar(obra: Obra, nueva: Long?): ObraDraft? = runBlocking {
+        var draft: ObraDraft? = null
+        val repo = object : FakeBaseObraRepository() {
+            override suspend fun update(userId: String, obraId: String, draft0: ObraDraft): AppResult<Obra> {
+                draft = draft0
+                return AppResult.Success(obra)
+            }
+        }
+        ScheduleVisitaUseCase(repo)("u1", obra, nueva)
+        draft
+    }
+
+    @Test
+    fun scheduleVisita_conLaMismaFecha_conservaLaHora() {
+        val draft = borradorAlProgramar(obraConVisita(5_000L, 600), 5_000L)
+
+        assertEquals(600, draft?.horaVisita)
+    }
+
+    @Test
+    fun scheduleVisita_conOtraFecha_descartaLaHora() {
+        val draft = borradorAlProgramar(obraConVisita(5_000L, 600), 9_000L)
+
+        assertEquals(null, draft?.horaVisita)
+    }
+
+    @Test
+    fun scheduleVisita_quitandoLaFecha_dejaSinHora() {
+        val draft = borradorAlProgramar(obraConVisita(5_000L, 600), null)
+
+        assertEquals(null, draft?.proximaVisita)
+        assertEquals(null, draft?.horaVisita)
+    }
 }
 
 open class FakeBaseObraRepository : ObraRepository {

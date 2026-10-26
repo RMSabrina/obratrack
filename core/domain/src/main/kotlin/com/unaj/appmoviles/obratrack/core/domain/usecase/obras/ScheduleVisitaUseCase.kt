@@ -17,7 +17,9 @@ class ScheduleVisitaUseCase @Inject constructor(
             publica = obra.publica,
             estado = obra.estado,
             ubicacion = obra.ubicacion,
-            proximaVisita = proximaVisita
+            proximaVisita = proximaVisita,
+            // La hora pertenece a su fecha: si la fecha cambia, la hora anterior ya no corresponde.
+            horaVisita = if (proximaVisita == obra.proximaVisita) obra.horaVisita else null
         )
         return obraRepository.update(userId, obra.id, draft)
     }
