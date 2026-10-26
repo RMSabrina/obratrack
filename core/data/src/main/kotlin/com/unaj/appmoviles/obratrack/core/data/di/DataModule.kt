@@ -48,4 +48,24 @@ abstract class DataModule {
     abstract fun bindGeocodingRepository(
         impl: com.unaj.appmoviles.obratrack.core.data.repository.GeocodingRepositoryImpl
     ): com.unaj.appmoviles.obratrack.core.domain.repository.GeocodingRepository
+
+    @Binds
+    abstract fun bindLanguagePreferencesRepository(
+        impl: com.unaj.appmoviles.obratrack.core.data.repository.LanguagePreferencesRepositoryImpl
+    ): com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
+
+    @Binds
+    abstract fun bindNotificacionRepository(
+        impl: com.unaj.appmoviles.obratrack.core.data.repository.NotificacionRepositoryImpl
+    ): com.unaj.appmoviles.obratrack.core.domain.repository.NotificacionRepository
+
+    @Binds
+    abstract fun bindColaboradorRepository(
+        impl: com.unaj.appmoviles.obratrack.core.data.repository.ColaboradorRepositoryImpl
+    ): com.unaj.appmoviles.obratrack.core.domain.repository.ColaboradorRepository
+
+    @Binds
+    abstract fun bindIncidenteRepository(
+        impl: com.unaj.appmoviles.obratrack.core.data.repository.IncidenteRepositoryImpl
+    ): com.unaj.appmoviles.obratrack.core.domain.repository.IncidenteRepository
 }

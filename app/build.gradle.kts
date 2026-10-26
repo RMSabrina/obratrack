@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
 
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -83,6 +84,7 @@ dependencies {
     implementation(project(":features:auth")) // Para poder renderizar la pantalla de login
     implementation(project(":features:home"))
     implementation(project(":features:obras"))
+    implementation(project(":features:notificaciones"))
     
     // Cloudinary para AppContainer
     implementation(libs.cloudinary.android)

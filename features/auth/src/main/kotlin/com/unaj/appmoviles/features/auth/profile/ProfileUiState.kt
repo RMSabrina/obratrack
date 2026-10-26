@@ -21,6 +21,7 @@ data class ProfileUiState(
     val showDeleteAccountDialog: Boolean = false,
     val showReAuthDialog: Boolean = false,
     val pendingAction: PendingAction = PendingAction.NONE,
+    val selectedLanguage: com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage = com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage.SPANISH,
     val successMessage: String? = null,
     val error: DomainError? = null
 )

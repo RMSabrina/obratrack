@@ -56,6 +56,15 @@ import androidx.compose.ui.unit.dp
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.auth.R
+import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
+import com.unaj.appmoviles.obratrack.core.domain.model.UserRole
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -72,6 +81,7 @@ fun ProfileScreen(
     onReauthenticateAndRetry: (String) -> Unit,
     onClearMessage: () -> Unit,
     onClearError: () -> Unit,
+    onLanguageChange: (AppLanguage) -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
@@ -103,12 +113,12 @@ fun ProfileScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Mi Perfil", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.auth_perfil_titulo), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.auth_cancelar)
                         )
                     }
                 }
@@ -151,13 +161,71 @@ fun ProfileScreen(
                     )
                 }
 
+                // Badge de Rol de usuario
+                val rolText = when (user.role) {
+                    UserRole.ARQUITECTO -> stringResource(R.string.role_arquitecto)
+                    UserRole.INSPECTOR -> stringResource(R.string.role_inspector)
+                    UserRole.CLIENTE -> stringResource(R.string.role_cliente)
+                }
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = rolText,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Selector de Idioma (i18n)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text(
+                            text = stringResource(R.string.auth_idioma_titulo),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            FilterChip(
+                                selected = state.selectedLanguage == AppLanguage.SPANISH,
+                                onClick = { onLanguageChange(AppLanguage.SPANISH) },
+                                label = { Text(stringResource(R.string.auth_idioma_espanol)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                            FilterChip(
+                                selected = state.selectedLanguage == AppLanguage.ENGLISH,
+                                onClick = { onLanguageChange(AppLanguage.ENGLISH) },
+                                label = { Text(stringResource(R.string.auth_idioma_ingles)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Campo Editable: Nombre completo
                 OutlinedTextField(
                     value = state.nameInput,
                     onValueChange = onNameChange,
-                    label = { Text("Nombre completo") },
+                    label = { Text(stringResource(R.string.auth_nombre)) },
                     leadingIcon = {
                         Icon(Icons.Default.Person, contentDescription = null)
                     },
@@ -170,7 +238,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = user.email,
                     onValueChange = {},
-                    label = { Text("Correo electrónico") },
+                    label = { Text(stringResource(R.string.auth_email)) },
                     readOnly = true,
                     enabled = false,
                     modifier = Modifier.fillMaxWidth(),
@@ -181,13 +249,13 @@ fun ProfileScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Verificado",
+                                contentDescription = stringResource(R.string.auth_verificado),
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.size(4.dp))
                             Text(
-                                text = "Verificado",
+                                text = stringResource(R.string.auth_verificado),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
@@ -196,7 +264,7 @@ fun ProfileScreen(
                     }
                 )
 
-                // Botón Guardar Cambios (Ubicado debajo de todos los campos de texto)
+                // Botón Guardar Cambios
                 val isNameChanged = state.nameInput.trim() != user.name && state.nameInput.isNotBlank()
 
                 Button(
@@ -214,13 +282,13 @@ fun ProfileScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Guardar cambios", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.auth_guardar_cambios), fontWeight = FontWeight.Bold)
                     }
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // Opciones de Cuenta (Parte Inferior)
+                // Opciones de Cuenta
                 OutlinedButton(
                     onClick = onShowChangePasswordDialog,
                     modifier = Modifier
@@ -234,7 +302,7 @@ fun ProfileScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text("Cambiar contraseña", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auth_cambiar_password), fontWeight = FontWeight.Bold)
                 }
 
                 OutlinedButton(
@@ -250,7 +318,7 @@ fun ProfileScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text("Cerrar sesión", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auth_logout), fontWeight = FontWeight.Bold)
                 }
 
                 TextButton(

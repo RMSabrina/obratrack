@@ -32,6 +32,16 @@ import java.time.LocalDate
 
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import com.unaj.appmoviles.obratrack.core.domain.model.Colaborador
+import com.unaj.appmoviles.obratrack.core.domain.model.GravedadIncidente
+import com.unaj.appmoviles.obratrack.core.domain.model.Incidente
+import com.unaj.appmoviles.obratrack.core.domain.model.NotificacionItem
+import com.unaj.appmoviles.obratrack.core.domain.model.TipoNotificacion
+import com.unaj.appmoviles.obratrack.core.domain.model.User
+import com.unaj.appmoviles.obratrack.core.domain.model.UserRole
+import com.unaj.appmoviles.obratrack.core.domain.repository.ColaboradorRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.IncidenteRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.NotificacionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,6 +53,9 @@ class ObraDetailViewModel @AssistedInject constructor(
     private val observeRelevamientos: ObserveRelevamientosUseCase,
     private val observeTareas: ObserveTareasUseCase,
     private val deleteObraUseCase: DeleteObraUseCase,
+    private val colaboradorRepository: ColaboradorRepository,
+    private val incidenteRepository: IncidenteRepository,
+    private val notificacionRepository: NotificacionRepository,
     private val clock: Clock
 ) : ViewModel() {
 
@@ -53,10 +66,12 @@ class ObraDetailViewModel @AssistedInject constructor(
 
     private val _uiState = MutableStateFlow(ObraDetailUiState())
     val uiState: StateFlow<ObraDetailUiState> = _uiState.asStateFlow()
+    private var currentUser: User? = null
 
     init {
         viewModelScope.launch {
             observeSession().collectLatest { user ->
+                currentUser = user
                 if (user == null) {
                     _uiState.update { it.copy(isLoading = false, error = ObraError.NoAutorizada) }
                     return@collectLatest
@@ -64,8 +79,10 @@ class ObraDetailViewModel @AssistedInject constructor(
                 combine(
                     observeObra(user.id, obraId),
                     observeRelevamientosOError(user.id),
-                    observeTareasOError(user.id)
-                ) { obra, relevamientos, tareas ->
+                    observeTareasOError(user.id),
+                    colaboradorRepository.observeColaboradores(obraId).catch { emit(emptyList()) },
+                    incidenteRepository.observeIncidentes(obraId).catch { emit(emptyList()) }
+                ) { obra, relevamientos, tareas, colaboradores, incidentes ->
                     val esDueno = obra?.userId == user.id
                     val resumenTareas = if (esDueno && tareas.isNotEmpty()) tareas.resumen(LocalDate.now(clock)) else if (esDueno) ResumenTareas(0, 0, 0) else null
                     val current = _uiState.value
@@ -84,6 +101,8 @@ class ObraDetailViewModel @AssistedInject constructor(
                             relevamientosError = relevamientos == null,
                             tareas = if (esDueno) tareas else emptyList(),
                             resumenTareas = resumenTareas,
+                            colaboradores = colaboradores,
+                            incidentes = incidentes,
                             error = if (obra == null) ObraError.NoEncontrada else null,
                             isDeleting = current.isDeleting,
                             isDeleted = current.isDeleted,
@@ -152,5 +171,58 @@ class ObraDetailViewModel @AssistedInject constructor(
 
     fun onDeleteErrorDismissed() {
         _uiState.update { it.copy(deleteError = null) }
+    }
+
+    fun agregarColaborador(email: String, nombre: String, rol: UserRole) {
+        viewModelScope.launch {
+            colaboradorRepository.agregarColaborador(
+                obraId = obraId,
+                email = email,
+                nombre = nombre,
+                rol = rol
+            )
+        }
+    }
+
+    fun removerColaborador(colaboradorId: String) {
+        viewModelScope.launch {
+            colaboradorRepository.removerColaborador(obraId, colaboradorId)
+        }
+    }
+
+    fun reportarIncidente(titulo: String, descripcion: String, gravedad: GravedadIncidente) {
+        viewModelScope.launch {
+            val user = currentUser ?: return@launch
+            val incidente = Incidente(
+                id = "",
+                obraId = obraId,
+                titulo = titulo,
+                descripcion = descripcion,
+                gravedad = gravedad,
+                reportadoPorUserId = user.id,
+                reportadoPorNombre = user.name.ifBlank { "Inspector" },
+                fecha = System.currentTimeMillis(),
+                resuelto = false
+            )
+            incidenteRepository.reportarIncidente(incidente)
+
+            val notif = NotificacionItem(
+                id = "",
+                userId = user.id,
+                obraId = obraId,
+                titulo = "⚠️ ${incidente.titulo}",
+                mensaje = incidente.descripcion,
+                tipo = TipoNotificacion.INCIDENTE_REPORTADO,
+                fecha = System.currentTimeMillis(),
+                leida = false
+            )
+            notificacionRepository.crearNotificacion(notif)
+        }
+    }
+
+    fun resolverIncidente(incidenteId: String) {
+        viewModelScope.launch {
+            incidenteRepository.resolverIncidente(obraId, incidenteId)
+        }
     }
 }

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
+import com.unaj.appmoviles.obratrack.core.domain.repository.NotificacionRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveAgendaVisitasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
@@ -24,7 +25,8 @@ class HomeViewModel @Inject constructor(
     private val observeSessionUseCase: ObserveSessionUseCase,
     private val observeObrasUseCase: ObserveObrasUseCase,
     private val observeAllRelevamientosUseCase: ObserveAllRelevamientosUseCase,
-    private val observeAgendaVisitasUseCase: ObserveAgendaVisitasUseCase
+    private val observeAgendaVisitasUseCase: ObserveAgendaVisitasUseCase,
+    private val notificacionRepository: NotificacionRepository
 ) : ViewModel() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -42,8 +44,12 @@ class HomeViewModel @Inject constructor(
                     observeAgendaVisitasUseCase(user.id).catch { e ->
                         Log.e("HomeViewModel", "Fallo al obtener agenda de visitas", e)
                         emit(emptyList())
+                    },
+                    notificacionRepository.observe(user.id).catch { e ->
+                        Log.e("HomeViewModel", "Fallo al obtener notificaciones", e)
+                        emit(emptyList())
                     }
-                ) { obras, relevamientos, agendaItems ->
+                ) { obras, relevamientos, agendaItems, notificaciones ->
                     val recientes = relevamientos
                         .sortedByDescending { it.fecha }
                         .take(3)
@@ -60,7 +66,8 @@ class HomeViewModel @Inject constructor(
                     val destacada = agendaItems.firstOrNull {
                         it.categoria == CategoriaAgendaVisita.HOY || it.categoria == CategoriaAgendaVisita.URGENTE_VENCIDA
                     } ?: agendaItems.firstOrNull { it.categoria == CategoriaAgendaVisita.ESTA_SEMANA }
-                        
+                    val unreadCount = notificaciones.count { !it.leida }
+
                     HomeUiState(
                         isLoading = false,
                         userName = user.name.ifBlank { "Usuario" },
@@ -68,7 +75,8 @@ class HomeViewModel @Inject constructor(
                         recientes = recientes,
                         proximaVisitaDestacada = destacada,
                         totalVisitasHoy = visitasHoy,
-                        totalVisitasAtrasadas = visitasAtrasadas
+                        totalVisitasAtrasadas = visitasAtrasadas,
+                        unreadNotificationsCount = unreadCount
                     )
                 }.catch { e ->
                     Log.e("HomeViewModel", "Error general en Home", e)

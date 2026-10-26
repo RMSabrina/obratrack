@@ -127,4 +127,24 @@
         <item quantity="one">%d tarea sin fechas no aparece en el cronograma</item>
         <item quantity="other">%d tareas sin fechas no aparecen en el cronograma</item>
     </plurals>
+
+    <!-- Equipo e Incidentes -->
+    <string name="obra_seccion_equipo">Equipo</string>
+    <string name="obra_equipo_titulo">Equipo de la Obra</string>
+    <string name="obra_equipo_agregar">Asignar colaborador</string>
+    <string name="obra_equipo_vacio">No hay inspectores ni colaboradores asignados.</string>
+    <string name="obra_incidentes_titulo">Alertas e Incidentes</string>
+    <string name="obra_incidente_reportar">Reportar Incidente</string>
+    <string name="obra_incidente_sin_incidentes">Sin incidentes activos en esta obra.</string>
+    <string name="obra_eliminar_titulo">Eliminar Obra</string>
+    <string name="obra_eliminar_mensaje">¿Eliminar Obra y todos sus relevamientos, tareas y suscriptores? Esta acción no se puede deshacer.</string>
+    <string name="colaborador_nombre_label">Nombre del colaborador</string>
+    <string name="colaborador_email_label">Correo electrónico</string>
+    <string name="colaborador_rol_label">Rol</string>
+    <string name="incidente_titulo_label">Título del incidente</string>
+    <string name="incidente_descripcion_label">Descripción de lo ocurrido</string>
+    <string name="incidente_gravedad_label">Gravedad</string>
+    <string name="incidente_resolver">Marcar como resuelto</string>
+    <string name="incidente_resuelto_tag">Resuelto</string>
+    <string name="guardar">Guardar</string>
 </resources>

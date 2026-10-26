@@ -16,6 +16,7 @@ fun HomeRoute(
     onNavigateToProfile: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onIniciarRelevamientoParaObra: (String) -> Unit,
+    onNavigateToNotificaciones: () -> Unit = {},
     onTriggerDemoNotification: (() -> Unit)? = null
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -29,6 +30,7 @@ fun HomeRoute(
         onNavigateToProfile = onNavigateToProfile,
         onOpenRelevamiento = onOpenRelevamiento,
         onIniciarRelevamientoParaObra = onIniciarRelevamientoParaObra,
+        onNavigateToNotificaciones = onNavigateToNotificaciones,
         onTriggerDemoNotification = onTriggerDemoNotification
     )
 }

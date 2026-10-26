@@ -42,4 +42,13 @@
     <string name="ui_map_picker_confirm">Confirmar ubicación</string>
     <string name="ui_map_picker_cancel">Cancelar</string>
     <string name="ui_map_picker_instructions">Toca en el mapa para colocar el pin</string>
+
+    <!-- Language & Roles -->
+    <string name="language_title">Idioma de la aplicación</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_english">English</string>
+    <string name="language_changed_msg">Idioma actualizado correctamente</string>
+    <string name="role_arquitecto">Arquitecto</string>
+    <string name="role_inspector">Inspector Técnico</string>
+    <string name="role_cliente">Propietario / Cliente</string>
 </resources>

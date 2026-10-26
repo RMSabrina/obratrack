@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notificaciones_titulo">Notification Center</string>
+    <string name="notificaciones_marcar_todas">Mark all as read</string>
+    <string name="notificaciones_filtro_todas">All</string>
+    <string name="notificaciones_filtro_no_leidas">Unread</string>
+    <string name="notificaciones_filtro_visitas">Visits</string>
+    <string name="notificaciones_filtro_incidentes">Incidents</string>
+    <string name="notificaciones_vacio_titulo">No notifications</string>
+    <string name="notificaciones_vacio_desc">You\'re all caught up! Visit reminders, inactivity warnings, and site incident reports will appear here.</string>
+    <string name="notificaciones_marcar_leida">Mark as read</string>
+    <string name="notificaciones_volver">Back</string>
+    <string name="notificaciones_hoy">Today</string>
+    <string name="notificaciones_ayer">Yesterday</string>
+</resources>

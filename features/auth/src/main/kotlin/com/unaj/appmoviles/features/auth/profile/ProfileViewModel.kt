@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
+import com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,15 +27,17 @@ class ProfileViewModel @Inject constructor(
     private val updateProfileNameUseCase: UpdateProfileNameUseCase,
     private val changePasswordUseCase: ChangePasswordUseCase,
     private val deleteAccountUseCase: DeleteAccountUseCase,
-    private val reauthenticateUseCase: ReauthenticateUseCase
+    private val reauthenticateUseCase: ReauthenticateUseCase,
+    private val languagePreferencesRepository: LanguagePreferencesRepository
 ) : ViewModel() {
 
     private val internalState = MutableStateFlow(ProfileUiState())
 
     val uiState: StateFlow<ProfileUiState> = combine(
         observeSessionUseCase(),
+        languagePreferencesRepository.observeLanguage(),
         internalState
-    ) { sessionUser, state ->
+    ) { sessionUser, language, state ->
         val nameInputToUse = if (state.nameInput.isEmpty() && sessionUser != null) {
             sessionUser.name
         } else {
@@ -42,6 +46,7 @@ class ProfileViewModel @Inject constructor(
         state.copy(
             user = sessionUser,
             nameInput = nameInputToUse,
+            selectedLanguage = language,
             isLoading = sessionUser == null && state.error == null
         )
     }.stateIn(
@@ -49,6 +54,12 @@ class ProfileViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ProfileUiState(isLoading = true)
     )
+
+    fun onLanguageChange(language: AppLanguage) {
+        viewModelScope.launch {
+            languagePreferencesRepository.setLanguage(language)
+        }
+    }
 
     fun onNameChange(newName: String) {
         internalState.value = internalState.value.copy(nameInput = newName, error = null)

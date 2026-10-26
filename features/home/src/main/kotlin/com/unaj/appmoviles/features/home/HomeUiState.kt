@@ -13,6 +13,7 @@ data class HomeUiState(
     val proximaVisitaDestacada: ItemAgendaVisita? = null,
     val totalVisitasHoy: Int = 0,
     val totalVisitasAtrasadas: Int = 0,
+    val unreadNotificationsCount: Int = 0,
     val error: DomainError? = null
 )
 

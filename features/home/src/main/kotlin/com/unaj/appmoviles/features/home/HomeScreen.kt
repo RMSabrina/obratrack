@@ -45,7 +45,10 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -71,6 +74,11 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
 
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.home.R
+
 @Composable
 fun HomeScreen(
     state: HomeUiState,
@@ -81,6 +89,7 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onIniciarRelevamientoParaObra: (String) -> Unit = {},
+    onNavigateToNotificaciones: () -> Unit = {},
     onTriggerDemoNotification: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -106,32 +115,56 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(32.dp))
-                    
-                    // App Logo area can be added here if needed (e.g., ObraTrack logo)
-                    Text(
-                        text = "ObraTrack",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                    
                     Spacer(modifier = Modifier.height(24.dp))
-                    
-                    Text(
-                        text = "Hola, ${state.userName}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "\u00bfQu\u00e9 quer\u00e9s hacer hoy?",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 18.sp
-                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.home_saludo, state.userName),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = stringResource(R.string.home_subtitulo),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 18.sp
+                            )
+                        }
+
+                        IconButton(
+                            onClick = onNavigateToNotificaciones,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                                .size(48.dp)
+                        ) {
+                            BadgedBox(
+                                badge = {
+                                    if (state.unreadNotificationsCount > 0) {
+                                        Badge(
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            contentColor = MaterialTheme.colorScheme.onPrimary
+                                        ) {
+                                            Text(state.unreadNotificationsCount.toString())
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Notifications,
+                                    contentDescription = stringResource(R.string.home_centro_notificaciones),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
                 }
                 
 

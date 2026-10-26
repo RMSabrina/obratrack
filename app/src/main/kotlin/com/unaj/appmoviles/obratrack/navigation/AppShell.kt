@@ -35,6 +35,8 @@ import com.unaj.appmoviles.features.obras.toStorageValue
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import com.unaj.appmoviles.obratrack.worker.RelevamientoReminderWorker
 
+import com.unaj.appmoviles.notificaciones.NotificacionesRoute
+
 @Composable
 fun AppShell(onLogout: () -> Unit) {
     val backStack = rememberNavBackStack(HomeDestination)
@@ -87,6 +89,7 @@ fun AppShell(onLogout: () -> Unit) {
                     onNavigateToObraSelection = { navigateTo(ObraSelectionDestination) },
                     onNavigateToObrasPublicas = { navigateTo(ObrasPublicasDestination) },
                     onNavigateToProfile = { navigateTo(ProfileDestination) },
+                    onNavigateToNotificaciones = { navigateTo(NotificacionesDestination) },
                     onIniciarRelevamientoParaObra = { obraId ->
                         navigateTo(RelevamientoFormDestination(obraId = obraId))
                     },
@@ -110,6 +113,17 @@ fun AppShell(onLogout: () -> Unit) {
                             NotificationHelper.showDemoNotification(appContext)
                             RelevamientoReminderWorker.triggerImmediateDemo(appContext)
                         }
+                    }
+                )
+            }
+            entry<NotificacionesDestination> {
+                NotificacionesRoute(
+                    onBack = ::goBack,
+                    onNavigateToObra = { obraId ->
+                        navigateTo(ObraDetailDestination(obraId = obraId))
+                    },
+                    onNavigateToAgenda = {
+                        navigateTo(AgendaDestination)
                     }
                 )
             }

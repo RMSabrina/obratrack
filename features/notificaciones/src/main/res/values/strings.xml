@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notificaciones_titulo">Centro de Notificaciones</string>
+    <string name="notificaciones_marcar_todas">Marcar todas como leídas</string>
+    <string name="notificaciones_filtro_todas">Todas</string>
+    <string name="notificaciones_filtro_no_leidas">No leídas</string>
+    <string name="notificaciones_filtro_visitas">Visitas</string>
+    <string name="notificaciones_filtro_incidentes">Incidentes</string>
+    <string name="notificaciones_vacio_titulo">Sin notificaciones</string>
+    <string name="notificaciones_vacio_desc">Estás al día. Aquí aparecerán los avisos de visitas, alertas de inactividad e incidentes en obra.</string>
+    <string name="notificaciones_marcar_leida">Marcar como leída</string>
+    <string name="notificaciones_volver">Volver</string>
+    <string name="notificaciones_hoy">Hoy</string>
+    <string name="notificaciones_ayer">Ayer</string>
+</resources>

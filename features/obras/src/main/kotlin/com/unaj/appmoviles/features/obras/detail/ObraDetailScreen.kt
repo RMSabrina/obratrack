@@ -3,7 +3,9 @@ package com.unaj.appmoviles.features.obras.detail
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,15 +15,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -34,13 +40,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -48,6 +57,10 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import com.unaj.appmoviles.obratrack.core.domain.model.Colaborador
+import com.unaj.appmoviles.obratrack.core.domain.model.GravedadIncidente
+import com.unaj.appmoviles.obratrack.core.domain.model.Incidente
+import com.unaj.appmoviles.obratrack.core.domain.model.UserRole
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +70,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
@@ -113,6 +127,10 @@ fun ObraDetailRoute(
         onCreateRelevamiento = onCreateRelevamiento,
         onOpenRelevamiento = onOpenRelevamiento,
         onCreateTarea = onCreateTarea,
+        onAgregarColaborador = viewModel::agregarColaborador,
+        onRemoverColaborador = viewModel::removerColaborador,
+        onReportarIncidente = viewModel::reportarIncidente,
+        onResolverIncidente = viewModel::resolverIncidente,
         onShareInforme = {
             val obra = state.obra
             if (obra != null && !state.isDeleting) {
@@ -170,12 +188,18 @@ fun ObraDetailScreen(
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onCreateTarea: () -> Unit,
     onShareInforme: () -> Unit = {},
+    onAgregarColaborador: (email: String, nombre: String, rol: UserRole) -> Unit = { _, _, _ -> },
+    onRemoverColaborador: (colaboradorId: String) -> Unit = {},
+    onReportarIncidente: (titulo: String, descripcion: String, gravedad: GravedadIncidente) -> Unit = { _, _, _ -> },
+    onResolverIncidente: (incidenteId: String) -> Unit = {},
     tareasTab: @Composable (Modifier) -> Unit,
     cronogramaTab: @Composable (onOpenTareas: () -> Unit, Modifier) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val obra = state.obra
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    var showAddColaboradorDialog by rememberSaveable { mutableStateOf(false) }
+    var showReportIncidenteDialog by rememberSaveable { mutableStateOf(false) }
     // Se conserva al volver del detalle o del formulario de una tarea (decorador de Nav3).
     var pestana by rememberSaveable { mutableStateOf(ObraDetailTab.RESUMEN) }
     val pestanas = pestanasVisibles(esDueno = state.isEditable)
@@ -221,6 +245,26 @@ fun ObraDetailScreen(
                 ) {
                     Text("Cancelar")
                 }
+            }
+        )
+    }
+
+    if (showAddColaboradorDialog) {
+        AddColaboradorDialog(
+            onDismiss = { showAddColaboradorDialog = false },
+            onConfirm = { email, nombre, rol ->
+                showAddColaboradorDialog = false
+                onAgregarColaborador(email, nombre, rol)
+            }
+        )
+    }
+
+    if (showReportIncidenteDialog) {
+        ReportarIncidenteDialog(
+            onDismiss = { showReportIncidenteDialog = false },
+            onConfirm = { titulo, descripcion, gravedad ->
+                showReportIncidenteDialog = false
+                onReportarIncidente(titulo, descripcion, gravedad)
             }
         )
     }
@@ -322,6 +366,10 @@ fun ObraDetailScreen(
                         obra = obra,
                         onOpenRelevamiento = onOpenRelevamiento,
                         onVerTodos = { pestana = ObraDetailTab.RELEVAMIENTOS },
+                        onOpenAddColaborador = { showAddColaboradorDialog = true },
+                        onRemoverColaborador = onRemoverColaborador,
+                        onOpenReportarIncidente = { showReportIncidenteDialog = true },
+                        onResolverIncidente = onResolverIncidente,
                         modifier = contenido
                     )
                     ObraDetailTab.TAREAS -> tareasTab(contenido)
@@ -423,6 +471,10 @@ private fun ResumenTab(
     obra: Obra,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onVerTodos: () -> Unit,
+    onOpenAddColaborador: () -> Unit,
+    onRemoverColaborador: (String) -> Unit,
+    onOpenReportarIncidente: () -> Unit,
+    onResolverIncidente: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val recientes = state.relevamientos.recientes()
@@ -443,6 +495,73 @@ private fun ResumenTab(
             }
             item {
                 TareasResumenCard(resumen = resumen)
+            }
+        }
+
+        // Alertas e Incidentes
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SectionTitle(stringResource(R.string.obra_incidentes_titulo))
+                TextButton(onClick = onOpenReportarIncidente) {
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.obra_incidente_reportar))
+                }
+            }
+        }
+        if (state.incidentes.isEmpty()) {
+            item {
+                Text(
+                    text = stringResource(R.string.obra_incidente_sin_incidentes),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            items(state.incidentes, key = { it.id }) { incidente ->
+                IncidenteCard(
+                    incidente = incidente,
+                    onResolver = { onResolverIncidente(incidente.id) }
+                )
+            }
+        }
+
+        // Equipo y Colaboradores
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SectionTitle(stringResource(R.string.obra_equipo_titulo))
+                if (state.isEditable) {
+                    TextButton(onClick = onOpenAddColaborador) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(stringResource(R.string.obra_equipo_agregar))
+                    }
+                }
+            }
+        }
+        if (state.colaboradores.isEmpty()) {
+            item {
+                Text(
+                    text = stringResource(R.string.obra_equipo_vacio),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            items(state.colaboradores, key = { it.id }) { colaborador ->
+                ColaboradorCard(
+                    colaborador = colaborador,
+                    isEditable = state.isEditable,
+                    onRemover = { onRemoverColaborador(colaborador.id) }
+                )
             }
         }
 
@@ -750,3 +869,247 @@ private fun RelevamientoCard(
         }
     }
 }
+
+@Composable
+private fun IncidenteCard(
+    incidente: Incidente,
+    onResolver: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val (badgeBg, badgeText) = when (incidente.gravedad) {
+        GravedadIncidente.ALTA -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        GravedadIncidente.MEDIA -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+        GravedadIncidente.BAJA -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+    }
+
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = incidente.titulo,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                StatusBadge(
+                    text = incidente.gravedad.name,
+                    backgroundColor = badgeBg,
+                    textColor = badgeText
+                )
+            }
+            if (incidente.descripcion.isNotBlank()) {
+                Text(
+                    text = incidente.descripcion,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${incidente.reportadoPorNombre} · ${formatFecha(incidente.fecha)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (!incidente.resuelto) {
+                    TextButton(onClick = onResolver) {
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(stringResource(R.string.incidente_resolver))
+                    }
+                } else {
+                    StatusBadge(
+                        text = stringResource(R.string.incidente_resuelto_tag),
+                        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                        textColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ColaboradorCard(
+    colaborador: Colaborador,
+    isEditable: Boolean,
+    onRemover: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = colaborador.nombre.take(1).uppercase().ifBlank { "U" },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = colaborador.nombre,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = colaborador.email,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            StatusBadge(
+                text = colaborador.rol.name,
+                backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                textColor = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            if (isEditable) {
+                IconButton(onClick = onRemover) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar colaborador",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddColaboradorDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (email: String, nombre: String, rol: UserRole) -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+    var nombre by remember { mutableStateOf("") }
+    var rol by remember { mutableStateOf(UserRole.INSPECTOR) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.obra_equipo_agregar)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = nombre,
+                    onValueChange = { nombre = it },
+                    label = { Text(stringResource(R.string.colaborador_nombre_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text(stringResource(R.string.colaborador_email_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(stringResource(R.string.colaborador_rol_label), style = MaterialTheme.typography.labelLarge)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    UserRole.entries.forEach { r ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(selected = rol == r, onClick = { rol = r })
+                            Text(r.name.lowercase().replaceFirstChar { it.uppercase() })
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(email, nombre, rol) },
+                enabled = email.isNotBlank() && nombre.isNotBlank()
+            ) {
+                Text(stringResource(R.string.guardar))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancelar))
+            }
+        }
+    )
+}
+
+@Composable
+private fun ReportarIncidenteDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (titulo: String, descripcion: String, gravedad: GravedadIncidente) -> Unit
+) {
+    var titulo by remember { mutableStateOf("") }
+    var descripcion by remember { mutableStateOf("") }
+    var gravedad by remember { mutableStateOf(GravedadIncidente.MEDIA) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.obra_incidente_reportar)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = titulo,
+                    onValueChange = { titulo = it },
+                    label = { Text(stringResource(R.string.incidente_titulo_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = descripcion,
+                    onValueChange = { descripcion = it },
+                    label = { Text(stringResource(R.string.incidente_descripcion_label)) },
+                    maxLines = 4,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(stringResource(R.string.incidente_gravedad_label), style = MaterialTheme.typography.labelLarge)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    GravedadIncidente.entries.forEach { g ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(selected = gravedad == g, onClick = { gravedad = g })
+                            Text(g.name)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(titulo, descripcion, gravedad) },
+                enabled = titulo.isNotBlank()
+            ) {
+                Text(stringResource(R.string.guardar))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancelar))
+            }
+        }
+    )
+}
+

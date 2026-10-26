@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_saludo">Hello, %1$s</string>
+    <string name="home_subtitulo">What would you like to do today?</string>
+    <string name="home_recordatorios_titulo">Visit Reminders</string>
+    <string name="home_probar_demo">Test demo</string>
+    <string name="home_notificaciones">Notifications</string>
+    <string name="home_centro_notificaciones">Notification Center</string>
+    <string name="home_visitas_atrasadas">Overdue visits</string>
+    <string name="home_visitas_hoy">Visits for today</string>
+    <string name="home_proxima_visita">Next site visit</string>
+    <string name="home_sin_visitas">No pending visits</string>
+    <string name="home_accion_mis_obras">My Projects</string>
+    <string name="home_accion_agenda">Visit Schedule</string>
+    <string name="home_accion_nuevo_relevamiento">Quick Inspection</string>
+    <string name="home_accion_obras_publicas">Public Projects</string>
+    <string name="home_relevamientos_recientes">Recent Inspections</string>
+    <string name="home_sin_relevamientos">No inspections recorded yet.</string>
+    <string name="home_perfil">My Profile</string>
+    <string name="home_seleccionar_obra_relevamiento">Select Project for Inspection</string>
+</resources>

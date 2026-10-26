@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_saludo">Hola, %1$s</string>
+    <string name="home_subtitulo">¿Qué querés hacer hoy?</string>
+    <string name="home_recordatorios_titulo">Recordatorios de visita</string>
+    <string name="home_probar_demo">Probar demo</string>
+    <string name="home_notificaciones">Notificaciones</string>
+    <string name="home_centro_notificaciones">Centro de Notificaciones</string>
+    <string name="home_visitas_atrasadas">Visitas atrasadas</string>
+    <string name="home_visitas_hoy">Visitas para hoy</string>
+    <string name="home_proxima_visita">Próxima visita técnica</string>
+    <string name="home_sin_visitas">Sin visitas pendientes</string>
+    <string name="home_accion_mis_obras">Mis Obras</string>
+    <string name="home_accion_agenda">Agenda de Visitas</string>
+    <string name="home_accion_nuevo_relevamiento">Relevamiento Rápido</string>
+    <string name="home_accion_obras_publicas">Obras Públicas</string>
+    <string name="home_relevamientos_recientes">Relevamientos recientes</string>
+    <string name="home_sin_relevamientos">Todavía no registraste relevamientos.</string>
+    <string name="home_perfil">Mi Perfil</string>
+    <string name="home_seleccionar_obra_relevamiento">Seleccionar Obra para Relevamiento</string>
+</resources>

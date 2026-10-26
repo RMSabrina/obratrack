@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compartir">Share</string>
+    <string name="compartir_relevamiento_via">Share inspection report via&#8230;</string>
+    <string name="compartir_informe_obra">Share project report</string>
+    <string name="compartir_informe_obra_via">Share project report via&#8230;</string>
+    <string name="error_exportacion_pdf">Could not generate PDF document</string>
+    <string name="generando_documento">Generating document...</string>
+
+    <string name="obras_capturando_ubicacion">Acquiring GPS signal...</string>
+    <string name="obras_borrar_ubicacion">Clear location</string>
+    <string name="obras_actualizar_ubicacion">Update coordinates via GPS</string>
+    <string name="obras_capturar_ubicacion">Capture GPS location</string>
+    <string name="obras_error_permiso_ubicacion">Location permission required to capture GPS.</string>
+    <string name="obras_error_ubicacion_no_disponible">Could not get current GPS signal.</string>
+    <string name="obras_ajustar_en_mapa">Adjust on map</string>
+
+    <!-- Tasks: categories -->
+    <string name="tarea_categoria_cimientos_y_excavacion">Foundations &amp; excavation</string>
+    <string name="tarea_categoria_estructura">Structure</string>
+    <string name="tarea_categoria_albanileria">Masonry</string>
+    <string name="tarea_categoria_techos">Roofing</string>
+    <string name="tarea_categoria_electricidad">Electrical</string>
+    <string name="tarea_categoria_plomeria">Plumbing</string>
+    <string name="tarea_categoria_gas">Gas</string>
+    <string name="tarea_categoria_climatizacion">HVAC</string>
+    <string name="tarea_categoria_carpinteria">Carpentry</string>
+    <string name="tarea_categoria_herreria">Metalwork</string>
+    <string name="tarea_categoria_pisos_y_revestimientos">Floors &amp; wall coverings</string>
+    <string name="tarea_categoria_pintura">Painting</string>
+    <string name="tarea_categoria_aberturas">Doors &amp; Windows</string>
+    <string name="tarea_categoria_impermeabilizacion">Waterproofing</string>
+    <string name="tarea_categoria_limpieza">Cleaning</string>
+    <string name="tarea_categoria_otros">Other</string>
+
+    <!-- Tasks: states -->
+    <string name="tarea_estado_pendiente">Pending</string>
+    <string name="tarea_estado_en_curso">In progress</string>
+    <string name="tarea_estado_completada">Completed</string>
+    <string name="tarea_atrasada">Overdue</string>
+
+    <!-- Tasks: list -->
+    <string name="obras_tareas">Tasks</string>
+    <string name="tareas_vacio_titulo">No tasks yet</string>
+    <string name="tareas_vacio_descripcion">Plan site work by creating tasks.</string>
+    <string name="tareas_agregar_primera">Add the first one</string>
+    <string name="tareas_sin_fechas">Unscheduled</string>
+    <string name="tareas_rango_fechas">%1$s – %2$s</string>
+    <string name="volver">Back</string>
+
+    <!-- Tasks: form -->
+    <string name="tarea_nueva">New task</string>
+    <string name="tarea_editar">Edit task</string>
+    <string name="tarea_campo_titulo">Title</string>
+    <string name="tarea_campo_descripcion">Description (optional)</string>
+    <string name="tarea_campo_categoria">Category</string>
+    <string name="tarea_campo_estado">Status</string>
+    <string name="tarea_campo_fechas">Dates (optional)</string>
+    <string name="tarea_campo_fecha_inicio">Start</string>
+    <string name="tarea_campo_fecha_fin">End</string>
+    <string name="tarea_fechas_ayuda">If you set dates, provide both start and end. Without dates, the task remains unscheduled.</string>
+    <string name="tarea_quitar_fechas">Remove dates</string>
+    <string name="tarea_elegir_fecha">Pick date</string>
+    <string name="tarea_guardar">Save task</string>
+    <string name="tarea_guardando">Saving…</string>
+    <string name="aceptar">Accept</string>
+    <string name="cancelar">Cancel</string>
+
+    <!-- Tasks: detail -->
+    <string name="tarea_detalle_titulo">Task Details</string>
+    <string name="tarea_descripcion">Description</string>
+    <string name="tarea_sin_descripcion">No description</string>
+    <string name="tarea_marcar_completada">Mark as completed</string>
+    <string name="tarea_eliminar">Delete task</string>
+    <string name="tarea_eliminar_confirmacion">Delete this task? This action cannot be undone.</string>
+    <string name="eliminar">Delete</string>
+    <string name="tarea_eliminar_solo_tarea">Delete only the task</string>
+    <plurals name="tarea_eliminar_vinculados">
+        <item quantity="one">This task has %d linked report. If you delete only the task, the report will be kept without a task.</item>
+        <item quantity="other">This task has %d linked reports. If you delete only the task, the reports will be kept without a task.</item>
+    </plurals>
+    <plurals name="tarea_eliminar_con_relevamientos">
+        <item quantity="one">Delete task and %d report</item>
+        <item quantity="other">Delete task and %d reports</item>
+    </plurals>
+    <string name="tarea_vinculados_titulo">Linked reports (%1$d)</string>
+    <string name="tarea_vinculados_vacio">No inspection reports are linked to this task.</string>
+    <string name="tarea_vinculados_error">Could not load linked reports. Reopen the task to retry.</string>
+
+    <!-- Project details: tabs -->
+    <string name="obra_seccion_resumen">Summary</string>
+    <string name="obra_seccion_relevamientos">Inspections</string>
+    <string name="obra_tareas_completadas">Completed</string>
+    <string name="obra_tareas_pendientes">Pending</string>
+    <string name="obra_tareas_atrasadas">Overdue</string>
+    <string name="obra_tareas_sin_tareas">No tasks loaded yet.</string>
+    <string name="obra_relevamiento_nuevo">New inspection</string>
+    <string name="obra_relevamientos_vacio">No inspections yet.</string>
+    <string name="obra_relevamientos_ver_todos">View all (%1$d)</string>
+    <string name="obra_relevamientos_error">Could not load inspections. Reopen project to retry.</string>
+    <string name="obra_relevamientos_vacio_titulo">No inspections yet</string>
+    <string name="obra_relevamientos_vacio_descripcion">This project has no inspections recorded.</string>
+    <string name="obra_relevamientos_agregar_primero">Add the first one</string>
+    <plurals name="obra_tareas_atrasadas_insignia">
+        <item quantity="one">%d overdue task</item>
+        <item quantity="other">%d overdue tasks</item>
+    </plurals>
+
+    <!-- Inspection: linked task -->
+    <string name="relevamiento_tarea_titulo">Linked task</string>
+    <string name="relevamiento_tarea_ninguna">None</string>
+    <string name="relevamiento_tarea_completada">%1$s (completed)</string>
+    <string name="relevamiento_tarea_ayuda">Optional. Linking it does not change task status.</string>
+    <string name="relevamiento_tarea_sin_tareas">This project has no tasks to link.</string>
+    <string name="relevamiento_tarea_error">Could not load tasks. Preserving current link.</string>
+
+    <!-- Schedule / Timeline -->
+    <string name="cronograma_hoy">Today</string>
+    <string name="cronograma_fecha_inicio">%1$s –</string>
+    <string name="cronograma_titulo">Schedule</string>
+    <string name="cronograma_ir_a_tareas">View tasks</string>
+    <string name="cronograma_vacio_titulo">No tasks yet</string>
+    <string name="cronograma_vacio_descripcion">Add tasks with start and end dates to see them on the timeline.</string>
+    <string name="cronograma_sin_planificadas_titulo">No tasks have dates</string>
+    <string name="cronograma_sin_planificadas_descripcion">To view a task on the timeline, set its start and end date.</string>
+    <plurals name="cronograma_sin_fechas">
+        <item quantity="one">%d unscheduled task is not shown on the timeline</item>
+        <item quantity="other">%d unscheduled tasks are not shown on the timeline</item>
+    </plurals>
+
+    <!-- Team & Incidents -->
+    <string name="obra_seccion_equipo">Team</string>
+    <string name="obra_equipo_titulo">Project Team</string>
+    <string name="obra_equipo_agregar">Assign collaborator</string>
+    <string name="obra_equipo_vacio">No inspectors or collaborators assigned yet.</string>
+    <string name="obra_incidentes_titulo">Alerts &amp; Incidents</string>
+    <string name="obra_incidente_reportar">Report Incident</string>
+    <string name="obra_incidente_sin_incidentes">No active incidents in this project.</string>
+    <string name="obra_eliminar_titulo">Delete Project</string>
+    <string name="obra_eliminar_mensaje">Delete Project and all its inspections, tasks, and subscribers? This action cannot be undone.</string>
+    <string name="colaborador_nombre_label">Collaborator name</string>
+    <string name="colaborador_email_label">Email address</string>
+    <string name="colaborador_rol_label">Role</string>
+    <string name="incidente_titulo_label">Incident title</string>
+    <string name="incidente_descripcion_label">Description of what happened</string>
+    <string name="incidente_gravedad_label">Severity</string>
+    <string name="incidente_resolver">Mark as resolved</string>
+    <string name="incidente_resuelto_tag">Resolved</string>
+    <string name="guardar">Save</string>
+</resources>

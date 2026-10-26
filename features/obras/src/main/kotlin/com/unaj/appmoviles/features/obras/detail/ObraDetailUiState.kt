@@ -6,6 +6,9 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 
+import com.unaj.appmoviles.obratrack.core.domain.model.Colaborador
+import com.unaj.appmoviles.obratrack.core.domain.model.Incidente
+
 data class ObraDetailUiState(
     val isLoading: Boolean = true,
     val isEditable: Boolean = false,
@@ -16,6 +19,8 @@ data class ObraDetailUiState(
     val tareas: List<Tarea> = emptyList(),
     /** Solo para el dueño; null si no es dueño o si no se pudieron leer las tareas. */
     val resumenTareas: ResumenTareas? = null,
+    val colaboradores: List<Colaborador> = emptyList(),
+    val incidentes: List<Incidente> = emptyList(),
     val error: DomainError? = null,
     val isDeleting: Boolean = false,
     val isDeleted: Boolean = false,

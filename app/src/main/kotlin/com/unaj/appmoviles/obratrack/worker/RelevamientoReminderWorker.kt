@@ -18,12 +18,17 @@ import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.concurrent.TimeUnit
 
+import com.unaj.appmoviles.obratrack.core.domain.model.NotificacionItem
+import com.unaj.appmoviles.obratrack.core.domain.model.TipoNotificacion
+import com.unaj.appmoviles.obratrack.core.domain.repository.NotificacionRepository
+
 @HiltWorker
 class RelevamientoReminderWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val authRepository: AuthRepository,
-    private val obraRepository: ObraRepository
+    private val obraRepository: ObraRepository,
+    private val notificacionRepository: NotificacionRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -42,17 +47,29 @@ class RelevamientoReminderWorker @AssistedInject constructor(
             if (proxima != null) {
                 val diff = proxima - now
                 if (diff < oneDayMillis) {
-                    val title = if (diff < 0) "⚠️ Visita atrasada: " else "🔔 Visita técnica hoy: "
+                    val title = if (diff < 0) "⚠️ Visita atrasada: ${obra.nombre}" else "🔔 Visita técnica hoy: ${obra.nombre}"
                     val msg = if (diff < 0) {
-                        "La visita planificada para  está pendiente de relevamiento."
+                        "La visita planificada para '${obra.nombre}' está pendiente de relevamiento."
                     } else {
-                        "Tenés inspección técnica programada para las próximas horas en ."
+                        "Tenés inspección técnica programada para las próximas horas en '${obra.nombre}'."
                     }
                     NotificationHelper.showNotification(
                         applicationContext,
                         obra.id.hashCode(),
                         title,
                         msg
+                    )
+                    notificacionRepository.crearNotificacion(
+                        NotificacionItem(
+                            id = "visita-${obra.id}-${now}",
+                            userId = sessionUser.id,
+                            obraId = obra.id,
+                            titulo = title,
+                            mensaje = msg,
+                            tipo = if (diff < 0) TipoNotificacion.VISITA_ATRASADA else TipoNotificacion.VISITA_RECORDATORIO,
+                            fecha = now,
+                            rutaDestino = "agenda"
+                        )
                     )
                     notifiedCount++
                     continue
@@ -65,13 +82,25 @@ class RelevamientoReminderWorker @AssistedInject constructor(
                 val diffSinVisita = now - ultima
                 if (diffSinVisita >= sevenDaysMillis) {
                     val diasSinVisita = diffSinVisita / oneDayMillis
-                    val title = "⚠️ Obra sin relevamientos: "
-                    val msg = "La obra para '' lleva  días sin visitas registradas."
+                    val title = "⚠️ Obra sin relevamientos: ${obra.nombre}"
+                    val msg = "La obra para '${obra.cliente}' lleva $diasSinVisita días sin visitas registradas."
                     NotificationHelper.showNotification(
                         applicationContext,
                         obra.id.hashCode() + 1,
                         title,
                         msg
+                    )
+                    notificacionRepository.crearNotificacion(
+                        NotificacionItem(
+                            id = "inactiva-${obra.id}-${now}",
+                            userId = sessionUser.id,
+                            obraId = obra.id,
+                            titulo = title,
+                            mensaje = msg,
+                            tipo = TipoNotificacion.OBRA_INACTIVA,
+                            fecha = now,
+                            rutaDestino = "obras"
+                        )
                     )
                     notifiedCount++
                 }
@@ -80,6 +109,17 @@ class RelevamientoReminderWorker @AssistedInject constructor(
 
         if (notifiedCount == 0 && isImmediateDemo) {
             NotificationHelper.showDemoNotification(applicationContext)
+            notificacionRepository.crearNotificacion(
+                NotificacionItem(
+                    id = "demo-${now}",
+                    userId = sessionUser.id,
+                    titulo = "🔔 Recordatorio de Visita Demo",
+                    mensaje = "Tenés una visita técnica programada para hoy en 'Edificio Mitre'. Tocá para inspeccionar los relevamientos pendientes.",
+                    tipo = TipoNotificacion.VISITA_RECORDATORIO,
+                    fecha = now,
+                    rutaDestino = "agenda"
+                )
+            )
         }
 
         return Result.success()
