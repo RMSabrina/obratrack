@@ -3,16 +3,22 @@ package com.unaj.appmoviles.obratrack.core.domain.usecase
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
+import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientoDraft
+import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
+import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
+import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.DeleteRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ProximaVisitaObra
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.SincronizarProximaVisitaObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.UpdateRelevamientoUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.proximaVisitaDeObra
+import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.DeleteTareaUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
@@ -84,12 +90,31 @@ private class ObraRepositoryEnMemoria(private val almacen: Almacen) : FakeBaseOb
     }
 }
 
+/** Como el batch de Firestore: con ELIMINAR borra los relevamientos vinculados; con DESVINCULAR, no. */
+private class TareaRepositoryEnMemoria(private val almacen: Almacen) : TareaRepository {
+    var vinculados: RelevamientosVinculados? = null
+    var error: TareaError? = null
+    override fun observeByObra(obraId: String): Flow<List<Tarea>> = emptyFlow()
+    override fun observeOne(obraId: String, tareaId: String): Flow<Tarea?> = emptyFlow()
+    override suspend fun create(userId: String, obraId: String, draft: TareaDraft): AppResult<Tarea> = TODO()
+    override suspend fun update(userId: String, obraId: String, tareaId: String, draft: TareaDraft): AppResult<Tarea> = TODO()
+    override suspend fun delete(obraId: String, tareaId: String, vinculados: RelevamientosVinculados): AppResult<Unit> {
+        this.vinculados = vinculados
+        error?.let { return AppResult.Error(it) }
+        if (vinculados == RelevamientosVinculados.ELIMINAR) almacen.relevamientos.removeAll { it.tareaId == tareaId }
+        return AppResult.Success(Unit)
+    }
+    override suspend fun deleteAllByObra(obraId: String): AppResult<Unit> = TODO()
+}
+
 class ProximaVisitaObraSyncTest {
 
     private val almacen = Almacen()
     private val relevamientoRepo = RelevamientoRepositoryEnMemoria(almacen)
     private val sincronizar = SincronizarProximaVisitaObraUseCase(relevamientoRepo, ObraRepositoryEnMemoria(almacen))
     private val borrar = DeleteRelevamientoUseCase(relevamientoRepo, sincronizar)
+    private val tareaRepo = TareaRepositoryEnMemoria(almacen)
+    private val borrarTarea = DeleteTareaUseCase(tareaRepo, sincronizar)
     private val actualizar = UpdateRelevamientoUseCase(relevamientoRepo, sincronizar)
 
     private fun relevamiento(id: String, fecha: Long, proxima: Long?, hora: Int? = null) = Relevamiento(
@@ -225,6 +250,51 @@ class ProximaVisitaObraSyncTest {
         val resultado = borrar("obra-1", "r1")
 
         assertEquals(ObraError.Red, (resultado as AppResult.Error).error)
+    }
+
+    // ---- Borrar una tarea con sus relevamientos
+
+    @Test
+    fun borrarTareaYSusRelevamientos_dejaLaObraSinProximaVisitaNiHora() = runBlocking {
+        almacen.guardar(relevamiento("r1", fecha = 100L, proxima = 5_000L, hora = 600).copy(tareaId = "t1"))
+
+        val resultado = borrarTarea("obra-1", "t1", RelevamientosVinculados.ELIMINAR)
+
+        assertTrue(resultado is AppResult.Success)
+        assertNull(almacen.obra.proximaVisita)
+        assertNull(almacen.obra.horaVisita)
+    }
+
+    @Test
+    fun borrarTareaYSusRelevamientos_conOtroSinTarea_laObraPasaAlOtro() = runBlocking {
+        almacen.guardar(relevamiento("libre", fecha = 100L, proxima = 3_000L, hora = 540))
+        almacen.guardar(relevamiento("vinculado", fecha = 200L, proxima = 9_000L).copy(tareaId = "t1"))
+
+        borrarTarea("obra-1", "t1", RelevamientosVinculados.ELIMINAR)
+
+        assertEquals(3_000L, almacen.obra.proximaVisita)
+        assertEquals(540, almacen.obra.horaVisita)
+    }
+
+    @Test
+    fun borrarSoloLaTarea_noToCaLaProximaVisitaDeLaObra() = runBlocking {
+        almacen.guardar(relevamiento("r1", fecha = 100L, proxima = 5_000L, hora = 600).copy(tareaId = "t1"))
+
+        borrarTarea("obra-1", "t1", RelevamientosVinculados.DESVINCULAR)
+
+        assertEquals(0, almacen.setProximaVisitaCalls)
+        assertEquals(5_000L, almacen.obra.proximaVisita)
+    }
+
+    @Test
+    fun siFallaElBorradoDeLaTarea_devuelveElError_yNoToCaLaObra() = runBlocking {
+        almacen.guardar(relevamiento("r1", fecha = 100L, proxima = 5_000L).copy(tareaId = "t1"))
+        tareaRepo.error = TareaError.Red
+
+        val resultado = borrarTarea("obra-1", "t1", RelevamientosVinculados.ELIMINAR)
+
+        assertEquals(TareaError.Red, (resultado as AppResult.Error).error)
+        assertEquals(0, almacen.setProximaVisitaCalls)
     }
 
     // ---- Guardar (editar) un relevamiento

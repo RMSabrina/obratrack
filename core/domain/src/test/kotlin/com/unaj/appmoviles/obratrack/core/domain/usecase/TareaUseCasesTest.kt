@@ -7,7 +7,6 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.CreateTareaUseCase
-import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.DeleteTareaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.UpdateTareaUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -122,17 +121,6 @@ class TareaUseCasesTest {
 
         assertEquals("tarea-1", (result as AppResult.Success).data.id)
         assertEquals(1, repository.updateCalls)
-    }
-
-    @Test
-    fun delete_pasaAlRepositorioLaOpcionElegidaParaLosVinculados() = runBlocking {
-        val repository = FakeTareaRepository()
-
-        DeleteTareaUseCase(repository)("obra-1", "tarea-1", RelevamientosVinculados.ELIMINAR)
-        assertEquals(RelevamientosVinculados.ELIMINAR, repository.lastVinculados)
-
-        DeleteTareaUseCase(repository)("obra-1", "tarea-1", RelevamientosVinculados.DESVINCULAR)
-        assertEquals(RelevamientosVinculados.DESVINCULAR, repository.lastVinculados)
     }
 
     private fun draft(
