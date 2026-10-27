@@ -19,7 +19,7 @@ fun esOscuro(modo: ModoTema, sistemaOscuro: Boolean): Boolean = when (modo) {
     ModoTema.OSCURO -> true
 }
 
-/** Modo de AppCompat para los recursos XML (`values-night`); solo se aplica al arrancar el proceso. */
+/** Modo de AppCompat para los recursos XML con calificador night (tema DayNight); solo se aplica al arrancar el proceso. */
 fun ModoTema.aNightMode(): Int = when (this) {
     ModoTema.SISTEMA -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
     ModoTema.CLARO -> AppCompatDelegate.MODE_NIGHT_NO

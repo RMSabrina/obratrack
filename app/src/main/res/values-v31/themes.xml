@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Android 12+: el splash del sistema sale con el color de marca, no con el tema del sistema. -->
+    <style name="Theme.ObraTrack" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/ic_launcher_background</item>
+        <item name="android:windowSplashScreenBackground">@color/ic_launcher_background</item>
+    </style>
+</resources>

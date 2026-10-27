@@ -33,7 +33,7 @@ class ObraTrackApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        // Solo al arrancar: los recursos XML (values-night) coinciden con el tema elegido desde la primera
+        // Solo al arrancar: los recursos XML con calificador night (DayNight) coinciden con el tema elegido desde la primera
         // pantalla. Cambiar el tema en vivo lo hace Compose, sin recrear la Activity.
         AppCompatDelegate.setDefaultNightMode(temaPreferences.getModo().aNightMode())
         NotificationHelper.createNotificationChannels(this)
