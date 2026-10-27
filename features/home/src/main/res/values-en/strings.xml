@@ -16,8 +16,6 @@
     <!-- Home -->
     <string name="home_saludo">Hello, %1$s</string>
     <string name="home_subtitulo">What would you like to do today?</string>
-    <string name="home_recordatorios_titulo">Visit reminders</string>
-    <string name="home_probar_demo">Try demo</string>
     <plurals name="home_visitas_atrasadas">
         <item quantity="one">⚠️ %d overdue site visit</item>
         <item quantity="other">⚠️ %d overdue site visits</item>

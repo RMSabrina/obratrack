@@ -84,7 +84,6 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onIniciarRelevamientoParaObra: (String) -> Unit = {},
-    onTriggerDemoNotification: (() -> Unit)? = null,
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -143,63 +142,6 @@ fun HomeScreen(
                     )
                 }
                 
-
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Notifications,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    text = stringResource(R.string.home_recordatorios_titulo),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-
-                            Button(
-                                onClick = { onTriggerDemoNotification?.invoke() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                ),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                modifier = Modifier.height(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Send,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = stringResource(R.string.home_probar_demo),
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                        }
-                    }
-                }
 
                 item {
                     val destacada = state.proximaVisitaDestacada

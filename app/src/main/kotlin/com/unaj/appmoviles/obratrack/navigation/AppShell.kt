@@ -33,8 +33,6 @@ import com.unaj.appmoviles.features.home.ObraSelectionRoute
 import com.unaj.appmoviles.features.home.agenda.AgendaRoute
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.features.obras.toStorageValue
-import com.unaj.appmoviles.obratrack.notification.NotificationHelper
-import com.unaj.appmoviles.obratrack.worker.RelevamientoReminderWorker
 
 @Composable
 fun AppShell(
@@ -45,13 +43,6 @@ fun AppShell(
 ) {
     val backStack = rememberNavBackStack(HomeDestination)
     val appContext = LocalContext.current
-
-    val notifPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { _ ->
-        NotificationHelper.showDemoNotification(appContext)
-        RelevamientoReminderWorker.triggerImmediateDemo(appContext)
-    }
 
     // Android 13+: sin este permiso los avisos de visita no se muestran.
     val avisosPermissionLauncher = rememberLauncherForActivityResult(
@@ -123,19 +114,6 @@ fun AppShell(
                                 relevamientoId = relevamiento.id
                             )
                         )
-                    },
-                    onTriggerDemoNotification = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                                NotificationHelper.showDemoNotification(appContext)
-                                RelevamientoReminderWorker.triggerImmediateDemo(appContext)
-                            } else {
-                                notifPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            }
-                        } else {
-                            NotificationHelper.showDemoNotification(appContext)
-                            RelevamientoReminderWorker.triggerImmediateDemo(appContext)
-                        }
                     }
                 )
             }

@@ -16,8 +16,6 @@
     <!-- Home -->
     <string name="home_saludo">Ciao, %1$s</string>
     <string name="home_subtitulo">Cosa vuoi fare oggi?</string>
-    <string name="home_recordatorios_titulo">Promemoria dei sopralluoghi</string>
-    <string name="home_probar_demo">Prova la demo</string>
     <plurals name="home_visitas_atrasadas">
         <item quantity="one">⚠️ %d sopralluogo in ritardo</item>
         <item quantity="other">⚠️ %d sopralluoghi in ritardo</item>
