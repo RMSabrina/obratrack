@@ -10,13 +10,17 @@ import com.unaj.appmoviles.features.obras.tareas.OTRO_USUARIO
 import com.unaj.appmoviles.features.obras.tareas.obraDe
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
+import com.unaj.appmoviles.obratrack.core.domain.model.PronosticoVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.model.User
+import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.DeleteObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObtenerPronosticoVisitaUseCase
+import com.unaj.appmoviles.obratrack.core.domain.repository.PronosticoRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareasUseCase
 import kotlinx.coroutines.Dispatchers
@@ -85,7 +89,11 @@ class ObraDetailViewModelTest {
         user: User? = DUENO,
         tareaRepo: FakeTareaRepository = FakeTareaRepository(),
         relevamientoRepo: FakeRelevamientoRepository = FakeRelevamientoRepository(listOf(relevamiento)),
-        obra: Obra = obraDe(DUENO.id, publica = true)
+        obra: Obra = obraDe(DUENO.id, publica = true),
+        pronosticoRepository: PronosticoRepository = object : PronosticoRepository {
+            override suspend fun obtenerParaVisita(latitud: Double, longitud: Double, fecha: LocalDate, hora: Int?) =
+                PronosticoVisita(fecha, hora ?: 720, 20.0, 10, 8.0, 1)
+        }
     ): ObraDetailViewModel {
         val obraRepo = FakeObraRepository(obra)
         return ObraDetailViewModel(
@@ -95,8 +103,37 @@ class ObraDetailViewModelTest {
             observeRelevamientos = ObserveRelevamientosUseCase(relevamientoRepo),
             observeTareas = ObserveTareasUseCase(tareaRepo),
             deleteObraUseCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo),
+            obtenerPronosticoVisita = ObtenerPronosticoVisitaUseCase(pronosticoRepository),
             clock = clock
         )
+    }
+
+    @Test
+    fun proximaVisitaConUbicacion_cargaPronosticoSoloParaElDueno() = runTest {
+        var consultas = 0
+        val repository = object : PronosticoRepository {
+            override suspend fun obtenerParaVisita(latitud: Double, longitud: Double, fecha: LocalDate, hora: Int?): PronosticoVisita {
+                consultas++
+                assertEquals(-34.6, latitud, 0.0)
+                assertEquals(-58.4, longitud, 0.0)
+                return PronosticoVisita(fecha, 600, 20.0, 10, 8.0, 1)
+            }
+        }
+        val obra = obraDe(DUENO.id, publica = false).copy(
+            proximaVisita = diaUtc(LocalDate.of(2026, 10, 23)),
+            horaVisita = 10 * 60 + 30,
+            ubicacion = Ubicacion(-34.6, -58.4)
+        )
+        val owner = crearViewModel(obra = obra, pronosticoRepository = repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, consultas)
+        assertTrue(owner.uiState.value.pronosticoVisita is PronosticoUiState.Disponible)
+
+        val guest = crearViewModel(user = OTRO_USUARIO, obra = obra, pronosticoRepository = repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(1, consultas)
+        assertNull(guest.uiState.value.pronosticoVisita)
     }
 
     @Test

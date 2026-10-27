@@ -11,6 +11,7 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.DeleteObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoFechaVisita
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoVisitaConHora
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObtenerPronosticoVisitaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.estadoFechaVisita
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.estadoVisitaConHora
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toFechaCalendario
@@ -31,6 +32,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import java.time.Clock
 import java.time.LocalDate
 
@@ -47,6 +50,7 @@ class ObraDetailViewModel @AssistedInject constructor(
     private val observeRelevamientos: ObserveRelevamientosUseCase,
     private val observeTareas: ObserveTareasUseCase,
     private val deleteObraUseCase: DeleteObraUseCase,
+    private val obtenerPronosticoVisita: ObtenerPronosticoVisitaUseCase,
     private val clock: Clock
 ) : ViewModel() {
 
@@ -57,12 +61,16 @@ class ObraDetailViewModel @AssistedInject constructor(
 
     private val _uiState = MutableStateFlow(ObraDetailUiState())
     val uiState: StateFlow<ObraDetailUiState> = _uiState.asStateFlow()
+    private var pronosticoJob: Job? = null
+    private var clavePronostico: String? = null
 
     init {
         viewModelScope.launch {
             observeSession().collectLatest { user ->
                 if (user == null) {
-                    _uiState.update { it.copy(isLoading = false, error = ObraError.NoAutorizada) }
+                    pronosticoJob?.cancel()
+                    clavePronostico = null
+                    _uiState.value = ObraDetailUiState(isLoading = false, error = ObraError.NoAutorizada)
                     return@collectLatest
                 }
                 combine(
@@ -110,10 +118,87 @@ class ObraDetailViewModel @AssistedInject constructor(
                         _uiState.update { it.copy(isLoading = false, error = ObraError.Desconocido) }
                     }
                 }.collect { newState ->
-                    _uiState.value = newState
+                    val sameVisit = mismoContextoVisita(newState, _uiState.value)
+                    _uiState.value = newState.copy(
+                        pronosticoVisita = _uiState.value.pronosticoVisita.takeIf { sameVisit }
+                    )
+                    actualizarPronostico(newState)
                 }
             }
         }
+    }
+
+    private fun actualizarPronostico(state: ObraDetailUiState) {
+        val obra = state.obra
+        val fecha = obra?.proximaVisita?.toFechaCalendario()
+        val ubicacion = obra?.ubicacion
+        val clave = clavePronostico(state)
+        if (clave == clavePronostico) return
+
+        clavePronostico = clave
+        pronosticoJob?.cancel()
+        if (clave == null) {
+            _uiState.update {
+                it.copy(
+                    pronosticoVisita = if (state.isEditable && fecha != null && !state.proximaVisitaAtrasada) {
+                        if (ubicacion == null) PronosticoUiState.SinUbicacion else null
+                    } else null
+                )
+            }
+            return
+        }
+
+        val visitaFecha = checkNotNull(fecha)
+        val visitaUbicacion = checkNotNull(ubicacion)
+        val hoy = LocalDate.now(clock)
+        if (visitaFecha.isAfter(hoy.plusDays(15))) {
+            _uiState.update { it.copy(pronosticoVisita = PronosticoUiState.FueraDeRango) }
+            return
+        }
+
+        _uiState.update { it.copy(pronosticoVisita = PronosticoUiState.Cargando) }
+        pronosticoJob = viewModelScope.launch {
+            val resultado = try {
+                PronosticoUiState.Disponible(
+                    obtenerPronosticoVisita(
+                    latitud = visitaUbicacion.latitud,
+                    longitud = visitaUbicacion.longitud,
+                    fecha = visitaFecha,
+                    hora = obra.horaVisita
+                    )
+                )
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                PronosticoUiState.SinDatos
+            }
+            if (clavePronostico == clave) {
+                _uiState.update { it.copy(pronosticoVisita = resultado) }
+            }
+        }
+    }
+
+    private fun clavePronostico(state: ObraDetailUiState): String? {
+        val obra = state.obra ?: return null
+        val fecha = obra.proximaVisita?.toFechaCalendario() ?: return null
+        val ubicacion = obra.ubicacion ?: return null
+        if (!state.isEditable || state.proximaVisitaAtrasada) return null
+        return "${obra.id}|$fecha|${obra.horaVisita}|${ubicacion.latitud}|${ubicacion.longitud}"
+    }
+
+    private fun mismoContextoVisita(a: ObraDetailUiState, b: ObraDetailUiState): Boolean =
+        a.isEditable == b.isEditable &&
+            a.proximaVisitaAtrasada == b.proximaVisitaAtrasada &&
+            a.obra?.id == b.obra?.id &&
+            a.obra?.proximaVisita == b.obra?.proximaVisita &&
+            a.obra?.horaVisita == b.obra?.horaVisita &&
+            a.obra?.ubicacion == b.obra?.ubicacion
+
+    fun reintentarPronostico() {
+        val state = _uiState.value
+        if (state.pronosticoVisita != PronosticoUiState.SinDatos) return
+        clavePronostico = null
+        actualizarPronostico(state)
     }
 
     /**

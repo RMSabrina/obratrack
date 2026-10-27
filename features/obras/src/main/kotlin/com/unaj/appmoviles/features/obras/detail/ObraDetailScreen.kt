@@ -28,6 +28,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.runtime.rememberCoroutineScope
 import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +62,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -76,6 +80,7 @@ import com.unaj.appmoviles.features.obras.tareas.cronograma.CronogramaRoute
 import com.unaj.appmoviles.features.obras.tareas.list.TareasListRoute
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
+import com.unaj.appmoviles.obratrack.core.domain.model.PronosticoVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
@@ -110,6 +115,7 @@ fun ObraDetailRoute(
         onDeleteSuccess = onDeleteSuccess,
         onDeleteObra = viewModel::deleteObra,
         onDeleteErrorDismissed = viewModel::onDeleteErrorDismissed,
+        onRetryPronostico = viewModel::reintentarPronostico,
         onEditObra = onEditObra,
         onCreateRelevamiento = onCreateRelevamiento,
         onOpenRelevamiento = onOpenRelevamiento,
@@ -166,6 +172,7 @@ fun ObraDetailScreen(
     onDeleteSuccess: () -> Unit,
     onDeleteObra: () -> Unit,
     onDeleteErrorDismissed: () -> Unit,
+    onRetryPronostico: () -> Unit = {},
     onEditObra: (Obra) -> Unit,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
@@ -320,6 +327,7 @@ fun ObraDetailScreen(
                     ObraDetailTab.RESUMEN -> ResumenTab(
                         state = state,
                         obra = obra,
+                        onRetryPronostico = onRetryPronostico,
                         onOpenRelevamiento = onOpenRelevamiento,
                         onVerTodos = { pestana = ObraDetailTab.RELEVAMIENTOS },
                         modifier = contenido
@@ -421,6 +429,7 @@ private fun PestanaTitulo(tab: ObraDetailTab, atrasadas: Int?) {
 private fun ResumenTab(
     state: ObraDetailUiState,
     obra: Obra,
+    onRetryPronostico: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onVerTodos: () -> Unit,
     modifier: Modifier = Modifier
@@ -433,6 +442,9 @@ private fun ResumenTab(
     ) {
         item {
             ObraHeaderCard(obra = obra, proximaVisitaAtrasada = state.proximaVisitaAtrasada)
+        }
+        if (state.isEditable && state.pronosticoVisita != null) {
+            item { PronosticoVisitaCard(state.pronosticoVisita, onRetryPronostico) }
         }
 
         // Las tareas son privadas del dueño. Sin resumen (error al leerlas) no se muestra la sección.
@@ -477,6 +489,147 @@ private fun ResumenTab(
             }
         }
     }
+}
+
+@Composable
+private fun PronosticoVisitaCard(
+    state: PronosticoUiState,
+    onRetry: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Cloud, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text(
+                    text = stringResource(R.string.pronostico_visita_titulo),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            when (state) {
+                PronosticoUiState.Cargando -> Text(
+                    stringResource(R.string.pronostico_visita_cargando),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                PronosticoUiState.SinUbicacion -> Text(
+                    stringResource(R.string.pronostico_visita_sin_ubicacion),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                PronosticoUiState.FueraDeRango -> Text(
+                    stringResource(R.string.pronostico_visita_fuera_rango),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                PronosticoUiState.SinDatos -> Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        stringResource(R.string.pronostico_visita_sin_datos),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    TextButton(onClick = onRetry, contentPadding = PaddingValues(horizontal = 0.dp)) {
+                        Text(stringResource(R.string.pronostico_visita_reintentar))
+                    }
+                }
+                is PronosticoUiState.Disponible -> {
+                    val pronostico = state.pronostico
+                    val uriHandler = LocalUriHandler.current
+                    Text(
+                        text = stringResource(
+                            R.string.pronostico_visita_condicion,
+                            stringResource(descripcionClimaRes(pronostico.codigoClima)),
+                            String.format(java.util.Locale.getDefault(), "%.0f °C", pronostico.temperaturaCelsius),
+                            formatHora(LocalContext.current, pronostico.hora)
+                        ),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        pronostico.probabilidadPrecipitacion?.let { probabilidad ->
+                            WeatherMetric(
+                                icon = { Icon(Icons.Default.WaterDrop, contentDescription = null) },
+                                text = stringResource(R.string.pronostico_visita_lluvia, probabilidad)
+                            )
+                        }
+                        pronostico.vientoKmH?.let { viento ->
+                            WeatherMetric(
+                                icon = { Icon(Icons.Default.Air, contentDescription = null) },
+                                text = stringResource(
+                                    R.string.pronostico_visita_viento,
+                                    String.format(java.util.Locale.getDefault(), "%.0f", viento)
+                                )
+                            )
+                        }
+                    }
+                    TextButton(
+                        onClick = { uriHandler.openUri(OPEN_METEO_URL) },
+                        contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.pronostico_visita_atribucion),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private const val OPEN_METEO_URL = "https://open-meteo.com/"
+
+private fun descripcionClimaRes(codigo: Int): Int = when (codigo) {
+    0 -> R.string.pronostico_clima_despejado
+    1 -> R.string.pronostico_clima_mayormente_despejado
+    2 -> R.string.pronostico_clima_parcialmente_nublado
+    3 -> R.string.pronostico_clima_nublado
+    45, 48 -> R.string.pronostico_clima_niebla
+    51, 53, 55 -> R.string.pronostico_clima_llovizna
+    56, 57 -> R.string.pronostico_clima_llovizna_engelante
+    61, 63, 65 -> R.string.pronostico_clima_lluvia
+    66, 67 -> R.string.pronostico_clima_lluvia_engelante
+    71, 73, 75, 77 -> R.string.pronostico_clima_nieve
+    80, 81, 82 -> R.string.pronostico_clima_chaparrones
+    85, 86 -> R.string.pronostico_clima_nevadas
+    95, 96, 99 -> R.string.pronostico_clima_tormenta
+    else -> R.string.pronostico_clima_variable
+}
+
+@Composable
+private fun WeatherMetric(icon: @Composable () -> Unit, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        icon()
+        Text(text = text, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360)
+@Composable
+private fun PronosticoVisitaCardPreview() {
+    PronosticoVisitaCard(
+        PronosticoUiState.Disponible(
+            PronosticoVisita(
+                fecha = java.time.LocalDate.of(2026, 10, 27),
+                hora = 10 * 60,
+                temperaturaCelsius = 21.4,
+                probabilidadPrecipitacion = 25,
+                vientoKmH = 12.0,
+                codigoClima = 2
+            )
+        ),
+        modifier = Modifier.padding(16.dp)
+    )
 }
 
 /** Aviso de la sección cuando fallan los relevamientos (también en la obra pública). */
