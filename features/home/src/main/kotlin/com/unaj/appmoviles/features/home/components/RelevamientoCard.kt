@@ -33,9 +33,20 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.home.RelevamientoReciente
 import com.unaj.appmoviles.home.R
-import java.text.SimpleDateFormat
-import java.util.Date
+import androidx.compose.ui.platform.LocalConfiguration
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toFechaCalendario
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
+
+/**
+ * La fecha del relevamiento es de calendario (medianoche UTC): se lee en UTC, sin pasar a la
+ * zona local, y se muestra en el idioma elegido. No tiene hora propia (`horaVisita` es la de la
+ * próxima visita), así que no se muestra hora.
+ */
+internal fun formatFechaRelevamiento(fechaMillis: Long, locale: Locale): String =
+    fechaMillis.toFechaCalendario()
+        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
 
 @Composable
 fun RelevamientoCard(
@@ -95,8 +106,8 @@ fun RelevamientoCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                val sdf = SimpleDateFormat("dd MMM. yyyy - HH:mm", Locale("es", "AR"))
-                val dateString = sdf.format(Date(reciente.relevamiento.fecha))
+                val locale = LocalConfiguration.current.locales[0]
+                val dateString = formatFechaRelevamiento(reciente.relevamiento.fecha, locale)
                 
                 Text(
                     text = dateString,
