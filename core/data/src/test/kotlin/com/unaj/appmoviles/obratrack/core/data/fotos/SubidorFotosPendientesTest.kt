@@ -78,7 +78,7 @@ class SubidorFotosPendientesTest {
 
         val resultado = subidor.subir("obra-1", "r1", intento = 0)
 
-        assertEquals(ResultadoSubida.DESCARTADA, resultado)
+        assertEquals(ResultadoSubida.PERDIDA, resultado)
         assertNull(store.archivo("obra-1", "r1"))
     }
 
@@ -92,7 +92,7 @@ class SubidorFotosPendientesTest {
 
         val ultimo = subidor.subir("obra-1", "r1", intento = SubidorFotosPendientes.MAX_INTENTOS - 1)
 
-        assertEquals(ResultadoSubida.DESCARTADA, ultimo)
+        assertEquals(ResultadoSubida.PERDIDA, ultimo)
         assertNull(store.archivo("obra-1", "r1"))
     }
 

@@ -18,8 +18,11 @@ enum class ResultadoSubida {
     /** Sin red o falla pasajera: el worker debe reintentar. */
     REINTENTAR,
 
-    /** No hay nada que hacer (el relevamiento ya no existe, la foto no sirve o se agotaron los intentos). */
-    DESCARTADA
+    /** No hay nada que hacer: el relevamiento ya no existe o no hay foto. */
+    DESCARTADA,
+
+    /** La foto no se pudo subir y se borró (demasiado grande o intentos agotados): hay que avisar al usuario. */
+    PERDIDA
 }
 
 /** La lógica de un trabajo de subida, separada de WorkManager para poder probarla. */
@@ -65,6 +68,11 @@ class SubidorFotosPendientes @Inject constructor(
         return ResultadoSubida.DESCARTADA
     }
 
+    private fun perder(obraId: String, relevamientoId: String): ResultadoSubida {
+        store.borrar(obraId, relevamientoId)
+        return ResultadoSubida.PERDIDA
+    }
+
     private fun reintentarOSoltar(
         obraId: String,
         relevamientoId: String,
@@ -74,13 +82,13 @@ class SubidorFotosPendientes @Inject constructor(
         // La foto no se puede achicar lo suficiente: reintentar no sirve.
         error == RelevamientoError.ImagenMuyGrande -> {
             Log.w(TAG, "Foto de $relevamientoId descartada: demasiado grande")
-            descartar(obraId, relevamientoId)
+            perder(obraId, relevamientoId)
         }
         // Sin red no cuenta como intento fallido: se espera a que vuelva.
         error == RelevamientoError.Red || error == RelevamientoError.Timeout -> ResultadoSubida.REINTENTAR
         intento + 1 >= MAX_INTENTOS -> {
             Log.w(TAG, "Foto de $relevamientoId descartada tras ${intento + 1} intentos: $error")
-            descartar(obraId, relevamientoId)
+            perder(obraId, relevamientoId)
         }
         else -> ResultadoSubida.REINTENTAR
     }

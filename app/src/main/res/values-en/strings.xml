@@ -29,4 +29,6 @@
     <string name="escritura_fallo_permiso">A change saved on your phone was rejected by the server (no permission) and was reverted</string>
     <string name="escritura_fallo_otro">A change saved on your phone could not be synced with the server</string>
     <string name="sin_conexion_banner">Offline. Changes are saved on your phone and sync when you are back online.</string>
+    <string name="notif_foto_perdida_titulo">Photo not uploaded</string>
+    <string name="notif_foto_perdida_mensaje">A photo of a survey could not be uploaded. The survey was saved without it.</string>
 </resources>

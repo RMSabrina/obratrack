@@ -29,4 +29,6 @@
     <string name="escritura_fallo_permiso">Un cambio guardado en el teléfono fue rechazado por el servidor (sin permiso) y se deshizo</string>
     <string name="escritura_fallo_otro">Un cambio guardado en el teléfono no se pudo sincronizar con el servidor</string>
     <string name="sin_conexion_banner">Sin conexión. Los cambios se guardan en el teléfono y se sincronizan al volver la red.</string>
+    <string name="notif_foto_perdida_titulo">Foto no subida</string>
+    <string name="notif_foto_perdida_mensaje">No se pudo subir una foto de un relevamiento. El relevamiento quedó guardado sin ella.</string>
 </resources>
