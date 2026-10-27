@@ -31,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.auth.R
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -120,7 +122,8 @@ fun RegisterScreen(
             onValueChange = { name = it; onInputChanged() },
             label = stringResource(R.string.auth_nombre),
             error = if (error == AuthError.BlankName) error.asMessage() else null,
-            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
+            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+            contentType = ContentType.PersonFullName
         )
         Spacer(Modifier.height(8.dp))
         AuthTextField(
@@ -129,6 +132,7 @@ fun RegisterScreen(
             label = stringResource(R.string.auth_campo_email),
             error = if (error == AuthError.InvalidEmail || error == AuthError.EmailAlreadyInUse) error.asMessage() else null,
             keyboardType = KeyboardType.Email,
+            contentType = ContentType.NewUsername,
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) }
         )
         Spacer(Modifier.height(8.dp))
@@ -138,6 +142,7 @@ fun RegisterScreen(
             label = stringResource(R.string.auth_campo_password),
             error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
             isPassword = true,
+            contentType = ContentType.NewPassword,
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) }
         )
         Spacer(Modifier.height(8.dp))
@@ -147,6 +152,13 @@ fun RegisterScreen(
             label = stringResource(R.string.auth_confirmar_password),
             error = if (mismatch) stringResource(R.string.auth_passwords_no_coinciden) else null,
             isPassword = true,
+            imeAction = ImeAction.Done,
+            onImeAction = {
+                if (!isLoading) {
+                    if (password != confirm) mismatch = true else onRegisterClick(name, email, password)
+                }
+            },
+            contentType = ContentType.NewPassword,
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) }
         )
 

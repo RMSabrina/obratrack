@@ -2,6 +2,7 @@ package com.unaj.appmoviles.features.auth.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -18,6 +19,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.auth.R
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,7 +39,12 @@ fun AuthTextField(
     modifier: Modifier = Modifier,
     leadingIcon: @Composable (() -> Unit)? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    /** Tecla de acción del teclado: Siguiente salta al campo que sigue, Listo ejecuta [onImeAction]. */
+    imeAction: ImeAction = ImeAction.Next,
+    onImeAction: () -> Unit = {},
+    /** Para el autocompletar del sistema (gestor de contraseñas). */
+    contentType: ContentType? = null
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
@@ -44,7 +54,8 @@ fun AuthTextField(
         label = { Text(label) },
         isError = error != null,
         supportingText = { error?.let { Text(it) } },
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+        keyboardActions = KeyboardActions(onDone = { onImeAction() }),
         visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
@@ -64,6 +75,8 @@ fun AuthTextField(
                 }
             }
         } else null,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (contentType != null) Modifier.semantics { this.contentType = contentType } else Modifier)
     )
 }

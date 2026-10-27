@@ -86,7 +86,10 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.obras.R
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -356,6 +359,8 @@ fun ObraFormScreen(
                             if (error == ObraError.NombreVacio) Text(error.asMessage())
                         },
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
+
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
@@ -370,6 +375,8 @@ fun ObraFormScreen(
                             if (error == ObraError.ClienteVacio) Text(error.asMessage())
                         },
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
+
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(

@@ -18,6 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -128,7 +130,8 @@ fun LoginScreen(
             label = stringResource(R.string.auth_campo_email),
             error = if (error == AuthError.InvalidEmail) error.asMessage() else null,
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-            keyboardType = KeyboardType.Email
+            keyboardType = KeyboardType.Email,
+            contentType = ContentType.EmailAddress
         )
         Spacer(Modifier.height(8.dp))
         AuthTextField(
@@ -137,7 +140,10 @@ fun LoginScreen(
             label = stringResource(R.string.auth_campo_password),
             error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-            isPassword = true
+            isPassword = true,
+            imeAction = ImeAction.Done,
+            onImeAction = { if (!isLoading) onLoginClick(email, password) },
+            contentType = ContentType.Password
         )
 
         // Errores que no pertenecen a un campo
