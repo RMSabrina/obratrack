@@ -17,11 +17,7 @@
     <string name="home_visitas_atrasadas_detalle">There are pending site inspections in your schedule</string>
     <string name="home_ver_agenda">View schedule</string>
     <string name="home_relevar_ahora">Inspect now</string>
-    <string name="home_accion_mis_obras">My projects</string>
-    <string name="home_accion_mis_obras_detalle">View and manage</string>
-    <string name="home_accion_agenda">Schedule</string>
-    <string name="home_accion_agenda_hoy">%1$d for today</string>
-    <string name="home_accion_agenda_detalle">Visit itinerary</string>
+    <string name="home_visitas_hoy_conteo">%1$d for today</string>
     <string name="home_accion_nuevo_relevamiento">New Field Inspection</string>
     <string name="home_accion_nuevo_relevamiento_detalle">Photos, technical notes and geolocation</string>
     <string name="home_accion_obras_publicas">Explore Public Projects</string>

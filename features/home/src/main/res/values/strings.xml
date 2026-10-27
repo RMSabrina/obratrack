@@ -17,11 +17,7 @@
     <string name="home_visitas_atrasadas_detalle">Hay inspecciones de obra pendientes en tu itinerario</string>
     <string name="home_ver_agenda">Ver Agenda</string>
     <string name="home_relevar_ahora">Relevar Ahora</string>
-    <string name="home_accion_mis_obras">Mis obras</string>
-    <string name="home_accion_mis_obras_detalle">Ver y gestionar</string>
-    <string name="home_accion_agenda">Agenda</string>
-    <string name="home_accion_agenda_hoy">%1$d para hoy</string>
-    <string name="home_accion_agenda_detalle">Itinerario de visitas</string>
+    <string name="home_visitas_hoy_conteo">%1$d para hoy</string>
     <string name="home_accion_nuevo_relevamiento">Nuevo Relevamiento de Campo</string>
     <string name="home_accion_nuevo_relevamiento_detalle">Fotografías, notas técnicas y geolocalización</string>
     <string name="home_accion_obras_publicas">Explorar Obras Públicas</string>

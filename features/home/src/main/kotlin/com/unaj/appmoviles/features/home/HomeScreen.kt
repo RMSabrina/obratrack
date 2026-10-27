@@ -55,9 +55,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.unaj.appmoviles.features.home.components.RelevamientoCard
 import com.unaj.appmoviles.home.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
@@ -93,41 +95,28 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(32.dp))
-                    
-                    // App Logo area can be added here if needed (e.g., ObraTrack logo)
-                    Text(
-                        text = "ObraTrack",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    Text(
-                        text = stringResource(
-                            R.string.home_saludo,
-                            state.userName.ifBlank { stringResource(R.string.home_usuario) }
-                        ),
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = stringResource(R.string.home_subtitulo),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 18.sp
-                    )
+                    Column {
+                        Text(
+                            text = stringResource(
+                                R.string.home_saludo,
+                                state.userName.ifBlank { stringResource(R.string.home_usuario) }
+                            ),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.home_subtitulo),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-                
 
                 item {
                     val destacada = state.proximaVisitaDestacada
@@ -175,6 +164,13 @@ fun HomeScreen(
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f)
                                     )
+                                    if (state.totalVisitasHoy > 0) {
+                                        Text(
+                                            text = stringResource(R.string.home_visitas_hoy_conteo, state.totalVisitasHoy),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f)
+                                        )
+                                    }
                                 }
                                 Icon(
                                     imageVector = Icons.Outlined.ChevronRight,
@@ -232,6 +228,13 @@ fun HomeScreen(
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                                     )
+                                    if (state.totalVisitasHoy > 1) {
+                                        Text(
+                                            text = stringResource(R.string.home_visitas_hoy_conteo, state.totalVisitasHoy),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                        )
+                                    }
                                 }
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -257,49 +260,18 @@ fun HomeScreen(
                 }
 
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        ActionCard(
-                            title = stringResource(R.string.home_accion_mis_obras),
-                            subtitle = stringResource(R.string.home_accion_mis_obras_detalle),
-                            icon = Icons.Outlined.GridView,
-                            onClick = onNavigateToObras,
-                            modifier = Modifier.weight(1f),
-                            outlined = true
-                        )
-                        
-                        ActionCard(
-                            title = stringResource(R.string.home_accion_agenda),
-                            subtitle = if (state.totalVisitasHoy > 0) {
-                                stringResource(R.string.home_accion_agenda_hoy, state.totalVisitasHoy)
-                            } else {
-                                stringResource(R.string.home_accion_agenda_detalle)
-                            },
-                            icon = Icons.Outlined.CalendarMonth,
-                            onClick = onNavigateToAgenda,
-                            modifier = Modifier.weight(1f),
-                            outlined = false
-                        )
-                    }
-                }
-
-                item {
-                    ActionCard(
+                    AccionPrincipal(
                         title = stringResource(R.string.home_accion_nuevo_relevamiento),
                         subtitle = stringResource(R.string.home_accion_nuevo_relevamiento_detalle),
                         icon = Icons.Outlined.CameraAlt,
-                        onClick = onNavigateToObraSelection,
-                        modifier = Modifier.fillMaxWidth(),
-                        outlined = true
+                        onClick = onNavigateToObraSelection
                     )
                 }
-                
+
                 item {
-                    BannerLocation(onClick = onNavigateToObrasPublicas)
+                    FilaObrasPublicas(onClick = onNavigateToObrasPublicas)
                 }
-                
+
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -308,19 +280,17 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = stringResource(R.string.home_relevamientos_recientes),
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.semantics { heading() }
                         )
-                        Text(
-                            text = stringResource(R.string.home_ver_todos),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.clickable { onNavigateToObras() }
-                        )
+                        TextButton(onClick = onNavigateToObras) {
+                            Text(stringResource(R.string.home_ver_todos))
+                        }
                     }
                 }
-                
+
                 if (state.recientes.isEmpty()) {
                     item {
                         Text(
@@ -335,78 +305,19 @@ fun HomeScreen(
                             reciente = reciente,
                             onClick = { onOpenRelevamiento(reciente.relevamiento) }
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                }
-                
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
     }
 }
 
+/** La acción más importante de Home: la única tarjeta llena con el color primario. Altura mínima, no fija. */
 @Composable
-fun ActionCard(
+private fun AccionPrincipal(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    outlined: Boolean = false
-) {
-    val containerColor = if (outlined) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.secondaryContainer
-    val contentColor = MaterialTheme.colorScheme.onSurface
-    
-    Card(
-        onClick = onClick,
-        modifier = modifier.height(120.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        border = if (outlined) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp)
-            )
-            
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Outlined.ChevronRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun BannerLocation(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -414,37 +325,84 @@ fun BannerLocation(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 88.dp)
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Icon(
+                imageVector = Icons.Outlined.ChevronRight,
+                contentDescription = null
+            )
+        }
+    }
+}
+
+/** Acceso secundario: tarjeta neutra, con el color solo en el ícono. */
+@Composable
+private fun FilaObrasPublicas(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 72.dp)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.LocationOn,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.size(24.dp)
                 )
             }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.home_accion_obras_publicas),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = stringResource(R.string.home_accion_obras_publicas_detalle),
@@ -452,11 +410,11 @@ fun BannerLocation(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             Icon(
                 imageVector = Icons.Outlined.ChevronRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
