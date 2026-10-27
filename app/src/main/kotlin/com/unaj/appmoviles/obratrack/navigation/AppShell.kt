@@ -76,9 +76,7 @@ fun AppShell(
     }
 
     fun navigateTo(destination: NavKey) {
-        if (backStack.lastOrNull() != destination) {
-            backStack.add(destination)
-        }
+        backStack.navegarA(destination)
     }
 
     fun popToHome() {
@@ -186,7 +184,7 @@ fun AppShell(
             }
             entry<ObrasPublicasDestination> {
                 ObrasPublicasListRoute(
-                    onOpen = { obra -> backStack.add(ObraPublicaDetailDestination(obra.id)) },
+                    onOpen = { obra -> navigateTo(ObraPublicaDetailDestination(obra.id)) },
                     onBack = ::goBack
                 )
             }
@@ -195,7 +193,7 @@ fun AppShell(
                     obraId = destination.obraId,
                     onBack = ::goBack,
                     onOpenRelevamiento = { relevamiento ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoDetailDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamiento.id
@@ -214,7 +212,7 @@ fun AppShell(
                         }
                     },
                     onEditObra = { obra ->
-                        backStack.add(
+                        navigateTo(
                             ObraFormDestination(
                                 obraId = obra.id,
                                 nombre = obra.nombre,
@@ -230,10 +228,10 @@ fun AppShell(
                         )
                     },
                     onCreateRelevamiento = {
-                        backStack.add(RelevamientoFormDestination(obraId = destination.obraId))
+                        navigateTo(RelevamientoFormDestination(obraId = destination.obraId))
                     },
                     onOpenRelevamiento = { relevamiento ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoDetailDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamiento.id
@@ -241,10 +239,10 @@ fun AppShell(
                         )
                     },
                     onCreateTarea = {
-                        backStack.add(TareaFormDestination(obraId = destination.obraId))
+                        navigateTo(TareaFormDestination(obraId = destination.obraId))
                     },
                     onOpenTarea = { tareaId ->
-                        backStack.add(TareaDetailDestination(obraId = destination.obraId, tareaId = tareaId))
+                        navigateTo(TareaDetailDestination(obraId = destination.obraId, tareaId = tareaId))
                     }
                 )
             }
@@ -255,12 +253,12 @@ fun AppShell(
                     onBack = ::goBack,
                     onDeleteSuccess = ::goBack,
                     onEditTarea = {
-                        backStack.add(
+                        navigateTo(
                             TareaFormDestination(obraId = destination.obraId, tareaId = destination.tareaId)
                         )
                     },
                     onOpenRelevamiento = { relevamientoId ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoDetailDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamientoId
@@ -268,7 +266,7 @@ fun AppShell(
                         )
                     },
                     onCreateRelevamiento = {
-                        backStack.add(
+                        navigateTo(
                             RelevamientoFormDestination(
                                 obraId = destination.obraId,
                                 tareaId = destination.tareaId
@@ -316,7 +314,7 @@ fun AppShell(
                     onBack = ::goBack,
                     onDeleteSuccess = ::goBack,
                     onEditRelevamiento = { relevamiento ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoFormDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamiento.id,
