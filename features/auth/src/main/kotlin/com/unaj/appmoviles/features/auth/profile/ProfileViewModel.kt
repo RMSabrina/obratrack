@@ -21,7 +21,9 @@ import com.unaj.appmoviles.auth.R
 import com.unaj.appmoviles.obratrack.core.domain.model.AnticipacionAviso
 import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
 import com.unaj.appmoviles.obratrack.core.domain.repository.AvisoPreferencesRepository
+import com.unaj.appmoviles.obratrack.core.domain.model.ModoTema
 import com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.ThemePreferencesRepository
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,7 +34,8 @@ class ProfileViewModel @Inject constructor(
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val reauthenticateUseCase: ReauthenticateUseCase,
     private val languagePreferencesRepository: LanguagePreferencesRepository,
-    private val avisoPreferencesRepository: AvisoPreferencesRepository
+    private val avisoPreferencesRepository: AvisoPreferencesRepository,
+    private val themePreferencesRepository: ThemePreferencesRepository
 ) : ViewModel() {
 
     private val internalState = MutableStateFlow(ProfileUiState())
@@ -41,8 +44,9 @@ class ProfileViewModel @Inject constructor(
         observeSessionUseCase(),
         languagePreferencesRepository.observeLanguage(),
         avisoPreferencesRepository.observeAnticipacion(),
+        themePreferencesRepository.observeModo(),
         internalState
-    ) { sessionUser, language, anticipacion, state ->
+    ) { sessionUser, language, anticipacion, modoTema, state ->
         val nameInputToUse = if (state.nameInput.isEmpty() && sessionUser != null) {
             sessionUser.name
         } else {
@@ -53,6 +57,7 @@ class ProfileViewModel @Inject constructor(
             nameInput = nameInputToUse,
             selectedLanguage = language,
             selectedAnticipacion = anticipacion,
+            selectedTema = modoTema,
             isLoading = sessionUser == null && state.error == null
         )
     }.stateIn(
@@ -64,6 +69,12 @@ class ProfileViewModel @Inject constructor(
     fun onLanguageChange(language: AppLanguage) {
         viewModelScope.launch {
             languagePreferencesRepository.setLanguage(language)
+        }
+    }
+
+    fun onTemaChange(modo: ModoTema) {
+        viewModelScope.launch {
+            themePreferencesRepository.setModo(modo)
         }
     }
 
