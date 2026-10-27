@@ -8,7 +8,12 @@ import com.unaj.appmoviles.obratrack.core.domain.model.ObraDraft
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveAgendaVisitasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ScheduleVisitaUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
@@ -117,7 +122,7 @@ class AgendaVisitasUseCasesTest {
 
         val newVisitDate = 1792876800000L
         val useCase = ScheduleVisitaUseCase(repo)
-        val result = useCase("u1", obra, newVisitDate)
+        val result = useCase("u1", obra, newVisitDate, null)
 
         assertTrue(result is AppResult.Success)
         assertEquals(newVisitDate, updatedDraft?.proximaVisita)
@@ -171,7 +176,7 @@ class AgendaVisitasUseCasesTest {
         estado = EstadoObra.ACTIVA, fechaInicio = 1000L, ultimaVisita = null, proximaVisita = proxima, horaVisita = hora
     )
 
-    private fun borradorAlProgramar(obra: Obra, nueva: Long?): ObraDraft? = runBlocking {
+    private fun borradorAlProgramar(obra: Obra, nueva: Long?, hora: Int? = obra.horaVisita): ObraDraft? = runBlocking {
         var draft: ObraDraft? = null
         val repo = object : FakeBaseObraRepository() {
             override suspend fun update(userId: String, obraId: String, draft0: ObraDraft): AppResult<Obra> {
@@ -179,7 +184,7 @@ class AgendaVisitasUseCasesTest {
                 return AppResult.Success(obra)
             }
         }
-        ScheduleVisitaUseCase(repo)("u1", obra, nueva)
+        ScheduleVisitaUseCase(repo)("u1", obra, nueva, hora)
         draft
     }
 
@@ -191,18 +196,59 @@ class AgendaVisitasUseCasesTest {
     }
 
     @Test
-    fun scheduleVisita_conOtraFecha_descartaLaHora() {
+    fun scheduleVisita_conOtraFecha_conservaLaHoraSiSePide() {
         val draft = borradorAlProgramar(obraConVisita(5_000L, 600), 9_000L)
 
-        assertEquals(null, draft?.horaVisita)
+        assertEquals(9_000L, draft?.proximaVisita)
+        assertEquals(600, draft?.horaVisita)
     }
 
     @Test
-    fun scheduleVisita_quitandoLaFecha_dejaSinHora() {
-        val draft = borradorAlProgramar(obraConVisita(5_000L, 600), null)
+    fun scheduleVisita_permiteElegirOtraHoraOQuitarla() {
+        val obra = obraConVisita(5_000L, 600)
+
+        assertEquals(900, borradorAlProgramar(obra, 9_000L, hora = 900)?.horaVisita)
+        assertEquals(null, borradorAlProgramar(obra, 9_000L, hora = null)?.horaVisita)
+    }
+
+    @Test
+    fun scheduleVisita_conHoraFueraDeRango_laDescarta() {
+        assertEquals(null, borradorAlProgramar(obraConVisita(5_000L, 600), 9_000L, hora = 5_000)?.horaVisita)
+    }
+
+    @Test
+    fun scheduleVisita_quitandoLaFecha_dejaSinHoraAunqueSePida() {
+        val draft = borradorAlProgramar(obraConVisita(5_000L, 600), null, hora = 600)
 
         assertEquals(null, draft?.proximaVisita)
         assertEquals(null, draft?.horaVisita)
+    }
+
+    private class RelojMutable(var ahora: Instant, private val zona: ZoneId) : Clock() {
+        override fun getZone(): ZoneId = zona
+        override fun withZone(zone: ZoneId): Clock = RelojMutable(ahora, zone)
+        override fun instant(): Instant = ahora
+    }
+
+    @Test
+    fun observeAgenda_alLlegarLaHora_laVisitaPasaAAtrasadaSinCambiarLasObras() {
+        // 20:00 en Buenos Aires; la visita de hoy es a las 20:30.
+        val reloj = RelojMutable(Instant.parse("2026-10-24T23:00:00Z"), ZoneId.of("America/Argentina/Buenos_Aires"))
+        val obra = obraConVisita(localDateToUtcMillis(baseDate), 20 * 60 + 30)
+        val repo = object : FakeBaseObraRepository() {
+            override fun observe(userId: String): Flow<List<Obra>> = flowOf(listOf(obra))
+        }
+        val tic = MutableStateFlow(0)
+        val categorias = mutableListOf<CategoriaAgendaVisita>()
+        val job = CoroutineScope(Dispatchers.Unconfined).launch {
+            ObserveAgendaVisitasUseCase(repo, reloj)("u1", tic.map { }).collect { categorias += it.single().categoria }
+        }
+
+        reloj.ahora = Instant.parse("2026-10-24T23:45:00Z")
+        tic.value = 1
+        job.cancel()
+
+        assertEquals(listOf(CategoriaAgendaVisita.HOY, CategoriaAgendaVisita.URGENTE_VENCIDA), categorias)
     }
 }
 

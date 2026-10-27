@@ -84,7 +84,7 @@
     </plurals>
     <string name="tarea_vinculados_titulo">Linked reports (%1$d)</string>
     <string name="tarea_vinculados_vacio">No inspection reports are linked to this task.</string>
-    <string name="tarea_vinculados_error">Could not load linked reports. Reopen the task to retry.</string>
+    <string name="tarea_vinculados_error">Could not load the linked reports. Check your connection.</string>
 
     <!-- Project details: tabs -->
     <string name="obra_seccion_resumen">Summary</string>
@@ -96,7 +96,6 @@
     <string name="obra_relevamiento_nuevo">New inspection</string>
     <string name="obra_relevamientos_vacio">No inspections yet.</string>
     <string name="obra_relevamientos_ver_todos">View all (%1$d)</string>
-    <string name="obra_relevamientos_error">Could not load inspections. Reopen project to retry.</string>
     <string name="obra_relevamientos_vacio_titulo">No inspections yet</string>
     <string name="obra_relevamientos_vacio_descripcion">This project has no inspections recorded.</string>
     <string name="obra_relevamientos_agregar_primero">Add the first one</string>
@@ -202,7 +201,7 @@
 
     <!-- Diálogos de borrado y cuerpo de los detalles -->
     <string name="obra_eliminar_titulo">Delete project</string>
-    <string name="obra_eliminar_confirmacion">Delete the project and all its inspections, tasks and subscribers? This action cannot be undone.</string>
+    <string name="obra_eliminar_confirmacion">Delete “%1$s”? Its surveys, tasks and subscribers will be deleted. Photos already uploaded are not removed from the server. This cannot be undone.</string>
     <string name="obra_eliminar">Delete project</string>
     <string name="obra_no_encontrada">We couldn\'t find that project</string>
     <string name="obra_publica_no_encontrada">We couldn\'t find this project, or it\'s no longer public.</string>
@@ -302,6 +301,12 @@
     <string name="relevamiento_detalle_proxima_hora">Next planned visit: %1$s at %2$s</string>
     <string name="obra_proxima_visita_fecha_hora">Next visit: %1$s at %2$s</string>
     <string name="obra_proxima_visita_atrasada_hora">Next visit: %1$s at %2$s (Overdue)</string>
+    <string name="pdf_generando">Generating PDF…</string>
+    <string name="obras_ubicacion_cancelada">Location capture cancelled.</string>
+    <string name="relevamiento_tarea_repetida">%1$s (#%2$d · %3$s)</string>
+    <string name="relevamiento_tarea_sin_fechas">no dates</string>
+    <string name="obras_cerrar_sesion_titulo">Log out?</string>
+    <string name="obras_cerrar_sesion_mensaje">You will be signed out of your account on this device.</string>
     <string name="pronostico_visita_titulo">Weather for the visit</string>
     <string name="pronostico_visita_cargando">Checking the forecast for this location…</string>
     <string name="pronostico_visita_sin_ubicacion">Add the project location to see the forecast.</string>

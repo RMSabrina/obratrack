@@ -42,11 +42,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.unaj.appmoviles.features.obras.formatDiaMes
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlin.math.roundToInt
 
 private val ANCHO_DIA = 24.dp
@@ -58,8 +57,6 @@ private val ALTO_ENCABEZADO = 32.dp
 // Alto para el título y las fechas de inicio y fin en dos líneas.
 private val ALTO_FILA = 64.dp
 private val ALTO_BARRA = 24.dp
-
-private val semanaFormatter = DateTimeFormatter.ofPattern("d MMM", Locale.forLanguageTag("es-AR"))
 
 /**
  * Cronograma tipo Gantt: títulos fijos a la izquierda y barras con scroll horizontal.
@@ -190,7 +187,7 @@ private fun EncabezadoSemanas(periodo: PeriodoVisible, semanas: List<Int>, hoyDi
     Box(modifier = Modifier.height(ALTO_ENCABEZADO)) {
         semanas.forEach { dia ->
             Text(
-                text = periodo.inicio.plusDays(dia.toLong()).format(semanaFormatter),
+                text = periodo.inicio.plusDays(dia.toLong()).let(::formatDiaMes),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
@@ -225,12 +222,16 @@ private fun FilaBarra(barra: BarraGantt, onClick: () -> Unit) {
                 .height(ALTO_BARRA)
                 .padding(horizontal = 1.dp)
                 .background(relleno, forma)
-                .border(BorderStroke(if (barra.atrasada) 2.dp else 1.dp, borde), forma)
+                .border(BorderStroke(grosorBorde(barra), borde), forma)
                 .clickable(onClick = onClick)
         )
     }
     HorizontalDivider()
 }
+
+/** En curso y atrasada llevan borde grueso: así no dependen solo del relleno, que en claro casi no se ve. */
+private fun grosorBorde(barra: BarraGantt): Dp =
+    if (barra.atrasada || barra.tarea.estado == EstadoTarea.EN_CURSO) 2.dp else 1.dp
 
 /**
  * El estado se distingue por cuánto se llena la barra: pendiente vacía, en curso clara,
@@ -241,7 +242,7 @@ private fun coloresBarra(barra: BarraGantt): Pair<Color, Color> {
     val colors = MaterialTheme.colorScheme
     val (relleno, bordeEstado) = when (barra.tarea.estado) {
         EstadoTarea.PENDIENTE -> colors.surface to colors.outline
-        EstadoTarea.EN_CURSO -> colors.primaryContainer to colors.primary
+        EstadoTarea.EN_CURSO -> colors.secondaryContainer to colors.primary
         EstadoTarea.COMPLETADA -> colors.tertiary to colors.tertiary
     }
     val borde = if (barra.atrasada) colors.error else bordeEstado

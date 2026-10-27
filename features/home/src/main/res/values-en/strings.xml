@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Barra inferior (Home y Agenda) -->
-    <string name="nav_inicio">Home</string>
-    <string name="nav_obras">Projects</string>
-    <string name="nav_agenda">Schedule</string>
-    <string name="nav_perfil">Profile</string>
-
     <!-- Comunes -->
     <string name="volver">Back</string>
     <string name="cancelar">Cancel</string>
@@ -16,8 +10,6 @@
     <!-- Home -->
     <string name="home_saludo">Hello, %1$s</string>
     <string name="home_subtitulo">What would you like to do today?</string>
-    <string name="home_recordatorios_titulo">Visit reminders</string>
-    <string name="home_probar_demo">Try demo</string>
     <plurals name="home_visitas_atrasadas">
         <item quantity="one">⚠️ %d overdue site visit</item>
         <item quantity="other">⚠️ %d overdue site visits</item>
@@ -87,4 +79,14 @@
     <!-- Textos por defecto -->
     <string name="home_usuario">User</string>
     <string name="home_obra_desconocida">Unknown project</string>
+    <string name="agenda_hora_visita_titulo">Visit time</string>
+    <string name="agenda_hora_actual">Time: %1$s</string>
+    <string name="agenda_sin_hora">No time</string>
+    <string name="agenda_elegir_hora">Set time</string>
+    <string name="agenda_cambiar_hora">Change time</string>
+    <string name="agenda_quitar_hora">Remove time</string>
+    <string name="agenda_quitar_confirmar_titulo">Remove the visit date?</string>
+    <string name="agenda_quitar_confirmar_mensaje">The date and time of the next visit to %1$s will be removed.</string>
+    <string name="agenda_guardando">Saving…</string>
+    <string name="aceptar">OK</string>
 </resources>

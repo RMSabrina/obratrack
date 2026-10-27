@@ -6,7 +6,8 @@ import com.unaj.appmoviles.obratrack.core.domain.model.ItemAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import java.time.Clock
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -16,8 +17,12 @@ class ObserveAgendaVisitasUseCase @Inject constructor(
     private val obraRepository: ObraRepository,
     private val clock: Clock
 ) {
-    operator fun invoke(userId: String): Flow<List<ItemAgendaVisita>> {
-        return obraRepository.observe(userId).map { obras ->
+    /**
+     * [actualizar] fuerza a recalcular con la hora actual (por ejemplo cada minuto) sin que cambien
+     * las obras: una visita con hora pasa a atrasada al llegar esa hora.
+     */
+    operator fun invoke(userId: String, actualizar: Flow<Unit> = flowOf(Unit)): Flow<List<ItemAgendaVisita>> {
+        return combine(obraRepository.observe(userId), actualizar) { obras, _ ->
             val today = LocalDate.now(clock)
 
             obras.mapNotNull { obra ->

@@ -52,4 +52,9 @@
     <string name="auth_aviso_15_min">15 minutes before</string>
     <string name="auth_aviso_1_hora">1 hour before</string>
     <string name="auth_aviso_1_dia">1 day before</string>
+    <string name="auth_aviso_obra_notificacion">Sign in to see the project from the notification.</string>
+    <string name="auth_tema_titulo">Theme</string>
+    <string name="auth_tema_sistema">System default</string>
+    <string name="auth_tema_claro">Light</string>
+    <string name="auth_tema_oscuro">Dark</string>
 </resources>

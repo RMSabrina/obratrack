@@ -46,7 +46,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -57,6 +61,7 @@ import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.millisUtcToLocalDate
 import com.unaj.appmoviles.features.obras.tareas.labelRes
 import com.unaj.appmoviles.features.obras.toMillisUtc
+import com.unaj.appmoviles.features.obras.rememberSalidaConConfirmacion
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
 import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaTarea
@@ -89,6 +94,18 @@ fun TareaFormRoute(
     )
 }
 
+/** Si lo que hay en el formulario difiere de lo que tenía al abrirse. */
+internal fun tareaTieneCambios(
+    inicial: TareaDraft,
+    titulo: String,
+    descripcion: String,
+    categoria: CategoriaTarea,
+    estado: EstadoTarea,
+    fechaInicio: LocalDate?,
+    fechaFin: LocalDate?
+): Boolean = titulo != inicial.titulo || descripcion != inicial.descripcion || categoria != inicial.categoria ||
+    estado != inicial.estado || fechaInicio != inicial.fechaInicio || fechaFin != inicial.fechaFin
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TareaFormScreen(
@@ -100,6 +117,8 @@ fun TareaFormScreen(
     modifier: Modifier = Modifier
 ) {
     val inicial = state.inicial
+    var hayCambios by rememberSaveable { mutableStateOf(false) }
+    val salir = rememberSalidaConConfirmacion(hayCambios = hayCambios && !state.isSaving, onSalir = onBack)
 
     Scaffold(
         modifier = modifier,
@@ -107,7 +126,7 @@ fun TareaFormScreen(
             TopAppBar(
                 title = { Text(stringResource(if (isNew) R.string.tarea_nueva else R.string.tarea_editar)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = salir) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 }
@@ -130,6 +149,7 @@ fun TareaFormScreen(
                 state = state,
                 onSave = onSave,
                 onInputChanged = onInputChanged,
+                onHayCambios = { hayCambios = it },
                 modifier = Modifier.padding(padding)
             )
         }
@@ -143,6 +163,7 @@ private fun TareaFormContent(
     state: TareaFormUiState,
     onSave: (TareaDraft) -> Unit,
     onInputChanged: () -> Unit,
+    onHayCambios: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var titulo by rememberSaveable { mutableStateOf(inicial.titulo) }
@@ -155,6 +176,10 @@ private fun TareaFormContent(
     var showFinPicker by rememberSaveable { mutableStateOf(false) }
 
     val error = state.error
+
+    LaunchedEffect(titulo, descripcion, categoria, estado, fechaInicio, fechaFin) {
+        onHayCambios(tareaTieneCambios(inicial, titulo, descripcion, categoria, estado, fechaInicio, fechaFin))
+    }
 
     if (showInicioPicker) {
         FechaPickerDialog(
@@ -193,6 +218,7 @@ private fun TareaFormContent(
                 onValueChange = { titulo = it; onInputChanged() },
                 label = { Text(stringResource(R.string.tarea_campo_titulo)) },
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next),
                 isError = error == TareaError.TituloVacio,
                 supportingText = {
                     if (error == TareaError.TituloVacio) Text(error.asMessage())
@@ -395,7 +421,7 @@ private fun ReadOnlyField(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(4.dp))
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
     ) {
         OutlinedTextField(
             value = value,

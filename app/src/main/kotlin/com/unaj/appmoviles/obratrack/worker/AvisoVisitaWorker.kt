@@ -44,6 +44,7 @@ class AvisoVisitaWorker @AssistedInject constructor(
         // El texto sale en el idioma elegido en la app, no en el del sistema.
         val contexto = NotificationHelper.contextoLocalizado(applicationContext, languagePreferences.getLanguage())
         val fecha = proximaVisita.toFechaCalendario()
+        val locale = contexto.resources.configuration.locales[0]
         val horaTexto = hora?.let { formatHora(contexto, it) }
         val mensaje = when (ChronoUnit.DAYS.between(LocalDate.now(clock), fecha)) {
             0L ->
@@ -53,8 +54,8 @@ class AvisoVisitaWorker @AssistedInject constructor(
                 if (horaTexto != null) contexto.getString(R.string.notif_aviso_manana_con_hora, horaTexto, obra.direccion)
                 else contexto.getString(R.string.notif_aviso_manana_sin_hora, obra.direccion)
             else ->
-                if (horaTexto != null) contexto.getString(R.string.notif_aviso_otro_dia_con_hora, formatFecha(fecha), horaTexto, obra.direccion)
-                else contexto.getString(R.string.notif_aviso_otro_dia_sin_hora, formatFecha(fecha), obra.direccion)
+                if (horaTexto != null) contexto.getString(R.string.notif_aviso_otro_dia_con_hora, formatFecha(fecha, locale), horaTexto, obra.direccion)
+                else contexto.getString(R.string.notif_aviso_otro_dia_sin_hora, formatFecha(fecha, locale), obra.direccion)
         }
 
         NotificationHelper.createNotificationChannels(applicationContext)
@@ -62,7 +63,8 @@ class AvisoVisitaWorker @AssistedInject constructor(
             applicationContext,
             obra.id.hashCode() + 2,
             contexto.getString(R.string.notif_aviso_titulo, obra.nombre),
-            mensaje
+            mensaje,
+            obraId = obra.id
         )
         return Result.success()
     }

@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Barra inferior (Home y Agenda) -->
-    <string name="nav_inicio">Inicio</string>
-    <string name="nav_obras">Obras</string>
-    <string name="nav_agenda">Agenda</string>
-    <string name="nav_perfil">Perfil</string>
-
     <!-- Comunes -->
     <string name="volver">Volver</string>
     <string name="cancelar">Cancelar</string>
@@ -16,8 +10,6 @@
     <!-- Home -->
     <string name="home_saludo">Hola, %1$s</string>
     <string name="home_subtitulo">¿Qué querés hacer hoy?</string>
-    <string name="home_recordatorios_titulo">Recordatorios de visita</string>
-    <string name="home_probar_demo">Probar demo</string>
     <plurals name="home_visitas_atrasadas">
         <item quantity="one">⚠️ %d visita técnica atrasada</item>
         <item quantity="other">⚠️ %d visitas técnicas atrasadas</item>
@@ -87,4 +79,14 @@
     <!-- Textos por defecto -->
     <string name="home_usuario">Usuario</string>
     <string name="home_obra_desconocida">Obra desconocida</string>
+    <string name="agenda_hora_visita_titulo">Hora de la visita</string>
+    <string name="agenda_hora_actual">Hora: %1$s</string>
+    <string name="agenda_sin_hora">Sin hora</string>
+    <string name="agenda_elegir_hora">Elegir hora</string>
+    <string name="agenda_cambiar_hora">Cambiar hora</string>
+    <string name="agenda_quitar_hora">Quitar hora</string>
+    <string name="agenda_quitar_confirmar_titulo">¿Quitar la fecha de la visita?</string>
+    <string name="agenda_quitar_confirmar_mensaje">Se quitarán la fecha y la hora de la próxima visita a %1$s.</string>
+    <string name="agenda_guardando">Guardando…</string>
+    <string name="aceptar">Aceptar</string>
 </resources>

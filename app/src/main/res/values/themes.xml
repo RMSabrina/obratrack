@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.ObraTrack" parent="Theme.AppCompat.Light.NoActionBar" />
+    <!--
+        Un solo tema (DayNight, sin values-night): el color de marca del ícono de la app se usa como fondo de
+        la ventana mientras Compose no dibuja el primer cuadro, y en Android < 12 hace de splash. Es el mismo
+        en claro y en oscuro: no depende del tema del sistema ni del elegido en la app (que Compose aplica después).
+    -->
+    <style name="Theme.ObraTrack" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/ic_launcher_background</item>
+    </style>
 </resources>

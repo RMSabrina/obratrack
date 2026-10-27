@@ -1,5 +1,6 @@
 package com.unaj.appmoviles.features.obras.relevamiento
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
@@ -102,7 +103,10 @@ class RelevamientoFormViewModel @AssistedInject constructor(
     private fun leerTareas(observeTareas: ObserveTareasUseCase): Flow<LecturaTareas> =
         observeTareas(obraId)
             .map<List<Tarea>, LecturaTareas> { LecturaTareas.Cargadas(it) }
-            .catch { emit(LecturaTareas.Error) }
+            .catch { e ->
+                Log.e(TAG, "No se pudieron leer las tareas", e)
+                emit(LecturaTareas.Error)
+            }
 
     /** null = "Ninguna". Solo acepta tareas de la obra. */
     fun onTareaSeleccionada(tareaId: String?) {
@@ -113,18 +117,21 @@ class RelevamientoFormViewModel @AssistedInject constructor(
         }
     }
 
-    fun save(draft: RelevamientoDraft, photo: ByteArray?, continueAdding: Boolean = false) {
+    fun save(draft: RelevamientoDraft, photo: ByteArray?, continueAdding: Boolean = false) =
+        guardar(draft, { photo }, continueAdding)
+
+    /** [cargarFoto] lee la foto elegida (fuera del hilo principal); se llama una vez ya en "guardando". */
+    fun guardar(draft: RelevamientoDraft, cargarFoto: suspend () -> ByteArray?, continueAdding: Boolean = false) {
         if (_uiState.value is RelevamientoFormUiState.Loading) return
-        
-        // Validación de tamaño de imagen (límite de 5 MB)
-        val maxSizeInBytes = 5 * 1024 * 1024
-        if (photo != null && photo.size > maxSizeInBytes) {
-            _uiState.value = RelevamientoFormUiState.Error(RelevamientoError.ImagenMuyGrande)
-            return
-        }
-        
+
         _uiState.value = RelevamientoFormUiState.Loading
         viewModelScope.launch {
+            val photo = cargarFoto()
+            // La foto se achica al subirla (core:data); este tope solo evita intentar con archivos enormes.
+            if (photo != null && photo.size > MAX_FOTO_ORIGINAL_BYTES) {
+                _uiState.value = RelevamientoFormUiState.Error(RelevamientoError.ImagenMuyGrande)
+                return@launch
+            }
             val user = observeSession().first()
             if (user == null) {
                 _uiState.value = RelevamientoFormUiState.Error(RelevamientoError.NoAutorizado)
@@ -161,5 +168,10 @@ class RelevamientoFormViewModel @AssistedInject constructor(
         if (_uiState.value is RelevamientoFormUiState.Error) {
             _uiState.value = RelevamientoFormUiState.Idle
         }
+    }
+
+    internal companion object {
+        const val MAX_FOTO_ORIGINAL_BYTES = 20 * 1024 * 1024
+        private const val TAG = "RelevamientoFormVM"
     }
 }

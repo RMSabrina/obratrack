@@ -98,10 +98,8 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             firestore.batch().apply {
                 set(relevamientoRef, stored.toMap())
                 update(obraRef, FIELD_ULTIMA_VISITA, Timestamp(Date(ultimaVisita)))
-                if (stored.proximaVisitaMillis != null) {
-                    update(obraRef, FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis)))
-                    update(obraRef, FIELD_HORA_VISITA, valorOpcionalParaMerge(stored.horaVisita))
-                }
+                val visita = camposVisitaObra(alCrear = true, stored.proximaVisitaMillis, stored.horaVisita)
+                if (visita.isNotEmpty()) update(obraRef, visita)
             }.commit().await()
 
             FirebaseResult.Success(stored)
@@ -142,12 +140,9 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
                 FIELD_HORA_VISITA to valorOpcionalParaMerge(stored.horaVisita)
             )
             ref.set(campos, SetOptions.merge()).await()
-            if (stored.proximaVisitaMillis != null) {
-                obraRef.update(
-                    FIELD_PROXIMA_VISITA, Timestamp(Date(stored.proximaVisitaMillis)),
-                    FIELD_HORA_VISITA, valorOpcionalParaMerge(stored.horaVisita)
-                ).await()
-            }
+            // Editar no vuelve a proponer la visita: pisaría la vigente de la obra.
+            val visita = camposVisitaObra(alCrear = false, stored.proximaVisitaMillis, stored.horaVisita)
+            if (visita.isNotEmpty()) obraRef.update(visita).await()
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
             throw e
@@ -287,3 +282,19 @@ internal fun valorOpcionalParaMerge(valor: Any?): Any = valor ?: FieldValue.dele
  */
 internal fun ubicacionParaMerge(latitud: Double?, longitud: Double?): Any =
     if (latitud != null && longitud != null) GeoPoint(latitud, longitud) else FieldValue.delete()
+
+private const val OBRA_FIELD_PROXIMA_VISITA = "proximaVisita"
+private const val OBRA_FIELD_HORA_VISITA = "horaVisita"
+
+/**
+ * Campos de la obra que escribe un relevamiento. La próxima visita vive en la obra: un
+ * relevamiento la propone solo al crearse y solo si trae fecha (sin fecha no la borra).
+ * Editarlo nunca la toca.
+ */
+internal fun camposVisitaObra(alCrear: Boolean, proximaVisitaMillis: Long?, horaVisita: Int?): Map<String, Any> {
+    if (!alCrear || proximaVisitaMillis == null) return emptyMap()
+    return mapOf(
+        OBRA_FIELD_PROXIMA_VISITA to Timestamp(Date(proximaVisitaMillis)),
+        OBRA_FIELD_HORA_VISITA to valorOpcionalParaMerge(horaVisita)
+    )
+}

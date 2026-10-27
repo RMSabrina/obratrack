@@ -25,17 +25,21 @@ class ObraRepositoryImpl @Inject constructor(
         remoteDataSource.observe(userId).map { obras ->
             obras.map(ObraDto::toDomain).sortedWith(OBRA_ORDER)
         }
+        .conErrorDeLectura(Exception::toObraError)
 
     override fun observeOne(userId: String, obraId: String): Flow<Obra?> =
         remoteDataSource.observeOne(userId, obraId).map { it?.toDomain() }
+        .conErrorDeLectura(Exception::toObraError)
 
     override fun observePublicas(): Flow<List<Obra>> =
         remoteDataSource.observePublicas().map { obras ->
             obras.map(ObraDto::toDomain).sortedWith(OBRA_ORDER)
         }
+        .conErrorDeLectura(Exception::toObraError)
 
     override fun observePublica(obraId: String): Flow<Obra?> =
         remoteDataSource.observePublica(obraId).map { it?.toDomain() }
+        .conErrorDeLectura(Exception::toObraError)
 
     override fun observeSuscripciones(userId: String): Flow<Set<String>> =
         remoteDataSource.observeSuscripciones(userId)

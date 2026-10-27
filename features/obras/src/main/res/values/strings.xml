@@ -85,7 +85,7 @@
     </plurals>
     <string name="tarea_vinculados_titulo">Relevamientos vinculados (%1$d)</string>
     <string name="tarea_vinculados_vacio">Ningún relevamiento está vinculado a esta tarea.</string>
-    <string name="tarea_vinculados_error">No pudimos cargar los relevamientos vinculados. Volvé a abrir la tarea para reintentar.</string>
+    <string name="tarea_vinculados_error">No pudimos cargar los relevamientos vinculados. Revisá tu conexión.</string>
 
     <!-- Detalle de obra: secciones -->
     <string name="obra_seccion_resumen">Resumen</string>
@@ -97,7 +97,6 @@
     <string name="obra_relevamiento_nuevo">Nuevo relevamiento</string>
     <string name="obra_relevamientos_vacio">Todavía no hay relevamientos.</string>
     <string name="obra_relevamientos_ver_todos">Ver todos (%1$d)</string>
-    <string name="obra_relevamientos_error">No pudimos cargar los relevamientos. Volvé a abrir la obra para reintentar.</string>
     <string name="obra_relevamientos_vacio_titulo">Todavía no hay relevamientos</string>
     <string name="obra_relevamientos_vacio_descripcion">Esta obra no cuenta con relevamientos cargados.</string>
     <string name="obra_relevamientos_agregar_primero">Agregar el primero</string>
@@ -202,8 +201,8 @@
     <string name="relevamiento_form_nota_placeholder">Escribe una descripción del avance o problema...</string>
 
     <!-- Diálogos de borrado y cuerpo de los detalles -->
-    <string name="obra_eliminar_titulo">Eliminar Obra</string>
-    <string name="obra_eliminar_confirmacion">¿Eliminar Obra y todos sus relevamientos, tareas y suscriptores? Esta acción no se puede deshacer.</string>
+    <string name="obra_eliminar_titulo">Eliminar obra</string>
+    <string name="obra_eliminar_confirmacion">¿Eliminar «%1$s»? Se borrarán sus relevamientos, tareas y suscriptores. Las fotos ya subidas no se borran del servidor. Esta acción no se puede deshacer.</string>
     <string name="obra_eliminar">Eliminar obra</string>
     <string name="obra_no_encontrada">No encontramos esa obra</string>
     <string name="obra_publica_no_encontrada">No encontramos esta obra o ya no es pública.</string>
@@ -327,4 +326,10 @@
     <string name="relevamiento_detalle_proxima_hora">Próxima visita prevista: %1$s a las %2$s</string>
     <string name="obra_proxima_visita_fecha_hora">Próxima visita: %1$s a las %2$s</string>
     <string name="obra_proxima_visita_atrasada_hora">Próxima visita: %1$s a las %2$s (Atrasada)</string>
+    <string name="pdf_generando">Generando el PDF…</string>
+    <string name="obras_ubicacion_cancelada">Captura de ubicación cancelada.</string>
+    <string name="relevamiento_tarea_repetida">%1$s (n.º %2$d · %3$s)</string>
+    <string name="relevamiento_tarea_sin_fechas">sin fechas</string>
+    <string name="obras_cerrar_sesion_titulo">¿Cerrar sesión?</string>
+    <string name="obras_cerrar_sesion_mensaje">Vas a salir de tu cuenta en este dispositivo.</string>
 </resources>

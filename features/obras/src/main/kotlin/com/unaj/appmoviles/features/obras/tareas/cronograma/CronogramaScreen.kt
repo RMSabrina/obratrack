@@ -24,7 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
-import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 import com.unaj.appmoviles.obratrack.core.ui.components.EmptyState
 
 /** Contenido de la pestaña Cronograma del detalle de obra. */
@@ -43,6 +43,7 @@ fun CronogramaRoute(
         state = state,
         onOpenTarea = onOpenTarea,
         onOpenTareas = onOpenTareas,
+        onRetry = viewModel::reintentar,
         modifier = modifier
     )
 }
@@ -52,16 +53,13 @@ fun CronogramaContent(
     state: CronogramaUiState,
     onOpenTarea: (tareaId: String) -> Unit,
     onOpenTareas: () -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val cronograma = state.cronograma
     when {
         state.isLoading -> LoadingContent(modifier)
-        state.error != null -> Text(
-            text = state.error.asMessage(),
-            color = MaterialTheme.colorScheme.error,
-            modifier = modifier.padding(24.dp)
-        )
+        state.error != null -> ErrorCarga(error = state.error, onRetry = onRetry, modifier = modifier)
         cronograma == null -> Unit
         // Sin ninguna tarea cargada.
         cronograma.barras.isEmpty() && cronograma.sinFechas == 0 -> EmptyState(

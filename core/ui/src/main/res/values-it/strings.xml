@@ -8,8 +8,8 @@
     <string name="error_network">Nessuna connessione. Controlla internet</string>
     <string name="error_recent_login_required">Per sicurezza, conferma la tua password attuale per continuare</string>
     <string name="error_email_not_verified">Controlla la tua email e verifica il tuo account prima di accedere.</string>
-    <string name="error_unknown">Si è verificato un errore imprevisto</string>
-    <string name="error_timeout">Impossibile confermare l\'eliminazione. Controlla la connessione e riprova</string>
+    <string name="error_unknown">Si è verificato un errore imprevisto. Riprova</string>
+    <string name="error_timeout">L\'operazione ha richiesto troppo tempo. Controlla la connessione e riprova</string>
     <string name="error_fallo_parcial">Impossibile eliminare completamente, riprova</string>
     <string name="error_google_config">Errore di configurazione di Google Sign-In</string>
     <string name="error_google_failed">Impossibile accedere con Google</string>
@@ -23,7 +23,7 @@
     <string name="error_relevamiento_fecha">Seleziona la data del rilievo</string>
     <string name="error_relevamiento_not_found">Rilievo non trovato</string>
     <string name="error_relevamiento_forbidden">Non hai il permesso di modificare questo rilievo</string>
-    <string name="error_relevamiento_imagen_grande">L\'immagine supera il limite di 5 MB</string>
+    <string name="error_relevamiento_imagen_grande">Non è stato possibile ridurre abbastanza la foto. Scegline un\'altra o scattala di nuovo.</string>
     <string name="error_tarea_titulo">Inserisci il titolo dell\'attività</string>
     <string name="error_tarea_fechas_incompletas">Scegli entrambe le date o nessuna</string>
     <string name="error_tarea_fecha_fin_anterior">La data di fine non può essere precedente alla data di inizio</string>
@@ -31,6 +31,17 @@
     <string name="error_tarea_forbidden">Non hai il permesso di modificare questa attività</string>
     <string name="error_tarea_demasiados_vinculados">L\'attività ha troppi rilievi collegati per essere eliminata in una sola volta</string>
     <string name="error_tarea_timeout">Operazione scaduta. Controlla la connessione e riprova</string>
+
+    <string name="error_eliminacion_timeout">Impossibile confermare l\'eliminazione. Controlla la connessione e riprova</string>
+
+    <!-- Error al cargar datos (componente ErrorCarga) -->
+    <string name="carga_error_titulo">Impossibile caricare i dati</string>
+    <string name="carga_error_sin_conexion">Nessuna connessione. Controlla internet e riprova.</string>
+    <string name="carga_error_sin_permiso">Non hai il permesso di vedere queste informazioni.</string>
+    <string name="carga_error_no_encontrado">Non troviamo ciò che cerchi. Potrebbe essere stato eliminato.</string>
+    <string name="carga_error_timeout">Il caricamento ha richiesto troppo tempo. Controlla la connessione e riprova.</string>
+    <string name="carga_error_otro">Si è verificato un errore imprevisto durante il caricamento. Riprova.</string>
+    <string name="carga_error_reintentar">Riprova</string>
 
     <!-- UI Map Strings -->
     <string name="ui_map_title_default">Posizione geografica</string>
@@ -47,4 +58,10 @@
     <string name="ui_buscar_placeholder">Cerca...</string>
     <string name="ui_buscar">Cerca</string>
     <string name="ui_filtros">Filtri</string>
+
+    <!-- Descartar cambios -->
+    <string name="descartar_titulo">Scartare le modifiche?</string>
+    <string name="descartar_mensaje">Se esci ora, perderai quello che hai inserito e non hai ancora salvato.</string>
+    <string name="descartar_confirmar">Scarta</string>
+    <string name="descartar_seguir">Continua a modificare</string>
 </resources>

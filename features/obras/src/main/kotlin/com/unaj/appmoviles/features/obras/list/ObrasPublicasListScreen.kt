@@ -38,6 +38,7 @@ import com.unaj.appmoviles.features.obras.list.components.ObraCard
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 import com.unaj.appmoviles.obratrack.core.ui.components.SearchBarComponent
 import com.unaj.appmoviles.features.obras.label
 
@@ -54,6 +55,7 @@ fun ObrasPublicasListRoute(
         state = state,
         onOpen = onOpen,
         onBack = onBack,
+        onRetry = viewModel::reintentar,
         onToggleSubscription = viewModel::toggleSuscripcion
     )
 }
@@ -65,6 +67,7 @@ fun ObrasPublicasListScreen(
     onOpen: (Obra) -> Unit,
     onBack: () -> Unit,
     onToggleSubscription: (String) -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -99,6 +102,12 @@ fun ObrasPublicasListScreen(
     ) { paddingValues ->
         if (state.isLoading) {
             LoadingContent(Modifier.padding(paddingValues))
+        } else if (state.error != null) {
+            ErrorCarga(
+                error = state.error,
+                onRetry = onRetry,
+                modifier = Modifier.padding(paddingValues)
+            )
         } else {
             Column(
                 modifier = Modifier

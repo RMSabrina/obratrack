@@ -36,9 +36,6 @@ import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Business
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material.icons.outlined.ChevronRight
@@ -47,9 +44,6 @@ import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -57,7 +51,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -69,6 +62,7 @@ import com.unaj.appmoviles.features.home.components.RelevamientoCard
 import com.unaj.appmoviles.home.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 
 import androidx.compose.material.icons.outlined.CalendarMonth
 import com.unaj.appmoviles.features.obras.formatFecha
@@ -81,25 +75,19 @@ fun HomeScreen(
     onNavigateToAgenda: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
     onNavigateToObrasPublicas: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onIniciarRelevamientoParaObra: (String) -> Unit = {},
-    onTriggerDemoNotification: (() -> Unit)? = null,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            HomeBottomNavigation(
-                onNavigateToObras = onNavigateToObras,
-                onNavigateToAgenda = onNavigateToAgenda,
-                onNavigateToProfile = onNavigateToProfile
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         if (state.isLoading) {
             LoadingContent(Modifier.padding(padding).fillMaxSize())
+        } else if (state.error != null) {
+            ErrorCarga(error = state.error, onRetry = onRetry, modifier = Modifier.padding(padding))
         } else {
             LazyColumn(
                 modifier = Modifier
@@ -140,63 +128,6 @@ fun HomeScreen(
                     )
                 }
                 
-
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Notifications,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    text = stringResource(R.string.home_recordatorios_titulo),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-
-                            Button(
-                                onClick = { onTriggerDemoNotification?.invoke() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                ),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                modifier = Modifier.height(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Send,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = stringResource(R.string.home_probar_demo),
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                        }
-                    }
-                }
 
                 item {
                     val destacada = state.proximaVisitaDestacada
@@ -394,7 +325,7 @@ fun HomeScreen(
                     item {
                         Text(
                             text = stringResource(R.string.home_sin_relevamientos),
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 16.dp)
                         )
                     }
@@ -501,7 +432,7 @@ fun BannerLocation(
                 Icon(
                     imageVector = Icons.Outlined.LocationOn,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -518,7 +449,7 @@ fun BannerLocation(
                 Text(
                     text = stringResource(R.string.home_accion_obras_publicas_detalle),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
@@ -528,67 +459,5 @@ fun BannerLocation(
                 tint = MaterialTheme.colorScheme.primary
             )
         }
-    }
-}
-
-@Composable
-fun HomeBottomNavigation(
-    onNavigateToObras: () -> Unit,
-    onNavigateToAgenda: () -> Unit,
-    onNavigateToProfile: () -> Unit
-) {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.primary
-    ) {
-        NavigationBarItem(
-            selected = true,
-            onClick = { },
-            icon = { Icon(Icons.Outlined.Home, contentDescription = stringResource(R.string.nav_inicio)) },
-            label = { Text(stringResource(R.string.nav_inicio), fontWeight = FontWeight.Bold) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToObras,
-            icon = { Icon(Icons.Outlined.Business, contentDescription = stringResource(R.string.nav_obras)) },
-            label = { Text(stringResource(R.string.nav_obras)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToAgenda,
-            icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = stringResource(R.string.nav_agenda)) },
-            label = { Text(stringResource(R.string.nav_agenda)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToProfile,
-            icon = { Icon(Icons.Outlined.Person, contentDescription = stringResource(R.string.nav_perfil)) },
-            label = { Text(stringResource(R.string.nav_perfil)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
     }
 }

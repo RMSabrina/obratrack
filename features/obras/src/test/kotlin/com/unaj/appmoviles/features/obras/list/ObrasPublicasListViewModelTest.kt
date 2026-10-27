@@ -11,13 +11,17 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveSuscripcio
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.SetSuscripcionUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -25,11 +29,11 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ObrasPublicasListViewModelTest {
 
-    private val dispatcher = StandardTestDispatcher()
+    private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(dispatcher)
+        Dispatchers.setMain(testDispatcher)
     }
 
     @After
@@ -37,25 +41,79 @@ class ObrasPublicasListViewModelTest {
         Dispatchers.resetMain()
     }
 
+    private fun crearViewModel(repository: FakeObraRepository) = ObrasPublicasListViewModel(
+        observeObrasPublicasUseCase = ObserveObrasPublicasUseCase(repository),
+        observeSession = ObserveSessionUseCase(FakeAuthRepository(DUENO)),
+        observeSuscripciones = ObserveSuscripcionesUseCase(repository),
+        setSuscripcion = SetSuscripcionUseCase(repository)
+    )
+
+    /** uiState usa WhileSubscribed: sin un suscriptor no se calcula. */
+    private fun TestScope.suscribir(viewModel: ObrasPublicasListViewModel) {
+        viewModel.uiState.launchIn(backgroundScope)
+        testDispatcher.scheduler.advanceUntilIdle()
+    }
+
+    @Test
+    fun muestraLasObrasPublicas_sinError() = runTest {
+        val viewModel = crearViewModel(FakeObraRepository(obraDe(DUENO.id, publica = true)))
+
+        suscribir(viewModel)
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(OBRA_ID), state.obras.map { it.id })
+        assertNull(state.error)
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun reintentar_despuesDelErrorVuelveAMostrarLasObras() = runTest {
+        val repo = FakeObraRepository(obraDe(DUENO.id, publica = true)).apply {
+            observePublicasError = IllegalStateException("UNAVAILABLE")
+        }
+        val viewModel = crearViewModel(repo)
+        suscribir(viewModel)
+        assertNotNull(viewModel.uiState.value.error)
+
+        repo.observePublicasError = null
+        viewModel.reintentar()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.error)
+        assertEquals(listOf(OBRA_ID), state.obras.map { it.id })
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun errorAlLeer_noCierraLaAppYAvisa() = runTest {
+        val repo = FakeObraRepository(obraDe(DUENO.id, publica = true)).apply {
+            observePublicasError = IllegalStateException("PERMISSION_DENIED")
+        }
+        val viewModel = crearViewModel(repo)
+
+        suscribir(viewModel)
+
+        val state = viewModel.uiState.value
+        assertNotNull(state.error)
+        assertTrue(state.obras.isEmpty())
+        assertFalse(state.isLoading)
+    }
+
     @Test
     fun guardarYQuitarObra_actualizaElFiltroDeGuardadas() = runTest {
         val repository = FakeObraRepository(obra = null, publicas = listOf(obraDe("dueno", publica = true)))
-        val viewModel = ObrasPublicasListViewModel(
-            observeObrasPublicasUseCase = ObserveObrasPublicasUseCase(repository),
-            observeSession = ObserveSessionUseCase(FakeAuthRepository(DUENO)),
-            observeSuscripciones = ObserveSuscripcionesUseCase(repository),
-            setSuscripcion = SetSuscripcionUseCase(repository)
-        )
-        dispatcher.scheduler.advanceUntilIdle()
+        val viewModel = crearViewModel(repository)
+        suscribir(viewModel)
 
         assertFalse(OBRA_ID in viewModel.uiState.value.suscripciones)
 
         viewModel.toggleSuscripcion(OBRA_ID)
-        dispatcher.scheduler.advanceUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(OBRA_ID in viewModel.uiState.value.suscripciones)
 
         viewModel.toggleSuscripcion(OBRA_ID)
-        dispatcher.scheduler.advanceUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
         assertFalse(OBRA_ID in viewModel.uiState.value.suscripciones)
     }
 }

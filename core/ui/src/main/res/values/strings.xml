@@ -8,8 +8,8 @@
     <string name="error_network">Sin conexión. Revisá tu internet</string>
     <string name="error_recent_login_required">Por seguridad, confirmá tu contraseña actual para continuar</string>
     <string name="error_email_not_verified">Por favor, revisá tu correo y verificá tu cuenta antes de ingresar.</string>
-    <string name="error_unknown">Ocurrió un error inesperado</string>
-    <string name="error_timeout">No pudimos confirmar la eliminación, revisá tu conexión y reintentá</string>
+    <string name="error_unknown">Ocurrió un error inesperado. Probá de nuevo</string>
+    <string name="error_timeout">La operación tardó demasiado. Revisá tu conexión y reintentá</string>
     <string name="error_fallo_parcial">No se pudo eliminar completamente, reintentá</string>
     <string name="error_google_config">Error de configuración de Google Sign-In</string>
     <string name="error_google_failed">No se pudo iniciar sesión con Google</string>
@@ -23,7 +23,7 @@
     <string name="error_relevamiento_fecha">Elegí la fecha de la visita</string>
     <string name="error_relevamiento_not_found">No encontramos ese relevamiento</string>
     <string name="error_relevamiento_forbidden">No podés modificar este relevamiento</string>
-    <string name="error_relevamiento_imagen_grande">La imagen supera el límite de 5 MB</string>
+    <string name="error_relevamiento_imagen_grande">No se pudo reducir la foto lo suficiente. Elegí otra o sacala de nuevo.</string>
     <string name="error_tarea_titulo">Ingresá el título de la tarea</string>
     <string name="error_tarea_fechas_incompletas">Elegí ambas fechas o ninguna</string>
     <string name="error_tarea_fecha_fin_anterior">La fecha de fin no puede ser anterior a la de inicio</string>
@@ -31,6 +31,17 @@
     <string name="error_tarea_forbidden">No podés modificar esta tarea</string>
     <string name="error_tarea_demasiados_vinculados">La tarea tiene demasiados relevamientos vinculados para borrarla de una vez</string>
     <string name="error_tarea_timeout">La operación tardó demasiado. Revisá tu conexión y reintentá</string>
+
+    <string name="error_eliminacion_timeout">No pudimos confirmar la eliminación, revisá tu conexión y reintentá</string>
+
+    <!-- Error al cargar datos (componente ErrorCarga) -->
+    <string name="carga_error_titulo">No pudimos cargar los datos</string>
+    <string name="carga_error_sin_conexion">Sin conexión. Revisá tu internet y reintentá.</string>
+    <string name="carga_error_sin_permiso">No tenés permiso para ver esta información.</string>
+    <string name="carga_error_no_encontrado">No encontramos lo que buscás. Puede que se haya eliminado.</string>
+    <string name="carga_error_timeout">La carga tardó demasiado. Revisá tu conexión y reintentá.</string>
+    <string name="carga_error_otro">Ocurrió un error inesperado al cargar. Probá de nuevo.</string>
+    <string name="carga_error_reintentar">Reintentar</string>
 
     <!-- UI Map Strings -->
     <string name="ui_map_title_default">Ubicación Geográfica</string>
@@ -47,4 +58,10 @@
     <string name="ui_buscar_placeholder">Buscar...</string>
     <string name="ui_buscar">Buscar</string>
     <string name="ui_filtros">Filtros</string>
+
+    <!-- Descartar cambios -->
+    <string name="descartar_titulo">¿Descartar los cambios?</string>
+    <string name="descartar_mensaje">Si salís ahora, se pierde lo que cargaste y todavía no guardaste.</string>
+    <string name="descartar_confirmar">Descartar</string>
+    <string name="descartar_seguir">Seguir editando</string>
 </resources>

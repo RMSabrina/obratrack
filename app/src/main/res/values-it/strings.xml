@@ -21,4 +21,9 @@
         <item quantity="one">Il cantiere \'%1$s\' è senza sopralluoghi registrati da %2$d giorno.</item>
         <item quantity="other">Il cantiere \'%1$s\' è senza sopralluoghi registrati da %2$d giorni.</item>
     </plurals>
+    <!-- Barra inferior -->
+    <string name="nav_inicio">Home</string>
+    <string name="nav_obras">Cantieri</string>
+    <string name="nav_agenda">Agenda</string>
+    <string name="nav_perfil">Profilo</string>
 </resources>

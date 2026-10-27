@@ -52,4 +52,9 @@
     <string name="auth_aviso_15_min">15 minutos antes</string>
     <string name="auth_aviso_1_hora">1 hora antes</string>
     <string name="auth_aviso_1_dia">1 día antes</string>
+    <string name="auth_aviso_obra_notificacion">Iniciá sesión para ver la obra de la notificación.</string>
+    <string name="auth_tema_titulo">Tema</string>
+    <string name="auth_tema_sistema">Predeterminado del sistema</string>
+    <string name="auth_tema_claro">Claro</string>
+    <string name="auth_tema_oscuro">Oscuro</string>
 </resources>

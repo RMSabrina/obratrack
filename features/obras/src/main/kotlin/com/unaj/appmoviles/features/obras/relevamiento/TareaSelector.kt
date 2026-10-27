@@ -18,6 +18,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.features.obras.formatFecha
 import androidx.compose.ui.unit.dp
 import com.unaj.appmoviles.obras.R
 
@@ -93,9 +94,18 @@ fun TareaSelector(
 }
 
 @Composable
-private fun opcionTexto(opcion: OpcionTarea): String =
-    if (opcion.completada) {
-        stringResource(R.string.relevamiento_tarea_completada, opcion.titulo)
+private fun opcionTexto(opcion: OpcionTarea): String {
+    val titulo = if (opcion.repetida) {
+        val inicio = opcion.fechaInicio
+        val fin = opcion.fechaFin
+        val fechas = if (inicio != null && fin != null) {
+            stringResource(R.string.tareas_rango_fechas, formatFecha(inicio), formatFecha(fin))
+        } else {
+            stringResource(R.string.relevamiento_tarea_sin_fechas)
+        }
+        stringResource(R.string.relevamiento_tarea_repetida, opcion.titulo, opcion.numero, fechas)
     } else {
         opcion.titulo
     }
+    return if (opcion.completada) stringResource(R.string.relevamiento_tarea_completada, titulo) else titulo
+}

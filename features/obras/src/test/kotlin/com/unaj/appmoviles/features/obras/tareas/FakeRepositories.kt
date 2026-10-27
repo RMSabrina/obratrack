@@ -19,6 +19,7 @@ import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -58,13 +59,36 @@ class FakeObraRepository(obra: Obra?, publicas: List<Obra> = emptyList()) : Obra
     private val publicas = MutableStateFlow(publicas)
     private val suscripciones = MutableStateFlow(emptySet<String>())
 
-    override fun observeOne(userId: String, obraId: String): Flow<Obra?> =
-        this.obra.map { it?.takeIf { o -> o.id == obraId && o.userId == userId } }
+    /** Si no es null, observe y observeOne fallan con esta excepción (como Firestore). */
+    var observeError: Exception? = null
 
-    override fun observe(userId: String): Flow<List<Obra>> = TODO()
-    override fun observePublicas(): Flow<List<Obra>> = publicas
-    override fun observePublica(obraId: String): Flow<Obra?> =
-        this.obra.map { it?.takeIf { o -> o.id == obraId && o.publica } }
+    override fun observeOne(userId: String, obraId: String): Flow<Obra?> {
+        val error = observeError
+        if (error != null) return flow { throw error }
+        return this.obra.map { it?.takeIf { o -> o.id == obraId && o.userId == userId } }
+    }
+
+    /** Si no es null, observePublicas y observePublica fallan con esta excepción (como Firestore). */
+    var observePublicasError: Exception? = null
+
+    override fun observe(userId: String): Flow<List<Obra>> {
+        val error = observeError
+        if (error != null) return flow { throw error }
+        return this.obra.map { listOfNotNull(it?.takeIf { o -> o.userId == userId }) }
+    }
+    /** Las obras públicas de la lista inicial más la obra del fake si es pública. */
+    override fun observePublicas(): Flow<List<Obra>> {
+        val error = observePublicasError
+        if (error != null) return flow { throw error }
+        return combine(this.obra, publicas) { propia, lista ->
+            (lista + listOfNotNull(propia?.takeIf { o -> o.publica })).distinctBy { it.id }
+        }
+    }
+    override fun observePublica(obraId: String): Flow<Obra?> {
+        val error = observePublicasError
+        if (error != null) return flow { throw error }
+        return this.obra.map { it?.takeIf { o -> o.id == obraId && o.publica } }
+    }
     override fun observeSuscripciones(userId: String): Flow<Set<String>> = suscripciones
     override suspend fun setSuscripcion(userId: String, obraId: String, seguir: Boolean): AppResult<Unit> {
         suscripciones.value = if (seguir) suscripciones.value + obraId else suscripciones.value - obraId

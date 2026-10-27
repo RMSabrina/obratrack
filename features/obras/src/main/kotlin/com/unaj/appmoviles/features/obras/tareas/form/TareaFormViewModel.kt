@@ -1,5 +1,6 @@
 package com.unaj.appmoviles.features.obras.tareas.form
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.features.obras.tareas.toDraft
@@ -56,14 +57,24 @@ class TareaFormViewModel @AssistedInject constructor(
     private suspend fun cargar(): TareaFormUiState {
         val user = observeSession().first() ?: return fallo(TareaError.NoAutorizada)
         // Las tareas son privadas: solo el dueño de la obra puede abrir el formulario.
-        val obra = observeObra(user.id, obraId).catch { emit(null) }.first()
+        val obra = observeObra(user.id, obraId)
+            .catch { e ->
+                Log.e(TAG, "No se pudo leer la obra", e)
+                emit(null)
+            }
+            .first()
         if (obra?.userId != user.id) return fallo(TareaError.NoAutorizada)
         userId = user.id
 
         if (tareaId == null) {
             return TareaFormUiState(isLoading = false, inicial = TareaDraft(titulo = ""))
         }
-        val tarea = observeTarea(obraId, tareaId).catch { emit(null) }.first()
+        val tarea = observeTarea(obraId, tareaId)
+            .catch { e ->
+                Log.e(TAG, "No se pudo leer la tarea", e)
+                emit(null)
+            }
+            .first()
             ?: return fallo(TareaError.NoEncontrada)
         return TareaFormUiState(isLoading = false, inicial = tarea.toDraft())
     }
@@ -96,4 +107,8 @@ class TareaFormViewModel @AssistedInject constructor(
     }
 
     private fun fallo(error: TareaError) = TareaFormUiState(isLoading = false, error = error)
+
+    private companion object {
+        const val TAG = "TareaFormViewModel"
+    }
 }

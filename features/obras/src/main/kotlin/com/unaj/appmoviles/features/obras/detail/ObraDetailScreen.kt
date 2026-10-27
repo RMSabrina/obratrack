@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.semantics.semantics
+import com.unaj.appmoviles.features.obras.export.EstadoPdf
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -34,7 +38,7 @@ import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.runtime.rememberCoroutineScope
 import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ElevatedCard
@@ -61,6 +65,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
@@ -80,12 +85,15 @@ import com.unaj.appmoviles.features.obras.tareas.cronograma.CronogramaRoute
 import com.unaj.appmoviles.features.obras.tareas.list.TareasListRoute
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
+import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
+import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.PronosticoVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
-import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
+import com.unaj.appmoviles.obratrack.core.domain.ui.asDeleteMessage
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 import com.unaj.appmoviles.obratrack.core.ui.components.EmptyState
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
 import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
@@ -106,8 +114,20 @@ fun ObraDetailRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val shareTitle = stringResource(R.string.compartir_informe_obra_via)
+    val pdf by viewModel.pdf.collectAsStateWithLifecycle()
+
+    // El PDF queda listo en el ViewModel: si se rotó la pantalla mientras se generaba, se comparte igual.
+    LaunchedEffect(pdf) {
+        val listo = pdf as? EstadoPdf.Listo ?: return@LaunchedEffect
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/pdf"
+            putExtra(Intent.EXTRA_STREAM, listo.resultado)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(intent, shareTitle))
+        viewModel.pdfConsumido()
+    }
 
     ObraDetailScreen(
         state = state,
@@ -120,25 +140,22 @@ fun ObraDetailRoute(
         onCreateRelevamiento = onCreateRelevamiento,
         onOpenRelevamiento = onOpenRelevamiento,
         onCreateTarea = onCreateTarea,
+        onRetry = viewModel::reintentar,
+        generandoPdf = pdf is EstadoPdf.Generando,
+        pdfConError = pdf is EstadoPdf.Error,
+        onPdfErrorShown = viewModel::pdfConsumido,
         onShareInforme = {
             val obra = state.obra
             if (obra != null && !state.isDeleting) {
-                coroutineScope.launch(Dispatchers.IO) {
-                    val uri = RelevamientoPdfExporter.exportInformeObraToPdf(
-                        context = context,
-                        obra = obra,
-                        resumenTareas = state.resumenTareas,
-                        relevamientos = state.relevamientos,
-                        tareas = state.tareas
-                    )
-                    if (uri != null) {
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "application/pdf"
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-                        val chooser = Intent.createChooser(intent, shareTitle)
-                        context.startActivity(chooser)
+                viewModel.generarPdf {
+                    withContext(Dispatchers.IO) {
+                        RelevamientoPdfExporter.exportInformeObraToPdf(
+                            context = context,
+                            obra = obra,
+                            resumenTareas = state.resumenTareas,
+                            relevamientos = state.relevamientos,
+                            tareas = state.tareas
+                        )
                     }
                 }
             }
@@ -177,7 +194,11 @@ fun ObraDetailScreen(
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onCreateTarea: () -> Unit,
+    onRetry: () -> Unit = {},
     onShareInforme: () -> Unit = {},
+    generandoPdf: Boolean = false,
+    pdfConError: Boolean = false,
+    onPdfErrorShown: () -> Unit = {},
     tareasTab: @Composable (Modifier) -> Unit,
     cronogramaTab: @Composable (onOpenTareas: () -> Unit, Modifier) -> Unit,
     modifier: Modifier = Modifier
@@ -198,7 +219,7 @@ fun ObraDetailScreen(
         }
     }
 
-    val deleteErrorMessage = state.deleteError?.asMessage()
+    val deleteErrorMessage = state.deleteError?.asDeleteMessage()
     LaunchedEffect(deleteErrorMessage) {
         if (deleteErrorMessage != null) {
             snackbarHostState.showSnackbar(deleteErrorMessage)
@@ -206,11 +227,19 @@ fun ObraDetailScreen(
         }
     }
 
+    val pdfErrorMessage = stringResource(R.string.error_exportacion_pdf)
+    LaunchedEffect(pdfConError) {
+        if (pdfConError) {
+            snackbarHostState.showSnackbar(pdfErrorMessage)
+            onPdfErrorShown()
+        }
+    }
+
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { if (!state.isDeleting) showDeleteDialog = false },
             title = { Text(stringResource(R.string.obra_eliminar_titulo)) },
-            text = { Text(stringResource(R.string.obra_eliminar_confirmacion)) },
+            text = { Text(stringResource(R.string.obra_eliminar_confirmacion, state.obra?.nombre.orEmpty())) },
             confirmButton = {
                 TextButton(
                     enabled = !state.isDeleting,
@@ -255,12 +284,22 @@ fun ObraDetailScreen(
                     if (obra != null && state.isEditable) {
                         IconButton(
                             onClick = onShareInforme,
-                            enabled = !state.isDeleting
+                            enabled = !state.isDeleting && !generandoPdf
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = stringResource(R.string.compartir_informe_obra)
-                            )
+                            if (generandoPdf) {
+                                val generando = stringResource(R.string.pdf_generando)
+                                CircularProgressIndicator(
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .semantics { contentDescription = generando }
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = stringResource(R.string.compartir_informe_obra)
+                                )
+                            }
                         }
                         IconButton(
                             onClick = { if (!state.isDeleting) showDeleteDialog = true },
@@ -303,12 +342,10 @@ fun ObraDetailScreen(
         when {
             state.isLoading -> LoadingContent(Modifier.padding(padding))
             obra == null -> {
-                Text(
-                    text = state.error?.asMessage() ?: stringResource(R.string.obra_no_encontrada),
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .padding(padding)
-                        .padding(24.dp)
+                ErrorCarga(
+                    error = state.error ?: ObraError.NoEncontrada,
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(padding)
                 )
             }
             else -> Column(
@@ -330,6 +367,7 @@ fun ObraDetailScreen(
                         onRetryPronostico = onRetryPronostico,
                         onOpenRelevamiento = onOpenRelevamiento,
                         onVerTodos = { pestana = ObraDetailTab.RELEVAMIENTOS },
+                        onRetry = onRetry,
                         modifier = contenido
                     )
                     ObraDetailTab.TAREAS -> tareasTab(contenido)
@@ -338,6 +376,7 @@ fun ObraDetailScreen(
                         state = state,
                         onCreateRelevamiento = onCreateRelevamiento,
                         onOpenRelevamiento = onOpenRelevamiento,
+                        onRetry = onRetry,
                         modifier = contenido
                     )
                 }
@@ -432,6 +471,7 @@ private fun ResumenTab(
     onRetryPronostico: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onVerTodos: () -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val recientes = state.relevamientos.recientes()
@@ -461,8 +501,8 @@ private fun ResumenTab(
         item {
             SectionTitle(stringResource(R.string.obra_seccion_relevamientos))
         }
-        if (state.relevamientosError) {
-            item { RelevamientosErrorMensaje() }
+        if (state.relevamientosError != null) {
+            item { RelevamientosErrorMensaje(state.relevamientosError, onRetry) }
         } else if (recientes.isEmpty()) {
             item {
                 Text(
@@ -540,11 +580,13 @@ private fun PronosticoVisitaCard(
                 is PronosticoUiState.Disponible -> {
                     val pronostico = state.pronostico
                     val uriHandler = LocalUriHandler.current
+                    // Del idioma de la app (observable), no de Locale.getDefault().
+                    val locale = LocalConfiguration.current.locales[0]
                     Text(
                         text = stringResource(
                             R.string.pronostico_visita_condicion,
                             stringResource(descripcionClimaRes(pronostico.codigoClima)),
-                            String.format(java.util.Locale.getDefault(), "%.0f °C", pronostico.temperaturaCelsius),
+                            String.format(locale, "%.0f °C", pronostico.temperaturaCelsius),
                             formatHora(LocalContext.current, pronostico.hora)
                         ),
                         style = MaterialTheme.typography.bodyLarge,
@@ -566,7 +608,7 @@ private fun PronosticoVisitaCard(
                                 icon = { Icon(Icons.Default.Air, contentDescription = null) },
                                 text = stringResource(
                                     R.string.pronostico_visita_viento,
-                                    String.format(java.util.Locale.getDefault(), "%.0f", viento)
+                                    String.format(locale, "%.0f", viento)
                                 )
                             )
                         }
@@ -632,15 +674,14 @@ private fun PronosticoVisitaCardPreview() {
     )
 }
 
-/** Aviso de la sección cuando fallan los relevamientos (también en la obra pública). */
+/** Error de la sección cuando fallan los relevamientos (también en la obra pública). */
 @Composable
-internal fun RelevamientosErrorMensaje(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(R.string.obra_relevamientos_error),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.error,
-        modifier = modifier
-    )
+internal fun RelevamientosErrorMensaje(
+    error: DomainError,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ErrorCarga(error = error, onRetry = onRetry, modifier = modifier, compact = true)
 }
 
 /** Historial completo de relevamientos, del más nuevo al más viejo. */
@@ -649,11 +690,12 @@ private fun RelevamientosTab(
     state: ObraDetailUiState,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val puedeCrear = state.isEditable && !state.isDeleting
-    if (state.relevamientosError) {
-        RelevamientosErrorMensaje(modifier.padding(24.dp))
+    if (state.relevamientosError != null) {
+        RelevamientosErrorMensaje(state.relevamientosError, onRetry, modifier)
         return
     }
     if (state.relevamientos.isEmpty()) {

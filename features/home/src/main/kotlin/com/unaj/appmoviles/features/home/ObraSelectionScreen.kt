@@ -21,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.home.R
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,6 +29,7 @@ import com.unaj.appmoviles.features.obras.list.ObrasListViewModel
 import com.unaj.appmoviles.features.obras.list.components.ObraCard
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -44,7 +44,8 @@ fun ObraSelectionRoute(
     ObraSelectionScreen(
         state = state,
         onObraSelected = onObraSelected,
-        onBack = onBack
+        onBack = onBack,
+        onRetry = viewModel::reintentar
     )
 }
 
@@ -54,6 +55,7 @@ fun ObraSelectionScreen(
     state: ObrasListUiState,
     onObraSelected: (Obra) -> Unit,
     onBack: () -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -87,11 +89,14 @@ fun ObraSelectionScreen(
                 text = stringResource(R.string.obra_seleccion_instruccion),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            val error = state.error
             if (state.isLoading) {
                 LoadingContent(Modifier.weight(1f))
+            } else if (error != null) {
+                ErrorCarga(error = error, onRetry = onRetry, modifier = Modifier.weight(1f))
             } else if (state.obras.isEmpty()) {
                 Text(
                     text = stringResource(R.string.obra_seleccion_vacia),

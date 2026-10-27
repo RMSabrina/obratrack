@@ -84,7 +84,7 @@
     </plurals>
     <string name="tarea_vinculados_titulo">Rilievi collegati (%1$d)</string>
     <string name="tarea_vinculados_vacio">Nessun rilievo è collegato a questa attività.</string>
-    <string name="tarea_vinculados_error">Impossibile caricare i rilievi collegati. Riapri l\'attività per riprovare.</string>
+    <string name="tarea_vinculados_error">Impossibile caricare i rilievi collegati. Controlla la connessione.</string>
 
     <!-- Project details: tabs -->
     <string name="obra_seccion_resumen">Riepilogo</string>
@@ -96,7 +96,6 @@
     <string name="obra_relevamiento_nuevo">Nuovo rilievo</string>
     <string name="obra_relevamientos_vacio">Ancora nessun rilievo.</string>
     <string name="obra_relevamientos_ver_todos">Vedi tutti (%1$d)</string>
-    <string name="obra_relevamientos_error">Impossibile caricare i rilievi. Riapri il cantiere per riprovare.</string>
     <string name="obra_relevamientos_vacio_titulo">Ancora nessun rilievo</string>
     <string name="obra_relevamientos_vacio_descripcion">Questo cantiere non ha rilievi registrati.</string>
     <string name="obra_relevamientos_agregar_primero">Aggiungi il primo</string>
@@ -202,7 +201,7 @@
 
     <!-- Diálogos de borrado y cuerpo de los detalles -->
     <string name="obra_eliminar_titulo">Elimina cantiere</string>
-    <string name="obra_eliminar_confirmacion">Eliminare il cantiere con tutti i suoi rilievi, attività e iscritti? Questa azione non può essere annullata.</string>
+    <string name="obra_eliminar_confirmacion">Eliminare «%1$s»? Verranno eliminati i suoi rilievi, attività e iscritti. Le foto già caricate non vengono rimosse dal server. L\'azione non può essere annullata.</string>
     <string name="obra_eliminar">Elimina cantiere</string>
     <string name="obra_no_encontrada">Non abbiamo trovato questo cantiere</string>
     <string name="obra_publica_no_encontrada">Non abbiamo trovato questo cantiere, oppure non è più pubblico.</string>
@@ -302,4 +301,34 @@
     <string name="relevamiento_detalle_proxima_hora">Prossimo sopralluogo previsto: %1$s alle %2$s</string>
     <string name="obra_proxima_visita_fecha_hora">Prossimo sopralluogo: %1$s alle %2$s</string>
     <string name="obra_proxima_visita_atrasada_hora">Prossimo sopralluogo: %1$s alle %2$s (in ritardo)</string>
+    <string name="pdf_generando">Generazione del PDF…</string>
+    <string name="obras_ubicacion_cancelada">Acquisizione della posizione annullata.</string>
+    <string name="relevamiento_tarea_repetida">%1$s (n. %2$d · %3$s)</string>
+    <string name="relevamiento_tarea_sin_fechas">senza date</string>
+    <string name="obras_cerrar_sesion_titulo">Uscire?</string>
+    <string name="obras_cerrar_sesion_mensaje">Uscirai dal tuo account su questo dispositivo.</string>
+    <string name="pronostico_visita_titulo">Meteo per il sopralluogo</string>
+    <string name="pronostico_visita_cargando">Controllo le previsioni per questa posizione…</string>
+    <string name="pronostico_visita_sin_ubicacion">Aggiungi la posizione del cantiere per vedere le previsioni.</string>
+    <string name="pronostico_visita_fuera_rango">Le previsioni sono disponibili fino a 15 giorni.</string>
+    <string name="pronostico_visita_sin_datos">Impossibile caricare le previsioni. Controlla la connessione e riprova più tardi.</string>
+    <string name="pronostico_visita_reintentar">Riprova</string>
+    <string name="pronostico_visita_condicion">%1$s · %2$s intorno alle %3$s</string>
+    <string name="pronostico_visita_lluvia">Pioggia %1$d%%</string>
+    <string name="pronostico_visita_viento">Vento %1$s km/h</string>
+    <string name="pronostico_visita_atribucion">Meteo di Open-Meteo · stima oraria; le condizioni possono cambiare.</string>
+    <string name="pronostico_clima_despejado">Sereno</string>
+    <string name="pronostico_clima_mayormente_despejado">Prevalentemente sereno</string>
+    <string name="pronostico_clima_parcialmente_nublado">Parzialmente nuvoloso</string>
+    <string name="pronostico_clima_nublado">Coperto</string>
+    <string name="pronostico_clima_niebla">Nebbia</string>
+    <string name="pronostico_clima_llovizna">Pioggerella</string>
+    <string name="pronostico_clima_llovizna_engelante">Pioggerella gelata</string>
+    <string name="pronostico_clima_lluvia">Pioggia</string>
+    <string name="pronostico_clima_lluvia_engelante">Pioggia gelata</string>
+    <string name="pronostico_clima_nieve">Neve</string>
+    <string name="pronostico_clima_chaparrones">Rovesci</string>
+    <string name="pronostico_clima_nevadas">Rovesci di neve</string>
+    <string name="pronostico_clima_tormenta">Temporale</string>
+    <string name="pronostico_clima_variable">Condizioni variabili</string>
 </resources>

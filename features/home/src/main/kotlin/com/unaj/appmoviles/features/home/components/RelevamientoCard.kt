@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,9 +32,20 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.unaj.appmoviles.features.home.RelevamientoReciente
 import com.unaj.appmoviles.home.R
-import java.text.SimpleDateFormat
-import java.util.Date
+import androidx.compose.ui.platform.LocalConfiguration
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toFechaCalendario
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
+
+/**
+ * La fecha del relevamiento es de calendario (medianoche UTC): se lee en UTC, sin pasar a la
+ * zona local, y se muestra en el idioma elegido. No tiene hora propia (`horaVisita` es la de la
+ * próxima visita), así que no se muestra hora.
+ */
+internal fun formatFechaRelevamiento(fechaMillis: Long, locale: Locale): String =
+    fechaMillis.toFechaCalendario()
+        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
 
 @Composable
 fun RelevamientoCard(
@@ -48,7 +58,7 @@ fun RelevamientoCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -89,19 +99,19 @@ fun RelevamientoCard(
                     text = reciente.obraNombre ?: stringResource(R.string.home_obra_desconocida),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                val sdf = SimpleDateFormat("dd MMM. yyyy - HH:mm", Locale("es", "AR"))
-                val dateString = sdf.format(Date(reciente.relevamiento.fecha))
+                val locale = LocalConfiguration.current.locales[0]
+                val dateString = formatFechaRelevamiento(reciente.relevamiento.fecha, locale)
                 
                 Text(
                     text = dateString,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 if (reciente.relevamiento.nota.isNotBlank()) {
@@ -109,7 +119,7 @@ fun RelevamientoCard(
                     Text(
                         text = reciente.relevamiento.nota,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.DarkGray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -119,7 +129,7 @@ fun RelevamientoCard(
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = stringResource(R.string.ver),
-                tint = Color.Gray
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

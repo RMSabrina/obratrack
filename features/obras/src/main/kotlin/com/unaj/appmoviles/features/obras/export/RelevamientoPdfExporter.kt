@@ -1,6 +1,7 @@
 package com.unaj.appmoviles.features.obras.export
 
 import android.content.Context
+import android.util.Log
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -20,6 +21,7 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.features.obras.formatFechaHora
 import com.unaj.appmoviles.features.obras.labelRes
 import com.unaj.appmoviles.features.obras.tareas.labelRes
 import com.unaj.appmoviles.obras.R
@@ -32,11 +34,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDateTime
 import java.util.Locale
 
 object RelevamientoPdfExporter {
+
+    private const val TAG = "RelevamientoPdfExporter"
 
     private val primaryNavy = Color.parseColor("#1B365D")
     private val accentAmber = Color.parseColor("#E65100")
@@ -199,7 +202,7 @@ object RelevamientoPdfExporter {
             val authority = "${context.packageName}.fileprovider"
             return FileProvider.getUriForFile(context, authority, file)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "No se pudo generar el PDF", e)
             return null
         } finally {
             pdfDocument?.close()
@@ -405,7 +408,7 @@ object RelevamientoPdfExporter {
             val authority = "${context.packageName}.fileprovider"
             return FileProvider.getUriForFile(context, authority, file)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "No se pudo generar el PDF", e)
             return null
         } finally {
             pdfDocument?.close()
@@ -443,7 +446,7 @@ object RelevamientoPdfExporter {
         canvas.drawText("ObraTrack", PADDING + 48f, y + 26f, brandPaint)
 
         // Fecha de emisión alineada a la derecha
-        val fechaEmision = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+        val fechaEmision = formatFechaHora(context, LocalDateTime.now())
         val datePaint = TextPaint().apply {
             color = textMuted
             textSize = 10f
@@ -1045,7 +1048,9 @@ object RelevamientoPdfExporter {
                     if (bmp != null) return bmp
                 }
             }
-        } catch (_: Exception) { }
+        } catch (e: Exception) {
+            Log.w(TAG, "No se pudo leer la imagen del archivo; se prueba con Coil", e)
+        }
 
         // 2. Ejecución con Coil (URLs remotas, Cloudinary, Firebase, content:// URIs)
         return try {
@@ -1063,7 +1068,8 @@ object RelevamientoPdfExporter {
             } else {
                 null
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "No se pudo cargar la imagen para el PDF", e)
             null
         }
     }

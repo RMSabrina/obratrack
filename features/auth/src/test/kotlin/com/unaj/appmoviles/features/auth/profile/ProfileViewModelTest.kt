@@ -9,6 +9,8 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Credentials
 import com.unaj.appmoviles.obratrack.core.domain.model.User
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.ThemePreferencesRepository
+import com.unaj.appmoviles.obratrack.core.domain.model.ModoTema
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ChangePasswordUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.DeleteAccountUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
@@ -36,6 +38,7 @@ class ProfileViewModelTest {
     private val authRepo = FakeAuthRepoForProfile()
     private val languageRepo = FakeLanguageRepo()
     private val avisoRepo = FakeAvisoRepo()
+    private val temaRepo = FakeThemeRepo()
 
     @Before
     fun setUp() {
@@ -54,7 +57,8 @@ class ProfileViewModelTest {
         DeleteAccountUseCase(authRepo),
         ReauthenticateUseCase(authRepo),
         languageRepo,
-        avisoRepo
+        avisoRepo,
+        temaRepo
     )
 
     @Test
@@ -109,6 +113,25 @@ class ProfileViewModelTest {
         assertEquals(AppLanguage.ENGLISH, languageRepo.getLanguage())
         assertEquals(AppLanguage.ENGLISH, viewModel.uiState.value.selectedLanguage)
     }
+
+    @Test
+    fun onTemaChange_guardaYMuestraElModoElegido() = runTest(testDispatcher) {
+        val viewModel = crearViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+        assertEquals(ModoTema.SISTEMA, viewModel.uiState.value.selectedTema)
+
+        viewModel.onTemaChange(ModoTema.OSCURO)
+        advanceUntilIdle()
+
+        assertEquals(ModoTema.OSCURO, temaRepo.getModo())
+        assertEquals(ModoTema.OSCURO, viewModel.uiState.value.selectedTema)
+
+        viewModel.onTemaChange(ModoTema.SISTEMA)
+        advanceUntilIdle()
+
+        assertEquals(ModoTema.SISTEMA, viewModel.uiState.value.selectedTema)
+    }
 }
 
 private class FakeLanguageRepo : LanguagePreferencesRepository {
@@ -142,5 +165,14 @@ private class FakeAvisoRepo : AvisoPreferencesRepository {
     override fun getAnticipacion(): AnticipacionAviso = anticipacion.value
     override suspend fun setAnticipacion(anticipacion: AnticipacionAviso) {
         this.anticipacion.value = anticipacion
+    }
+}
+
+private class FakeThemeRepo : ThemePreferencesRepository {
+    private val modo = MutableStateFlow(ModoTema.SISTEMA)
+    override fun observeModo(): Flow<ModoTema> = modo
+    override fun getModo(): ModoTema = modo.value
+    override suspend fun setModo(modo: ModoTema) {
+        this.modo.value = modo
     }
 }

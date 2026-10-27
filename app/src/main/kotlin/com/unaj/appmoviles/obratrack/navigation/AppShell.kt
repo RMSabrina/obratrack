@@ -5,8 +5,20 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,20 +45,16 @@ import com.unaj.appmoviles.features.home.ObraSelectionRoute
 import com.unaj.appmoviles.features.home.agenda.AgendaRoute
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.features.obras.toStorageValue
-import com.unaj.appmoviles.obratrack.notification.NotificationHelper
-import com.unaj.appmoviles.obratrack.worker.RelevamientoReminderWorker
 
 @Composable
-fun AppShell(onLogout: () -> Unit) {
+fun AppShell(
+    onLogout: () -> Unit,
+    /** Obra que pidió abrir una notificación; null si no hay nada pendiente. */
+    obraAAbrir: String? = null,
+    onObraAbierta: () -> Unit = {}
+) {
     val backStack = rememberNavBackStack(HomeDestination)
     val appContext = LocalContext.current
-
-    val notifPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { _ ->
-        NotificationHelper.showDemoNotification(appContext)
-        RelevamientoReminderWorker.triggerImmediateDemo(appContext)
-    }
 
     // Android 13+: sin este permiso los avisos de visita no se muestran.
     val avisosPermissionLauncher = rememberLauncherForActivityResult(
@@ -71,9 +79,7 @@ fun AppShell(onLogout: () -> Unit) {
     }
 
     fun navigateTo(destination: NavKey) {
-        if (backStack.lastOrNull() != destination) {
-            backStack.add(destination)
-        }
+        backStack.navegarA(destination)
     }
 
     fun popToHome() {
@@ -86,7 +92,39 @@ fun AppShell(onLogout: () -> Unit) {
         }
     }
 
+    // Se apila el detalle sin vaciar el back stack (no se pierde un formulario abierto); con la
+    // app cerrada queda [Home, ObraDetail]. Navegar y consumir van juntos, sin suspender entre
+    // ambos: cada intent navega una sola vez. Si arriba ya está esa obra, navigateTo no hace nada.
+    LaunchedEffect(obraAAbrir) {
+        val obraId = obraAAbrir ?: return@LaunchedEffect
+        navigateTo(ObraDetailDestination(obraId))
+        onObraAbierta()
+    }
+
+    // La barra se define una sola vez, aquí: se ve en las pantallas de nivel superior y se oculta en el resto.
+    val actual = backStack.lastOrNull()
+    val conBarra = actual?.esDeNivelSuperior() == true
+    // Pestaña que se marca; se recuerda para que no cambie mientras la barra se oculta con animación.
+    var pestanaMarcada by remember { mutableStateOf<NavKey>(HomeDestination) }
+    if (actual != null && conBarra) pestanaMarcada = actual
+
+    Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        bottomBar = {
+            AnimatedVisibility(
+                visible = conBarra,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                BarraInferior(
+                    seleccionado = pestanaMarcada,
+                    onSeleccionar = { backStack.cambiarDePestana(it) }
+                )
+            }
+        }
+    ) { innerPadding ->
     NavDisplay(
+        modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding),
         backStack = backStack,
         onBack = ::goBack,
         entryDecorators = listOf(
@@ -100,7 +138,6 @@ fun AppShell(onLogout: () -> Unit) {
                     onNavigateToAgenda = { navigateTo(AgendaDestination) },
                     onNavigateToObraSelection = { navigateTo(ObraSelectionDestination) },
                     onNavigateToObrasPublicas = { navigateTo(ObrasPublicasDestination) },
-                    onNavigateToProfile = { navigateTo(ProfileDestination) },
                     onIniciarRelevamientoParaObra = { obraId ->
                         navigateTo(RelevamientoFormDestination(obraId = obraId))
                     },
@@ -111,34 +148,12 @@ fun AppShell(onLogout: () -> Unit) {
                                 relevamientoId = relevamiento.id
                             )
                         )
-                    },
-                    onTriggerDemoNotification = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                                NotificationHelper.showDemoNotification(appContext)
-                                RelevamientoReminderWorker.triggerImmediateDemo(appContext)
-                            } else {
-                                notifPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            }
-                        } else {
-                            NotificationHelper.showDemoNotification(appContext)
-                            RelevamientoReminderWorker.triggerImmediateDemo(appContext)
-                        }
                     }
                 )
             }
             entry<AgendaDestination> {
                 AgendaRoute(
                     onBack = ::popToHome,
-                    onNavigateToHome = ::popToHome,
-                    onNavigateToObras = {
-                        popToHome()
-                        navigateTo(ObrasDestination)
-                    },
-                    onNavigateToProfile = {
-                        popToHome()
-                        navigateTo(ProfileDestination)
-                    },
                     onOpenObra = { obraId ->
                         navigateTo(ObraDetailDestination(obraId))
                     },
@@ -172,7 +187,7 @@ fun AppShell(onLogout: () -> Unit) {
             }
             entry<ObrasPublicasDestination> {
                 ObrasPublicasListRoute(
-                    onOpen = { obra -> backStack.add(ObraPublicaDetailDestination(obra.id)) },
+                    onOpen = { obra -> navigateTo(ObraPublicaDetailDestination(obra.id)) },
                     onBack = ::goBack
                 )
             }
@@ -181,7 +196,7 @@ fun AppShell(onLogout: () -> Unit) {
                     obraId = destination.obraId,
                     onBack = ::goBack,
                     onOpenRelevamiento = { relevamiento ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoDetailDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamiento.id
@@ -200,7 +215,7 @@ fun AppShell(onLogout: () -> Unit) {
                         }
                     },
                     onEditObra = { obra ->
-                        backStack.add(
+                        navigateTo(
                             ObraFormDestination(
                                 obraId = obra.id,
                                 nombre = obra.nombre,
@@ -216,10 +231,10 @@ fun AppShell(onLogout: () -> Unit) {
                         )
                     },
                     onCreateRelevamiento = {
-                        backStack.add(RelevamientoFormDestination(obraId = destination.obraId))
+                        navigateTo(RelevamientoFormDestination(obraId = destination.obraId))
                     },
                     onOpenRelevamiento = { relevamiento ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoDetailDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamiento.id
@@ -227,10 +242,10 @@ fun AppShell(onLogout: () -> Unit) {
                         )
                     },
                     onCreateTarea = {
-                        backStack.add(TareaFormDestination(obraId = destination.obraId))
+                        navigateTo(TareaFormDestination(obraId = destination.obraId))
                     },
                     onOpenTarea = { tareaId ->
-                        backStack.add(TareaDetailDestination(obraId = destination.obraId, tareaId = tareaId))
+                        navigateTo(TareaDetailDestination(obraId = destination.obraId, tareaId = tareaId))
                     }
                 )
             }
@@ -241,12 +256,12 @@ fun AppShell(onLogout: () -> Unit) {
                     onBack = ::goBack,
                     onDeleteSuccess = ::goBack,
                     onEditTarea = {
-                        backStack.add(
+                        navigateTo(
                             TareaFormDestination(obraId = destination.obraId, tareaId = destination.tareaId)
                         )
                     },
                     onOpenRelevamiento = { relevamientoId ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoDetailDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamientoId
@@ -254,7 +269,7 @@ fun AppShell(onLogout: () -> Unit) {
                         )
                     },
                     onCreateRelevamiento = {
-                        backStack.add(
+                        navigateTo(
                             RelevamientoFormDestination(
                                 obraId = destination.obraId,
                                 tareaId = destination.tareaId
@@ -302,7 +317,7 @@ fun AppShell(onLogout: () -> Unit) {
                     onBack = ::goBack,
                     onDeleteSuccess = ::goBack,
                     onEditRelevamiento = { relevamiento ->
-                        backStack.add(
+                        navigateTo(
                             RelevamientoFormDestination(
                                 obraId = destination.obraId,
                                 relevamientoId = relevamiento.id,
@@ -339,4 +354,5 @@ fun AppShell(onLogout: () -> Unit) {
             }
         }
     )
+    }
 }

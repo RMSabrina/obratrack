@@ -24,6 +24,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -213,5 +214,22 @@ class CronogramaViewModelTest {
         assertFalse(state.isLoading)
         assertEquals(TareaError.Desconocido, state.error)
         assertNull(state.cronograma)
+    }
+
+    @Test
+    fun reintentar_despuesDelErrorVuelveACalcularElCronograma() = runTest {
+        val repo = FakeTareaRepository().apply { observeError = IllegalStateException("UNAVAILABLE") }
+        val viewModel = crearViewModel(tareaRepo = repo)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(TareaError.Desconocido, viewModel.uiState.value.error)
+
+        repo.observeError = null
+        viewModel.reintentar()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.error)
+        assertFalse(state.isLoading)
+        assertNotNull(state.cronograma)
     }
 }

@@ -2,11 +2,13 @@ package com.unaj.appmoviles.obratrack.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.util.Log
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -17,6 +19,7 @@ import java.util.Locale
 
 object NotificationHelper {
 
+    private const val TAG = "NotificationHelper"
     const val CHANNEL_ID = "obratrack_reminders"
 
     /** Contexto con el idioma elegido en la app; el de una notificación no lo recibe de ninguna Activity. */
@@ -45,10 +48,19 @@ object NotificationHelper {
         context: Context,
         notificationId: Int,
         title: String,
-        message: String
+        message: String,
+        /** Si viene, tocar la notificación abre el detalle de esa obra. */
+        obraId: String? = null
     ) {
+        // Sin CLEAR_TASK: si la app está abierta, vuelve a la pantalla donde estaba
+        // (con CLEAR_TASK se recreaba la Activity y se perdía, por ejemplo, un formulario a medio cargar).
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            // Solo el id, en el dato: además del request code, distingue el PendingIntent de cada obra.
+            if (esObraIdValido(obraId)) {
+                action = ACTION_ABRIR_OBRA
+                data = Uri.parse(uriObra(obraId!!))
+            }
         }
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
             context,
@@ -59,7 +71,8 @@ object NotificationHelper {
 
         val largeIcon = try {
             BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "No se pudo cargar el ícono de la notificación", e)
             null
         }
 
@@ -77,8 +90,9 @@ object NotificationHelper {
 
         try {
             NotificationManagerCompat.from(context).notify(notificationId, builder.build())
-        } catch (_: SecurityException) {
-            // Ignorado si el usuario no autorizó POST_NOTIFICATIONS en Android 13+
+        } catch (e: SecurityException) {
+            // Sin POST_NOTIFICATIONS en Android 13+ no se puede avisar; queda en el log.
+            Log.w(TAG, "Sin permiso para mostrar notificaciones", e)
         }
     }
 

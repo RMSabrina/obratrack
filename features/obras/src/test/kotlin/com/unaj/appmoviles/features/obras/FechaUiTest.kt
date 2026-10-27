@@ -5,6 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.Instant
 import java.time.LocalDate
+import java.util.Locale
 import java.util.TimeZone
 
 class FechaUiTest {
@@ -58,8 +59,35 @@ class FechaUiTest {
         }
     }
 
+    private val es = Locale.forLanguageTag("es")
+    private val en = Locale.ENGLISH
+    private val it = Locale.ITALIAN
+
     @Test
-    fun formatFecha_localDate_usaDiaMesAnio() {
-        assertEquals("05/01/2026", formatFecha(LocalDate.of(2026, 1, 5)))
+    fun formatFecha_localDate_usaMesesDelIdioma() {
+        val fecha = LocalDate.of(2026, 1, 5)
+
+        assertEquals("5 ene 2026", formatFecha(fecha, es))
+        assertEquals("Jan 5, 2026", formatFecha(fecha, en))
+        assertEquals("5 gen 2026", formatFecha(fecha, it))
+    }
+
+    @Test
+    fun formatFecha_millisUtc_leeElDiaEnUtcYUsaElIdioma() {
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Argentina/Buenos_Aires"))
+        val millis = Instant.parse("2026-10-26T00:00:00Z").toEpochMilli()
+
+        assertEquals("26 oct 2026", formatFecha(millis, es))
+        assertEquals("Oct 26, 2026", formatFecha(millis, en))
+        assertEquals("26 ott 2026", formatFecha(millis, it))
+    }
+
+    @Test
+    fun formatDiaMes_respetaIdiomaYOrden() {
+        val fecha = LocalDate.of(2026, 10, 26)
+
+        assertEquals("26 oct", formatDiaMes(fecha, es))
+        assertEquals("Oct 26", formatDiaMes(fecha, en))
+        assertEquals("26 ott", formatDiaMes(fecha, it))
     }
 }

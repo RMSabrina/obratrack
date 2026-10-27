@@ -45,7 +45,9 @@ data class AgendaUiState(
     val obraParaReprogramar: Obra? = null,
     val isUpdating: Boolean = false,
     val error: DomainError? = null,
-    val mensajeFeedback: FeedbackAgenda? = null
+    val mensajeFeedback: FeedbackAgenda? = null,
+    /** Hoy como fecha de calendario (medianoche UTC): la fecha inicial del selector de la visita. */
+    val hoyMillis: Long = 0L
 ) {
     val itemsFiltrados: List<ItemAgendaVisita>
         get() = when (filtro) {

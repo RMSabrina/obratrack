@@ -47,6 +47,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.RadioButton
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.semantics.Role
+import com.unaj.appmoviles.obratrack.core.domain.model.ModoTema
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -84,6 +92,7 @@ fun ProfileScreen(
     onClearMessage: () -> Unit,
     onClearError: () -> Unit,
     onLanguageChange: (AppLanguage) -> Unit,
+    onTemaChange: (ModoTema) -> Unit,
     onAnticipacionChange: (AnticipacionAviso) -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit,
@@ -93,6 +102,7 @@ fun ProfileScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val user = state.user
+    var showTemaDialog by rememberSaveable { mutableStateOf(false) }
 
     val errorMessage = state.error?.asMessage()
     val successMessage = state.successMessage?.let { stringResource(it) }
@@ -109,6 +119,41 @@ fun ProfileScreen(
             snackbarHostState.showSnackbar(successMessage)
             onClearMessage()
         }
+    }
+
+    if (showTemaDialog) {
+        AlertDialog(
+            onDismissRequest = { showTemaDialog = false },
+            title = { Text(stringResource(R.string.auth_tema_titulo)) },
+            text = {
+                Column(modifier = Modifier.selectableGroup()) {
+                    ModoTema.entries.forEach { opcion ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = state.selectedTema == opcion,
+                                    onClick = {
+                                        onTemaChange(opcion)
+                                        showTemaDialog = false
+                                    },
+                                    role = Role.RadioButton
+                                )
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = state.selectedTema == opcion, onClick = null)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(stringResource(opcion.labelRes()))
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showTemaDialog = false }) { Text(stringResource(R.string.auth_cancelar)) }
+            }
+        )
     }
 
     Scaffold(
@@ -205,6 +250,44 @@ fun ProfileScreen(
                                 modifier = Modifier.weight(1f)
                             )
                         }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Tema: una fila que abre un diálogo con las tres opciones
+                Card(
+                    onClick = { showTemaDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.auth_tema_titulo),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = stringResource(state.selectedTema.labelRes()),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
@@ -515,4 +598,10 @@ private fun AnticipacionAviso.labelRes(): Int = when (this) {
     AnticipacionAviso.MIN_15 -> R.string.auth_aviso_15_min
     AnticipacionAviso.HORA_1 -> R.string.auth_aviso_1_hora
     AnticipacionAviso.DIA_1 -> R.string.auth_aviso_1_dia
+}
+
+private fun ModoTema.labelRes(): Int = when (this) {
+    ModoTema.SISTEMA -> R.string.auth_tema_sistema
+    ModoTema.CLARO -> R.string.auth_tema_claro
+    ModoTema.OSCURO -> R.string.auth_tema_oscuro
 }

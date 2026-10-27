@@ -63,7 +63,8 @@ class RelevamientoReminderWorker @AssistedInject constructor(
                         applicationContext,
                         obra.id.hashCode(),
                         applicationContext.getString(R.string.notif_visita_atrasada_titulo, obra.nombre),
-                        applicationContext.getString(R.string.notif_visita_atrasada_mensaje, obra.cliente)
+                        applicationContext.getString(R.string.notif_visita_atrasada_mensaje, obra.cliente),
+                        obraId = obra.id
                     )
                     notifiedCount++
                     continue
@@ -86,7 +87,8 @@ class RelevamientoReminderWorker @AssistedInject constructor(
                         applicationContext,
                         obra.id.hashCode() + 1,
                         title,
-                        msg
+                        msg,
+                        obraId = obra.id
                     )
                     notifiedCount++
                 }

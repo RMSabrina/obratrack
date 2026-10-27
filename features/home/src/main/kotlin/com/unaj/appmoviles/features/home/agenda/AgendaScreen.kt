@@ -1,9 +1,11 @@
 package com.unaj.appmoviles.features.home.agenda
 
 import androidx.activity.compose.BackHandler
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -26,18 +28,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Business
-import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.DirectionsCar
 import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.HORA_VISITA_POR_DEFECTO_MINUTOS
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -49,9 +55,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -83,6 +86,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.ItemAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,16 +94,14 @@ import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 fun AgendaScreen(
     state: AgendaUiState,
     onBack: () -> Unit,
-    onNavigateToHome: () -> Unit,
-    onNavigateToObras: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onOpenObra: (String) -> Unit,
     onIniciarRelevamiento: (String) -> Unit,
     onFiltroChanged: (FiltroAgenda) -> Unit,
     onIniciarReprogramacion: (Obra) -> Unit,
     onCancelarReprogramacion: () -> Unit,
-    onConfirmarReprogramacion: (Obra, Long?) -> Unit,
+    onConfirmarReprogramacion: (Obra, Long?, Int?) -> Unit,
     onClearFeedbackMessage: () -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     BackHandler(onBack = onBack)
@@ -116,41 +118,14 @@ fun AgendaScreen(
         }
     }
 
-    if (state.obraParaReprogramar != null) {
-        val obra = state.obraParaReprogramar
-        val pickerState = rememberDatePickerState(
-            initialSelectedDateMillis = obra.proximaVisita ?: System.currentTimeMillis()
+    state.obraParaReprogramar?.let { obra ->
+        DialogReprogramar(
+            obra = obra,
+            guardando = state.isUpdating,
+            hoyMillis = state.hoyMillis,
+            onCancelar = onCancelarReprogramacion,
+            onConfirmar = onConfirmarReprogramacion
         )
-        DatePickerDialog(
-            onDismissRequest = onCancelarReprogramacion,
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onConfirmarReprogramacion(obra, pickerState.selectedDateMillis)
-                    }
-                ) {
-                    Text(stringResource(R.string.agenda_guardar_fecha))
-                }
-            },
-            dismissButton = {
-                Row {
-                    if (obra.proximaVisita != null) {
-                        TextButton(
-                            onClick = {
-                                onConfirmarReprogramacion(obra, null)
-                            }
-                        ) {
-                            Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                    TextButton(onClick = onCancelarReprogramacion) {
-                        Text(stringResource(R.string.cancelar))
-                    }
-                }
-            }
-        ) {
-            DatePicker(state = pickerState)
-        }
     }
 
     Scaffold(
@@ -182,17 +157,12 @@ fun AgendaScreen(
                     }
                 }
             )
-        },
-        bottomBar = {
-            AgendaBottomNavigation(
-                onNavigateToHome = onNavigateToHome,
-                onNavigateToObras = onNavigateToObras,
-                onNavigateToProfile = onNavigateToProfile
-            )
         }
     ) { padding ->
         if (state.isLoading) {
             LoadingContent(Modifier.padding(padding).fillMaxSize())
+        } else if (state.error != null) {
+            ErrorCarga(error = state.error, onRetry = onRetry, modifier = Modifier.padding(padding))
         } else {
             LazyColumn(
                 modifier = Modifier
@@ -410,6 +380,12 @@ fun AgendaVisitaCard(
         CategoriaAgendaVisita.SIN_PROGRAMAR -> MaterialTheme.colorScheme.tertiary
     }
 
+    // El texto del badge nunca va en secondary ni outline (poco contraste): esos acentos son solo de borde y fondo.
+    val textoAcento = when (item.categoria) {
+        CategoriaAgendaVisita.ESTA_SEMANA, CategoriaAgendaVisita.PROXIMAS -> MaterialTheme.colorScheme.onSurfaceVariant
+        else -> accentColor
+    }
+
     val context = LocalContext.current
     val horaTexto = item.obra.horaVisita?.takeIf { item.fechaProgramadaMillis != null }?.let { formatHora(context, it) }
     val fechaProgramada = item.fechaProgramadaMillis?.let { formatFecha(it) }.orEmpty()
@@ -460,7 +436,7 @@ fun AgendaVisitaCard(
                         text = badgeText,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = accentColor,
+                        color = textoAcento,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -523,13 +499,13 @@ fun AgendaVisitaCard(
                     Icon(
                         imageVector = Icons.Outlined.Schedule,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.outline,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = stringResource(R.string.agenda_ultimo_relevamiento, formatFecha(ultima)),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -602,68 +578,6 @@ fun AgendaVisitaCard(
     }
 }
 
-@Composable
-fun AgendaBottomNavigation(
-    onNavigateToHome: () -> Unit,
-    onNavigateToObras: () -> Unit,
-    onNavigateToProfile: () -> Unit
-) {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.primary
-    ) {
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToHome,
-            icon = { Icon(Icons.Outlined.Home, contentDescription = stringResource(R.string.nav_inicio)) },
-            label = { Text(stringResource(R.string.nav_inicio)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToObras,
-            icon = { Icon(Icons.Outlined.Business, contentDescription = stringResource(R.string.nav_obras)) },
-            label = { Text(stringResource(R.string.nav_obras)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = true,
-            onClick = { },
-            icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = stringResource(R.string.nav_agenda)) },
-            label = { Text(stringResource(R.string.nav_agenda), fontWeight = FontWeight.Bold) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToProfile,
-            icon = { Icon(Icons.Outlined.Person, contentDescription = stringResource(R.string.nav_perfil)) },
-            label = { Text(stringResource(R.string.nav_perfil)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-    }
-}
-
 fun abrirMapa(context: Context, direccion: String, latitud: Double?, longitud: Double?) {
     val uri = if (latitud != null && longitud != null) {
         Uri.parse("geo:$latitud,$longitud?q=$latitud,$longitud(${Uri.encode(direccion.ifBlank { "Obra" })})")
@@ -675,12 +589,124 @@ fun abrirMapa(context: Context, direccion: String, latitud: Double?, longitud: D
     }
     try {
         context.startActivity(mapIntent)
-    } catch (_: Exception) {
+    } catch (e: ActivityNotFoundException) {
+        Log.w("AgendaScreen", "Google Maps no está instalada; se prueba con otra app de mapas", e)
         val fallbackIntent = Intent(Intent.ACTION_VIEW, uri)
         try {
             context.startActivity(fallbackIntent)
-        } catch (_: Exception) {
-            // Manejado silenciosamente si no hay app instalada
+        } catch (e: ActivityNotFoundException) {
+            Log.w("AgendaScreen", "No hay ninguna app que pueda abrir el mapa", e)
+        }
+    }
+}
+
+/** Elegir la fecha y la hora de la próxima visita. La hora que ya tenía la obra se conserva por defecto. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DialogReprogramar(
+    obra: Obra,
+    guardando: Boolean,
+    hoyMillis: Long,
+    onCancelar: () -> Unit,
+    onConfirmar: (Obra, Long?, Int?) -> Unit
+) {
+    val context = LocalContext.current
+    val pickerState = rememberDatePickerState(
+        initialSelectedDateMillis = obra.proximaVisita ?: hoyMillis
+    )
+    var hora by rememberSaveable(obra.id) { mutableStateOf(obra.horaVisita) }
+    var eligiendoHora by rememberSaveable { mutableStateOf(false) }
+    var confirmandoQuitar by rememberSaveable { mutableStateOf(false) }
+
+    if (eligiendoHora) {
+        val inicial = hora ?: HORA_VISITA_POR_DEFECTO_MINUTOS
+        val timeState = rememberTimePickerState(
+            initialHour = inicial / 60,
+            initialMinute = inicial % 60,
+            is24Hour = android.text.format.DateFormat.is24HourFormat(context)
+        )
+        AlertDialog(
+            onDismissRequest = { eligiendoHora = false },
+            title = { Text(stringResource(R.string.agenda_hora_visita_titulo)) },
+            text = { TimePicker(state = timeState) },
+            confirmButton = {
+                TextButton(onClick = {
+                    hora = timeState.hour * 60 + timeState.minute
+                    eligiendoHora = false
+                }) { Text(stringResource(R.string.aceptar)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { eligiendoHora = false }) { Text(stringResource(R.string.cancelar)) }
+            }
+        )
+    }
+
+    if (confirmandoQuitar) {
+        AlertDialog(
+            onDismissRequest = { confirmandoQuitar = false },
+            title = { Text(stringResource(R.string.agenda_quitar_confirmar_titulo)) },
+            text = { Text(stringResource(R.string.agenda_quitar_confirmar_mensaje, obra.nombre)) },
+            confirmButton = {
+                TextButton(
+                    enabled = !guardando,
+                    onClick = {
+                        confirmandoQuitar = false
+                        onConfirmar(obra, null, null)
+                    }
+                ) { Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmandoQuitar = false }) { Text(stringResource(R.string.cancelar)) }
+            }
+        )
+    }
+
+    DatePickerDialog(
+        onDismissRequest = { if (!guardando) onCancelar() },
+        confirmButton = {
+            Button(
+                enabled = !guardando,
+                onClick = { onConfirmar(obra, pickerState.selectedDateMillis, hora) }
+            ) {
+                Text(stringResource(if (guardando) R.string.agenda_guardando else R.string.agenda_guardar_fecha))
+            }
+        },
+        dismissButton = {
+            Row {
+                if (obra.proximaVisita != null) {
+                    TextButton(enabled = !guardando, onClick = { confirmandoQuitar = true }) {
+                        Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                TextButton(enabled = !guardando, onClick = onCancelar) {
+                    Text(stringResource(R.string.cancelar))
+                }
+            }
+        }
+    ) {
+        Column {
+            DatePicker(state = pickerState)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = hora?.let { stringResource(R.string.agenda_hora_actual, formatHora(context, it)) }
+                        ?: stringResource(R.string.agenda_sin_hora),
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(enabled = !guardando, onClick = { eligiendoHora = true }) {
+                    Text(stringResource(if (hora == null) R.string.agenda_elegir_hora else R.string.agenda_cambiar_hora))
+                }
+                if (hora != null) {
+                    TextButton(enabled = !guardando, onClick = { hora = null }) {
+                        Text(stringResource(R.string.agenda_quitar_hora))
+                    }
+                }
+            }
         }
     }
 }

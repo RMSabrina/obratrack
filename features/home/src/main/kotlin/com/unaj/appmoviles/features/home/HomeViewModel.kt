@@ -3,6 +3,7 @@ package com.unaj.appmoviles.features.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.unaj.appmoviles.obratrack.core.domain.error.aErrorDeLectura
 import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveAgendaVisitasUseCase
@@ -10,13 +11,16 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCa
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveAllRelevamientosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,22 +31,19 @@ class HomeViewModel @Inject constructor(
     private val observeAgendaVisitasUseCase: ObserveAgendaVisitasUseCase
 ) : ViewModel() {
 
+    /** Cada incremento vuelve a leer todo; solo lo hace el botón "Reintentar". */
+    private val reintentos = MutableStateFlow(0)
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<HomeUiState> = observeSessionUseCase()
+    val uiState: StateFlow<HomeUiState> = combine(observeSessionUseCase(), reintentos) { user, _ -> user }
         .flatMapLatest { user ->
             if (user == null) {
                 flowOf(HomeUiState(isLoading = false))
             } else {
                 combine(
                     observeObrasUseCase(user.id),
-                    observeAllRelevamientosUseCase(user.id).catch { e ->
-                        Log.e("HomeViewModel", "Fallo al obtener relevamientos", e)
-                        emit(emptyList())
-                    },
-                    observeAgendaVisitasUseCase(user.id).catch { e ->
-                        Log.e("HomeViewModel", "Fallo al obtener agenda de visitas", e)
-                        emit(emptyList())
-                    }
+                    observeAllRelevamientosUseCase(user.id),
+                    observeAgendaVisitasUseCase(user.id)
                 ) { obras, relevamientos, agendaItems ->
                     val recientes = relevamientosRecientes(relevamientos, obras)
 
@@ -62,9 +63,10 @@ class HomeViewModel @Inject constructor(
                         totalVisitasAtrasadas = visitasAtrasadas
                     )
                 }.catch { e ->
-                    Log.e("HomeViewModel", "Error general en Home", e)
-                    emit(HomeUiState(isLoading = false, userName = user.name))
-                }
+                    // Una lectura que falla no se muestra como "sin datos": la pantalla ofrece reintentar.
+                    Log.e("HomeViewModel", "No se pudo cargar el Home", e)
+                    emit(HomeUiState(isLoading = false, userName = user.name, error = e.aErrorDeLectura()))
+                }.onStart { emit(HomeUiState(isLoading = true)) }
             }
         }
         .stateIn(
@@ -72,4 +74,8 @@ class HomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = HomeUiState(isLoading = true)
         )
+
+    fun reintentar() {
+        reintentos.update { it + 1 }
+    }
 }
