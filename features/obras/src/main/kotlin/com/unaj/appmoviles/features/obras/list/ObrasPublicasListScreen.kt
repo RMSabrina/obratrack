@@ -202,7 +202,8 @@ fun ObrasPublicasListScreen(
                                     onClick = { onOpen(obra) },
                                     isFollowing = obra.id in state.suscripciones,
                                     followEnabled = obra.id !in state.suscripcionesPendientes,
-                                    onFollowToggle = { onToggleSubscription(obra.id) }
+                                    onFollowToggle = { onToggleSubscription(obra.id) },
+                                    mostrarVisita = false
                                 )
                             }
                         }

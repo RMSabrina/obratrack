@@ -331,4 +331,7 @@
     <string name="pronostico_clima_nevadas">Snow showers</string>
     <string name="pronostico_clima_tormenta">Thunderstorm</string>
     <string name="pronostico_clima_variable">Variable conditions</string>
+    <string name="obras_card_proxima_visita">Next visit: %1$s</string>
+    <string name="obras_card_sin_visita">No visit scheduled</string>
+    <string name="obras_card_visita_atrasada">Overdue visit: %1$s</string>
 </resources>

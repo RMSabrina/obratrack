@@ -331,4 +331,7 @@
     <string name="pronostico_clima_nevadas">Rovesci di neve</string>
     <string name="pronostico_clima_tormenta">Temporale</string>
     <string name="pronostico_clima_variable">Condizioni variabili</string>
+    <string name="obras_card_proxima_visita">Prossimo sopralluogo: %1$s</string>
+    <string name="obras_card_sin_visita">Nessun sopralluogo programmato</string>
+    <string name="obras_card_visita_atrasada">Sopralluogo in ritardo: %1$s</string>
 </resources>
