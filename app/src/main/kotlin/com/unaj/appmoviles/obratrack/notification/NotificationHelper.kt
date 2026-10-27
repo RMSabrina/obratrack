@@ -47,8 +47,10 @@ object NotificationHelper {
         title: String,
         message: String
     ) {
+        // Sin CLEAR_TASK: si la app está abierta, vuelve a la pantalla donde estaba
+        // (con CLEAR_TASK se recreaba la Activity y se perdía, por ejemplo, un formulario a medio cargar).
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
             context,
