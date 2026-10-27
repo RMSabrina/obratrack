@@ -133,7 +133,6 @@
     <string name="relevamiento_detalle_titulo">Inspection details</string>
     <string name="obras_lista_titulo">My projects</string>
     <string name="obras_publicas_titulo">Explore public projects</string>
-    <string name="obras_cerrar_sesion">Log out</string>
     <string name="obras_nueva_obra">New project</string>
     <string name="obras_editar_obra">Edit project</string>
     <string name="obras_buscar">Search project...</string>
@@ -305,8 +304,6 @@
     <string name="obras_ubicacion_cancelada">Location capture cancelled.</string>
     <string name="relevamiento_tarea_repetida">%1$s (#%2$d · %3$s)</string>
     <string name="relevamiento_tarea_sin_fechas">no dates</string>
-    <string name="obras_cerrar_sesion_titulo">Log out?</string>
-    <string name="obras_cerrar_sesion_mensaje">You will be signed out of your account on this device.</string>
     <string name="pronostico_visita_titulo">Weather for the visit</string>
     <string name="pronostico_visita_cargando">Checking the forecast for this location…</string>
     <string name="pronostico_visita_sin_ubicacion">Add the project location to see the forecast.</string>

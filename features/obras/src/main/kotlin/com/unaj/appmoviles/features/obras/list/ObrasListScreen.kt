@@ -10,19 +10,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +51,6 @@ fun ObrasListRoute(
     viewModel: ObrasListViewModel = hiltViewModel(),
     onCreate: () -> Unit,
     onOpen: (Obra) -> Unit,
-    onLogout: () -> Unit,
     onBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,7 +58,6 @@ fun ObrasListRoute(
         state = state,
         onCreate = onCreate,
         onOpen = onOpen,
-        onLogout = onLogout,
         onBack = onBack,
         onRetry = viewModel::reintentar
     )
@@ -76,7 +69,6 @@ fun ObrasListScreen(
     state: ObrasListUiState,
     onCreate: () -> Unit,
     onOpen: (Obra) -> Unit,
-    onLogout: () -> Unit,
     onBack: () -> Unit,
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -92,24 +84,7 @@ fun ObrasListScreen(
         )
     ) { mutableStateOf<EstadoObra?>(null) }
     var showFilterMenu by rememberSaveable { mutableStateOf(false) }
-    var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
-    if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { Text(stringResource(R.string.obras_cerrar_sesion_titulo)) },
-            text = { Text(stringResource(R.string.obras_cerrar_sesion_mensaje)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showLogoutDialog = false
-                    onLogout()
-                }) { Text(stringResource(R.string.obras_cerrar_sesion)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) { Text(stringResource(R.string.cancelar)) }
-            }
-        )
-    }
     
     // Simple local filter for the list based on the search query and selected state
     val filteredObras = remember(searchQuery, selectedEstado, state.obras) {
@@ -131,22 +106,6 @@ fun ObrasListScreen(
                         fontWeight = FontWeight.Bold 
                     ) 
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = stringResource(R.string.volver)
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showLogoutDialog = true }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = stringResource(R.string.obras_cerrar_sesion)
-                        )
-                    }
-                }
             )
         },
         floatingActionButton = {

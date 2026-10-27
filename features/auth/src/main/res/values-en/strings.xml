@@ -59,4 +59,6 @@
     <string name="auth_tema_oscuro">Dark</string>
     <string name="auth_seccion_cuenta">Account</string>
     <string name="auth_seccion_preferencias">Preferences</string>
+    <string name="auth_logout_confirmar_titulo">Log out?</string>
+    <string name="auth_logout_confirmar_mensaje">You will be signed out of your account on this device.</string>
 </resources>

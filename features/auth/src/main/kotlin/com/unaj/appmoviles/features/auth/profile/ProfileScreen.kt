@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
@@ -30,7 +29,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -109,6 +107,7 @@ fun ProfileScreen(
     var showIdiomaDialog by rememberSaveable { mutableStateOf(false) }
     var showTemaDialog by rememberSaveable { mutableStateOf(false) }
     var showAvisoDialog by rememberSaveable { mutableStateOf(false) }
+    var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
     val errorMessage = state.error?.asMessage()
     val successMessage = state.successMessage?.let { stringResource(it) }
@@ -149,6 +148,23 @@ fun ProfileScreen(
         )
     }
 
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text(stringResource(R.string.auth_logout_confirmar_titulo)) },
+            text = { Text(stringResource(R.string.auth_logout_confirmar_mensaje)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    onLogout()
+                }) { Text(stringResource(R.string.auth_logout)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) { Text(stringResource(R.string.auth_cancelar)) }
+            }
+        )
+    }
+
     if (showAvisoDialog) {
         DialogoOpciones(
             titulo = stringResource(R.string.auth_aviso_titulo),
@@ -165,15 +181,7 @@ fun ProfileScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.auth_perfil_titulo), fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.auth_cancelar)
-                        )
-                    }
-                }
+                title = { Text(stringResource(R.string.auth_perfil_titulo), fontWeight = FontWeight.Bold) }
             )
         }
     ) { padding ->
@@ -254,7 +262,7 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
-                    onClick = onLogout,
+                    onClick = { showLogoutDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 50.dp),

@@ -133,7 +133,6 @@
     <string name="relevamiento_detalle_titulo">Dettagli del rilievo</string>
     <string name="obras_lista_titulo">I miei cantieri</string>
     <string name="obras_publicas_titulo">Esplora i cantieri pubblici</string>
-    <string name="obras_cerrar_sesion">Esci</string>
     <string name="obras_nueva_obra">Nuovo cantiere</string>
     <string name="obras_editar_obra">Modifica cantiere</string>
     <string name="obras_buscar">Cerca cantiere...</string>
@@ -305,8 +304,6 @@
     <string name="obras_ubicacion_cancelada">Acquisizione della posizione annullata.</string>
     <string name="relevamiento_tarea_repetida">%1$s (n. %2$d · %3$s)</string>
     <string name="relevamiento_tarea_sin_fechas">senza date</string>
-    <string name="obras_cerrar_sesion_titulo">Uscire?</string>
-    <string name="obras_cerrar_sesion_mensaje">Uscirai dal tuo account su questo dispositivo.</string>
     <string name="pronostico_visita_titulo">Meteo per il sopralluogo</string>
     <string name="pronostico_visita_cargando">Controllo le previsioni per questa posizione…</string>
     <string name="pronostico_visita_sin_ubicacion">Aggiungi la posizione del cantiere per vedere le previsioni.</string>

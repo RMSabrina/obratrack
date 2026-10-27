@@ -181,7 +181,6 @@ fun AppShell(
                 ObrasListRoute(
                     onCreate = { navigateTo(ObraFormDestination()) },
                     onOpen = { obra -> navigateTo(ObraDetailDestination(obra.id)) },
-                    onLogout = onLogout,
                     onBack = ::popToHome
                 )
             }

@@ -134,7 +134,6 @@
     <string name="relevamiento_detalle_titulo">Detalle de relevamiento</string>
     <string name="obras_lista_titulo">Mis obras</string>
     <string name="obras_publicas_titulo">Explorar obras públicas</string>
-    <string name="obras_cerrar_sesion">Cerrar sesión</string>
     <string name="obras_nueva_obra">Nueva obra</string>
     <string name="obras_editar_obra">Editar obra</string>
     <string name="obras_buscar">Buscar obra...</string>
@@ -330,8 +329,6 @@
     <string name="obras_ubicacion_cancelada">Captura de ubicación cancelada.</string>
     <string name="relevamiento_tarea_repetida">%1$s (n.º %2$d · %3$s)</string>
     <string name="relevamiento_tarea_sin_fechas">sin fechas</string>
-    <string name="obras_cerrar_sesion_titulo">¿Cerrar sesión?</string>
-    <string name="obras_cerrar_sesion_mensaje">Vas a salir de tu cuenta en este dispositivo.</string>
     <string name="obras_card_proxima_visita">Próxima visita: %1$s</string>
     <string name="obras_card_sin_visita">Sin visita programada</string>
     <string name="obras_card_visita_atrasada">Visita atrasada: %1$s</string>
