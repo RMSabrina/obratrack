@@ -230,7 +230,7 @@ fun ObraDetailScreen(
         AlertDialog(
             onDismissRequest = { if (!state.isDeleting) showDeleteDialog = false },
             title = { Text(stringResource(R.string.obra_eliminar_titulo)) },
-            text = { Text(stringResource(R.string.obra_eliminar_confirmacion)) },
+            text = { Text(stringResource(R.string.obra_eliminar_confirmacion, state.obra?.nombre.orEmpty())) },
             confirmButton = {
                 TextButton(
                     enabled = !state.isDeleting,

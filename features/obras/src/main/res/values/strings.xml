@@ -197,8 +197,8 @@
     <string name="relevamiento_form_nota_placeholder">Escribe una descripción del avance o problema...</string>
 
     <!-- Diálogos de borrado y cuerpo de los detalles -->
-    <string name="obra_eliminar_titulo">Eliminar Obra</string>
-    <string name="obra_eliminar_confirmacion">¿Eliminar Obra y todos sus relevamientos, tareas y suscriptores? Esta acción no se puede deshacer.</string>
+    <string name="obra_eliminar_titulo">Eliminar obra</string>
+    <string name="obra_eliminar_confirmacion">¿Eliminar «%1$s»? Se borrarán sus relevamientos, tareas y suscriptores. Las fotos ya subidas no se borran del servidor. Esta acción no se puede deshacer.</string>
     <string name="obra_eliminar">Eliminar obra</string>
     <string name="obra_no_encontrada">No encontramos esa obra</string>
     <string name="obra_publica_no_encontrada">No encontramos esta obra o ya no es pública.</string>

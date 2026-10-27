@@ -197,7 +197,7 @@
 
     <!-- Diálogos de borrado y cuerpo de los detalles -->
     <string name="obra_eliminar_titulo">Delete project</string>
-    <string name="obra_eliminar_confirmacion">Delete the project and all its inspections, tasks and subscribers? This action cannot be undone.</string>
+    <string name="obra_eliminar_confirmacion">Delete “%1$s”? Its surveys, tasks and subscribers will be deleted. Photos already uploaded are not removed from the server. This cannot be undone.</string>
     <string name="obra_eliminar">Delete project</string>
     <string name="obra_no_encontrada">We couldn\'t find that project</string>
     <string name="obra_publica_no_encontrada">We couldn\'t find this project, or it\'s no longer public.</string>

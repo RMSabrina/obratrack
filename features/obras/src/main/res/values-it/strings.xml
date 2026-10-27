@@ -197,7 +197,7 @@
 
     <!-- Diálogos de borrado y cuerpo de los detalles -->
     <string name="obra_eliminar_titulo">Elimina cantiere</string>
-    <string name="obra_eliminar_confirmacion">Eliminare il cantiere con tutti i suoi rilievi, attività e iscritti? Questa azione non può essere annullata.</string>
+    <string name="obra_eliminar_confirmacion">Eliminare «%1$s»? Verranno eliminati i suoi rilievi, attività e iscritti. Le foto già caricate non vengono rimosse dal server. L\'azione non può essere annullata.</string>
     <string name="obra_eliminar">Elimina cantiere</string>
     <string name="obra_no_encontrada">Non abbiamo trovato questo cantiere</string>
     <string name="obra_publica_no_encontrada">Non abbiamo trovato questo cantiere, oppure non è più pubblico.</string>
