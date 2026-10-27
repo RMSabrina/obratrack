@@ -3,16 +3,15 @@
     <!-- Comunes -->
     <string name="volver">Back</string>
     <string name="cancelar">Cancel</string>
-    <string name="ver">View</string>
     <string name="sin_direccion">No address specified</string>
-    <string name="visita_para_hoy">🔔 VISIT TODAY</string>
+    <string name="visita_para_hoy">VISIT TODAY</string>
 
     <!-- Home -->
     <string name="home_saludo">Hello, %1$s</string>
     <string name="home_subtitulo">What would you like to do today?</string>
     <plurals name="home_visitas_atrasadas">
-        <item quantity="one">⚠️ %d overdue site visit</item>
-        <item quantity="other">⚠️ %d overdue site visits</item>
+        <item quantity="one">%d overdue site visit</item>
+        <item quantity="other">%d overdue site visits</item>
     </plurals>
     <string name="home_visitas_atrasadas_detalle">There are pending site inspections in your schedule</string>
     <string name="home_ver_agenda">View schedule</string>
@@ -38,18 +37,18 @@
     <string name="agenda_filtro_sin_programar">Unscheduled</string>
     <string name="agenda_vacio_titulo">No visits for this filter</string>
     <string name="agenda_vacio_descripcion">You\'re all caught up, or select \'All\' to see the full itinerary.</string>
-    <string name="agenda_badge_atrasada_hoy">🚨 OVERDUE (TODAY)</string>
+    <string name="agenda_badge_atrasada_hoy">OVERDUE (TODAY)</string>
     <plurals name="agenda_badge_atrasada">
-        <item quantity="one">🚨 OVERDUE (%d DAY)</item>
-        <item quantity="other">🚨 OVERDUE (%d DAYS)</item>
+        <item quantity="one">OVERDUE (%d DAY)</item>
+        <item quantity="other">OVERDUE (%d DAYS)</item>
     </plurals>
     <plurals name="agenda_badge_esta_semana">
-        <item quantity="one">📅 IN %1$d DAY (%2$s)</item>
-        <item quantity="other">📅 IN %1$d DAYS (%2$s)</item>
+        <item quantity="one">IN %1$d DAY (%2$s)</item>
+        <item quantity="other">IN %1$d DAYS (%2$s)</item>
     </plurals>
     <plurals name="agenda_badge_sin_fecha">
-        <item quantity="one">⚠️ NO DATE (%d DAY WITHOUT INSPECTION)</item>
-        <item quantity="other">⚠️ NO DATE (%d DAYS WITHOUT INSPECTION)</item>
+        <item quantity="one">NO DATE (%d DAY WITHOUT INSPECTION)</item>
+        <item quantity="other">NO DATE (%d DAYS WITHOUT INSPECTION)</item>
     </plurals>
     <string name="agenda_ver_obra">View project</string>
     <string name="agenda_cliente">Client: %1$s</string>

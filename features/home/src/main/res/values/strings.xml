@@ -3,16 +3,15 @@
     <!-- Comunes -->
     <string name="volver">Volver</string>
     <string name="cancelar">Cancelar</string>
-    <string name="ver">Ver</string>
     <string name="sin_direccion">Sin dirección especificada</string>
-    <string name="visita_para_hoy">🔔 VISITA PARA HOY</string>
+    <string name="visita_para_hoy">VISITA PARA HOY</string>
 
     <!-- Home -->
     <string name="home_saludo">Hola, %1$s</string>
     <string name="home_subtitulo">¿Qué querés hacer hoy?</string>
     <plurals name="home_visitas_atrasadas">
-        <item quantity="one">⚠️ %d visita técnica atrasada</item>
-        <item quantity="other">⚠️ %d visitas técnicas atrasadas</item>
+        <item quantity="one">%d visita técnica atrasada</item>
+        <item quantity="other">%d visitas técnicas atrasadas</item>
     </plurals>
     <string name="home_visitas_atrasadas_detalle">Hay inspecciones de obra pendientes en tu itinerario</string>
     <string name="home_ver_agenda">Ver agenda</string>
@@ -38,18 +37,18 @@
     <string name="agenda_filtro_sin_programar">Sin programar</string>
     <string name="agenda_vacio_titulo">No hay visitas para este filtro</string>
     <string name="agenda_vacio_descripcion">Tenés todo al día o podés seleccionar \'Todas\' para ver el itinerario completo.</string>
-    <string name="agenda_badge_atrasada_hoy">🚨 ATRASADA (HOY)</string>
+    <string name="agenda_badge_atrasada_hoy">ATRASADA (HOY)</string>
     <plurals name="agenda_badge_atrasada">
-        <item quantity="one">🚨 ATRASADA (%d DÍA)</item>
-        <item quantity="other">🚨 ATRASADA (%d DÍAS)</item>
+        <item quantity="one">ATRASADA (%d DÍA)</item>
+        <item quantity="other">ATRASADA (%d DÍAS)</item>
     </plurals>
     <plurals name="agenda_badge_esta_semana">
-        <item quantity="one">📅 EN %1$d DÍA (%2$s)</item>
-        <item quantity="other">📅 EN %1$d DÍAS (%2$s)</item>
+        <item quantity="one">EN %1$d DÍA (%2$s)</item>
+        <item quantity="other">EN %1$d DÍAS (%2$s)</item>
     </plurals>
     <plurals name="agenda_badge_sin_fecha">
-        <item quantity="one">⚠️ SIN FECHA (%d DÍA SIN RELEVAMIENTO)</item>
-        <item quantity="other">⚠️ SIN FECHA (%d DÍAS SIN RELEVAMIENTO)</item>
+        <item quantity="one">SIN FECHA (%d DÍA SIN RELEVAMIENTO)</item>
+        <item quantity="other">SIN FECHA (%d DÍAS SIN RELEVAMIENTO)</item>
     </plurals>
     <string name="agenda_ver_obra">Ver obra</string>
     <string name="agenda_cliente">Cliente: %1$s</string>

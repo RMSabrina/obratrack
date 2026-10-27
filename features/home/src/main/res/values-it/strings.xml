@@ -3,16 +3,15 @@
     <!-- Comunes -->
     <string name="volver">Indietro</string>
     <string name="cancelar">Annulla</string>
-    <string name="ver">Vedi</string>
     <string name="sin_direccion">Nessun indirizzo specificato</string>
-    <string name="visita_para_hoy">🔔 SOPRALLUOGO OGGI</string>
+    <string name="visita_para_hoy">SOPRALLUOGO OGGI</string>
 
     <!-- Home -->
     <string name="home_saludo">Ciao, %1$s</string>
     <string name="home_subtitulo">Cosa vuoi fare oggi?</string>
     <plurals name="home_visitas_atrasadas">
-        <item quantity="one">⚠️ %d sopralluogo in ritardo</item>
-        <item quantity="other">⚠️ %d sopralluoghi in ritardo</item>
+        <item quantity="one">%d sopralluogo in ritardo</item>
+        <item quantity="other">%d sopralluoghi in ritardo</item>
     </plurals>
     <string name="home_visitas_atrasadas_detalle">Nella tua agenda ci sono rilievi in cantiere in sospeso</string>
     <string name="home_ver_agenda">Vedi agenda</string>
@@ -38,18 +37,18 @@
     <string name="agenda_filtro_sin_programar">Non programmati</string>
     <string name="agenda_vacio_titulo">Nessun sopralluogo per questo filtro</string>
     <string name="agenda_vacio_descripcion">Sei in pari, oppure seleziona \'Tutti\' per vedere l\'itinerario completo.</string>
-    <string name="agenda_badge_atrasada_hoy">🚨 IN RITARDO (OGGI)</string>
+    <string name="agenda_badge_atrasada_hoy">IN RITARDO (OGGI)</string>
     <plurals name="agenda_badge_atrasada">
-        <item quantity="one">🚨 IN RITARDO (%d GIORNO)</item>
-        <item quantity="other">🚨 IN RITARDO (%d GIORNI)</item>
+        <item quantity="one">IN RITARDO (%d GIORNO)</item>
+        <item quantity="other">IN RITARDO (%d GIORNI)</item>
     </plurals>
     <plurals name="agenda_badge_esta_semana">
-        <item quantity="one">📅 TRA %1$d GIORNO (%2$s)</item>
-        <item quantity="other">📅 TRA %1$d GIORNI (%2$s)</item>
+        <item quantity="one">TRA %1$d GIORNO (%2$s)</item>
+        <item quantity="other">TRA %1$d GIORNI (%2$s)</item>
     </plurals>
     <plurals name="agenda_badge_sin_fecha">
-        <item quantity="one">⚠️ SENZA DATA (%d GIORNO SENZA RILIEVO)</item>
-        <item quantity="other">⚠️ SENZA DATA (%d GIORNI SENZA RILIEVO)</item>
+        <item quantity="one">SENZA DATA (%d GIORNO SENZA RILIEVO)</item>
+        <item quantity="other">SENZA DATA (%d GIORNI SENZA RILIEVO)</item>
     </plurals>
     <string name="agenda_ver_obra">Vedi cantiere</string>
     <string name="agenda_cliente">Cliente: %1$s</string>

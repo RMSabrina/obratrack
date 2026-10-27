@@ -128,7 +128,7 @@ fun RelevamientoCard(
             
             Icon(
                 imageVector = Icons.Default.ChevronRight,
-                contentDescription = stringResource(R.string.ver),
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

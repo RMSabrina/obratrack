@@ -8,9 +8,9 @@
     <string name="auth_logout">Esci</string>
     <string name="auth_verificado">Verificato</string>
     <string name="auth_idioma_titulo">Lingua dell\'app</string>
-    <string name="auth_idioma_espanol">🇪🇸 Español</string>
-    <string name="auth_idioma_ingles">🇬🇧 English</string>
-    <string name="auth_idioma_italiano">🇮🇹 Italiano</string>
+    <string name="auth_idioma_espanol">Español</string>
+    <string name="auth_idioma_ingles">English</string>
+    <string name="auth_idioma_italiano">Italiano</string>
     <string name="auth_cancelar">Annulla</string>
     <string name="auth_eliminar_cuenta">Elimina account</string>
     <string name="auth_nueva_password_instruccion">Inserisci la nuova password (almeno 6 caratteri):</string>

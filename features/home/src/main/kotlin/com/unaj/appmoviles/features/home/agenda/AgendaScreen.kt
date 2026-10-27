@@ -81,6 +81,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -370,8 +371,7 @@ fun AgendaVisitaCard(
                 }
 
                 TextButton(
-                    onClick = onOpenObra,
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                    onClick = onOpenObra
                 ) {
                     Text(
                         text = stringResource(R.string.agenda_ver_obra),
@@ -440,66 +440,61 @@ fun AgendaVisitaCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Botones de acción operativa
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Iniciar Relevamiento
+            // Acciones: "Relevar" ocupa todo el ancho; las otras dos se reparten la fila de abajo.
+            // Con fuente grande o 360 dp las etiquetas pueden pasar a dos líneas sin recortarse.
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = onIniciarRelevamiento,
-                    modifier = Modifier.weight(1.3f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.CameraAlt,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.agenda_relevar),
-                        style = MaterialTheme.typography.labelMedium
+                        style = MaterialTheme.typography.labelLarge
                     )
                 }
 
-                // Cómo llegar / Mapa
-                OutlinedButton(
-                    onClick = onComoLlegar,
-                    modifier = Modifier.weight(1.1f),
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.DirectionsCar,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.agenda_mapa),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
+                    OutlinedButton(
+                        onClick = onComoLlegar,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.DirectionsCar,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.agenda_mapa),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
 
-                // Reprogramar
-                OutlinedButton(
-                    onClick = onReprogramar,
-                    modifier = Modifier.weight(1.1f),
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.EditCalendar,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(if (item.fechaProgramadaMillis != null) R.string.agenda_reprogramar else R.string.agenda_agendar),
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    OutlinedButton(
+                        onClick = onReprogramar,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.EditCalendar,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(if (item.fechaProgramadaMillis != null) R.string.agenda_reprogramar else R.string.agenda_agendar),
+                            style = MaterialTheme.typography.labelLarge,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
