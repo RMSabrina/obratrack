@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.unaj.appmoviles.features.obras.export.EstadoPdf
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -44,7 +48,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,7 +72,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun RelevamientoDetailRoute(
@@ -84,10 +87,30 @@ fun RelevamientoDetailRoute(
     )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    val pdf by viewModel.pdf.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMsg = stringResource(R.string.error_exportacion_pdf)
     val shareMsg = stringResource(R.string.compartir_relevamiento_via)
+
+    // El PDF queda listo en el ViewModel: si se rotó la pantalla mientras se generaba, se comparte igual.
+    LaunchedEffect(pdf) {
+        when (val actual = pdf) {
+            is EstadoPdf.Listo -> {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/pdf"
+                    putExtra(Intent.EXTRA_STREAM, actual.resultado)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, shareMsg))
+                viewModel.pdfConsumido()
+            }
+            EstadoPdf.Error -> {
+                snackbarHostState.showSnackbar(errorMsg)
+                viewModel.pdfConsumido()
+            }
+            else -> Unit
+        }
+    }
 
     RelevamientoDetailScreen(
         state = state,
@@ -98,22 +121,14 @@ fun RelevamientoDetailRoute(
         onEditRelevamiento = onEditRelevamiento,
         snackbarHostState = snackbarHostState,
         onRetry = viewModel::reintentar,
+        generandoPdf = pdf is EstadoPdf.Generando,
         onShareClick = {
             val relevamiento = state.relevamiento
             val obra = state.obra
             if (relevamiento != null && !state.isDeleting) {
-                coroutineScope.launch(Dispatchers.IO) {
-                    val uri = RelevamientoPdfExporter.exportRelevamientoToPdf(context, relevamiento, obra)
-                    if (uri != null) {
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "application/pdf"
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-                        val chooser = Intent.createChooser(intent, shareMsg)
-                        context.startActivity(chooser)
-                    } else {
-                        snackbarHostState.showSnackbar(errorMsg)
+                viewModel.generarPdf {
+                    withContext(Dispatchers.IO) {
+                        RelevamientoPdfExporter.exportRelevamientoToPdf(context, relevamiento, obra)
                     }
                 }
             }
@@ -132,6 +147,7 @@ fun RelevamientoDetailScreen(
     onEditRelevamiento: (Relevamiento) -> Unit,
     snackbarHostState: SnackbarHostState,
     onShareClick: () -> Unit,
+    generandoPdf: Boolean = false,
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -198,10 +214,20 @@ fun RelevamientoDetailScreen(
                 actions = {
                     if (relevamiento != null) {
                         IconButton(
-                            onClick = { if (!state.isDeleting) onShareClick() },
-                            enabled = !state.isDeleting
+                            onClick = { if (!state.isDeleting && !generandoPdf) onShareClick() },
+                            enabled = !state.isDeleting && !generandoPdf
                         ) {
-                            Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.compartir))
+                            if (generandoPdf) {
+                                val generando = stringResource(R.string.pdf_generando)
+                                CircularProgressIndicator(
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .semantics { contentDescription = generando }
+                                )
+                            } else {
+                                Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.compartir))
+                            }
                         }
                     }
                     if (state.isEditable && relevamiento != null) {

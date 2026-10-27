@@ -33,6 +33,11 @@ class CloudinaryImageStorageImpl @Inject constructor(
     override suspend fun uploadImage(bytes: ByteArray, folder: String, name: String): AppResult<String> {
         return withContext(Dispatchers.IO) {
             try {
+                // Achicar la foto es pesado: va acá, en IO, y no en el hilo principal.
+                val foto = when (val preparada = prepararFoto(bytes)) {
+                    is FotoPreparada.Lista -> preparada.bytes
+                    FotoPreparada.DemasiadoGrande -> return@withContext AppResult.Error(RelevamientoError.ImagenMuyGrande)
+                }
                 // Configuramos la subida "sin firma" usando el upload_preset
                 // y definiendo la carpeta ("folder") y el ID público ("public_id")
                 val params = ObjectUtils.asMap(
@@ -42,7 +47,7 @@ class CloudinaryImageStorageImpl @Inject constructor(
                 )
                 
                 // Realizamos la subida
-                val result = cloudinary.uploader().unsignedUpload(bytes, uploadPreset, params)
+                val result = cloudinary.uploader().unsignedUpload(foto, uploadPreset, params)
                 
                 // Retornamos la URL segura de la imagen
                 val secureUrl = result["secure_url"] as? String
@@ -53,6 +58,10 @@ class CloudinaryImageStorageImpl @Inject constructor(
                 }
             } catch (e: CancellationException) {
                 throw e
+            } catch (e: OutOfMemoryError) {
+                // Foto enorme que no entra en memoria al decodificarla: no es un fallo de red.
+                Log.e(TAG, "Sin memoria para preparar la imagen", e)
+                AppResult.Error(RelevamientoError.ImagenMuyGrande)
             } catch (e: Exception) {
                 Log.e(TAG, "Fallo al subir la imagen", e)
                 AppResult.Error(e.toUploadError())

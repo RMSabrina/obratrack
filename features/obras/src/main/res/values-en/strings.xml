@@ -297,4 +297,5 @@
     <string name="relevamiento_detalle_proxima_hora">Next planned visit: %1$s at %2$s</string>
     <string name="obra_proxima_visita_fecha_hora">Next visit: %1$s at %2$s</string>
     <string name="obra_proxima_visita_atrasada_hora">Next visit: %1$s at %2$s (Overdue)</string>
+    <string name="pdf_generando">Generating PDF…</string>
 </resources>

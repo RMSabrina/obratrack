@@ -1,5 +1,8 @@
 package com.unaj.appmoviles.features.obras.relevamiento.detail
 
+import android.net.Uri
+import com.unaj.appmoviles.features.obras.export.EstadoPdf
+import com.unaj.appmoviles.features.obras.export.GeneradorPdf
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -37,6 +40,14 @@ class RelevamientoDetailViewModel @AssistedInject constructor(
     private val observeRelevamientosDeObra: ObserveRelevamientosDeObraUseCase,
     private val deleteRelevamientoUseCase: DeleteRelevamientoUseCase
 ) : ViewModel() {
+
+    private val generadorPdf = GeneradorPdf<Uri>(viewModelScope)
+    val pdf: StateFlow<EstadoPdf<Uri>> = generadorPdf.estado
+
+    /** [trabajo] arma el PDF (fuera del hilo principal) y devuelve su `Uri`, o null si falló. */
+    fun generarPdf(trabajo: suspend () -> Uri?) = generadorPdf.generar(trabajo)
+
+    fun pdfConsumido() = generadorPdf.consumido()
 
     @AssistedFactory
     interface Factory {

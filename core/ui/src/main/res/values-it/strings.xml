@@ -23,7 +23,7 @@
     <string name="error_relevamiento_fecha">Seleziona la data del rilievo</string>
     <string name="error_relevamiento_not_found">Rilievo non trovato</string>
     <string name="error_relevamiento_forbidden">Non hai il permesso di modificare questo rilievo</string>
-    <string name="error_relevamiento_imagen_grande">L\'immagine supera il limite di 5 MB</string>
+    <string name="error_relevamiento_imagen_grande">Non è stato possibile ridurre abbastanza la foto. Scegline un\'altra o scattala di nuovo.</string>
     <string name="error_tarea_titulo">Inserisci il titolo dell\'attività</string>
     <string name="error_tarea_fechas_incompletas">Scegli entrambe le date o nessuna</string>
     <string name="error_tarea_fecha_fin_anterior">La data di fine non può essere precedente alla data di inizio</string>

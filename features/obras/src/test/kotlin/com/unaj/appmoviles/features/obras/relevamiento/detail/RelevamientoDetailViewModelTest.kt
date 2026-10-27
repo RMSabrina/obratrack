@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import com.unaj.appmoviles.features.obras.export.EstadoPdf
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -107,5 +108,31 @@ class RelevamientoDetailViewModelTest {
         assertNull(recuperado.error)
         assertEquals(relevamiento, recuperado.relevamiento)
         assertFalse(recuperado.isLoading)
+    }
+
+    @Test
+    fun pdf_siFallaQuedaEnErrorYSePuedeVolverAIntentar() = runTest {
+        val viewModel = crearViewModel(FakeRelevamientoRepository(listOf(relevamiento)))
+        assertEquals(EstadoPdf.Inactivo, viewModel.pdf.value)
+
+        viewModel.generarPdf { null }
+        assertEquals(EstadoPdf.Generando, viewModel.pdf.value)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(EstadoPdf.Error, viewModel.pdf.value)
+
+        viewModel.pdfConsumido()
+        assertEquals(EstadoPdf.Inactivo, viewModel.pdf.value)
+    }
+
+    @Test
+    fun pdf_dosToquesSeguidosGeneranUnSolo() = runTest {
+        val viewModel = crearViewModel(FakeRelevamientoRepository(listOf(relevamiento)))
+        var llamadas = 0
+
+        viewModel.generarPdf { llamadas++; null }
+        viewModel.generarPdf { llamadas++; null }
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, llamadas)
     }
 }

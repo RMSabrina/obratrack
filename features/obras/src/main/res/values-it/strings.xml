@@ -297,4 +297,5 @@
     <string name="relevamiento_detalle_proxima_hora">Prossimo sopralluogo previsto: %1$s alle %2$s</string>
     <string name="obra_proxima_visita_fecha_hora">Prossimo sopralluogo: %1$s alle %2$s</string>
     <string name="obra_proxima_visita_atrasada_hora">Prossimo sopralluogo: %1$s alle %2$s (in ritardo)</string>
+    <string name="pdf_generando">Generazione del PDF…</string>
 </resources>

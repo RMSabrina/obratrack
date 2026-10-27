@@ -27,6 +27,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -231,5 +232,31 @@ class RelevamientoFormViewModelTest {
 
         assertFalse(viewModel.selector.value.disponible)
         assertEquals(0, tareaRepo.observeByObraCalls)
+    }
+
+    @Test
+    fun foto_dePocosMb_seGuardaPorqueSeAchicaAlSubir() = runTest {
+        val relevamientoRepo = FakeRelevamientoRepository()
+        val viewModel = crearViewModel(relevamientoRepo = relevamientoRepo)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.save(draft, ByteArray(8 * 1024 * 1024))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, relevamientoRepo.created.size)
+        assertEquals(RelevamientoFormUiState.Saved, viewModel.uiState.value)
+    }
+
+    @Test
+    fun foto_enorme_noSeIntentaSubirYMuestraElError() = runTest {
+        val relevamientoRepo = FakeRelevamientoRepository()
+        val viewModel = crearViewModel(relevamientoRepo = relevamientoRepo)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.save(draft, ByteArray(RelevamientoFormViewModel.MAX_FOTO_ORIGINAL_BYTES + 1))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(relevamientoRepo.created.isEmpty())
+        assertEquals(RelevamientoFormUiState.Error(RelevamientoError.ImagenMuyGrande), viewModel.uiState.value)
     }
 }

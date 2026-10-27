@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.semantics.semantics
+import com.unaj.appmoviles.features.obras.export.EstadoPdf
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -28,10 +32,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.runtime.rememberCoroutineScope
 import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ElevatedCard
@@ -104,8 +107,20 @@ fun ObraDetailRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val shareTitle = stringResource(R.string.compartir_informe_obra_via)
+    val pdf by viewModel.pdf.collectAsStateWithLifecycle()
+
+    // El PDF queda listo en el ViewModel: si se rotó la pantalla mientras se generaba, se comparte igual.
+    LaunchedEffect(pdf) {
+        val listo = pdf as? EstadoPdf.Listo ?: return@LaunchedEffect
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/pdf"
+            putExtra(Intent.EXTRA_STREAM, listo.resultado)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(intent, shareTitle))
+        viewModel.pdfConsumido()
+    }
 
     ObraDetailScreen(
         state = state,
@@ -118,25 +133,21 @@ fun ObraDetailRoute(
         onOpenRelevamiento = onOpenRelevamiento,
         onCreateTarea = onCreateTarea,
         onRetry = viewModel::reintentar,
+        generandoPdf = pdf is EstadoPdf.Generando,
+        pdfConError = pdf is EstadoPdf.Error,
+        onPdfErrorShown = viewModel::pdfConsumido,
         onShareInforme = {
             val obra = state.obra
             if (obra != null && !state.isDeleting) {
-                coroutineScope.launch(Dispatchers.IO) {
-                    val uri = RelevamientoPdfExporter.exportInformeObraToPdf(
-                        context = context,
-                        obra = obra,
-                        resumenTareas = state.resumenTareas,
-                        relevamientos = state.relevamientos,
-                        tareas = state.tareas
-                    )
-                    if (uri != null) {
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "application/pdf"
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-                        val chooser = Intent.createChooser(intent, shareTitle)
-                        context.startActivity(chooser)
+                viewModel.generarPdf {
+                    withContext(Dispatchers.IO) {
+                        RelevamientoPdfExporter.exportInformeObraToPdf(
+                            context = context,
+                            obra = obra,
+                            resumenTareas = state.resumenTareas,
+                            relevamientos = state.relevamientos,
+                            tareas = state.tareas
+                        )
                     }
                 }
             }
@@ -176,6 +187,9 @@ fun ObraDetailScreen(
     onCreateTarea: () -> Unit,
     onRetry: () -> Unit = {},
     onShareInforme: () -> Unit = {},
+    generandoPdf: Boolean = false,
+    pdfConError: Boolean = false,
+    onPdfErrorShown: () -> Unit = {},
     tareasTab: @Composable (Modifier) -> Unit,
     cronogramaTab: @Composable (onOpenTareas: () -> Unit, Modifier) -> Unit,
     modifier: Modifier = Modifier
@@ -201,6 +215,14 @@ fun ObraDetailScreen(
         if (deleteErrorMessage != null) {
             snackbarHostState.showSnackbar(deleteErrorMessage)
             onDeleteErrorDismissed()
+        }
+    }
+
+    val pdfErrorMessage = stringResource(R.string.error_exportacion_pdf)
+    LaunchedEffect(pdfConError) {
+        if (pdfConError) {
+            snackbarHostState.showSnackbar(pdfErrorMessage)
+            onPdfErrorShown()
         }
     }
 
@@ -253,12 +275,22 @@ fun ObraDetailScreen(
                     if (obra != null && state.isEditable) {
                         IconButton(
                             onClick = onShareInforme,
-                            enabled = !state.isDeleting
+                            enabled = !state.isDeleting && !generandoPdf
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = stringResource(R.string.compartir_informe_obra)
-                            )
+                            if (generandoPdf) {
+                                val generando = stringResource(R.string.pdf_generando)
+                                CircularProgressIndicator(
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .semantics { contentDescription = generando }
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = stringResource(R.string.compartir_informe_obra)
+                                )
+                            }
                         }
                         IconButton(
                             onClick = { if (!state.isDeleting) showDeleteDialog = true },

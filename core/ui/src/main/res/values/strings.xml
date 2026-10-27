@@ -23,7 +23,7 @@
     <string name="error_relevamiento_fecha">Elegí la fecha de la visita</string>
     <string name="error_relevamiento_not_found">No encontramos ese relevamiento</string>
     <string name="error_relevamiento_forbidden">No podés modificar este relevamiento</string>
-    <string name="error_relevamiento_imagen_grande">La imagen supera el límite de 5 MB</string>
+    <string name="error_relevamiento_imagen_grande">No se pudo reducir la foto lo suficiente. Elegí otra o sacala de nuevo.</string>
     <string name="error_tarea_titulo">Ingresá el título de la tarea</string>
     <string name="error_tarea_fechas_incompletas">Elegí ambas fechas o ninguna</string>
     <string name="error_tarea_fecha_fin_anterior">La fecha de fin no puede ser anterior a la de inicio</string>

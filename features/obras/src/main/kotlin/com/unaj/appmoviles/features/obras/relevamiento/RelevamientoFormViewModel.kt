@@ -120,9 +120,8 @@ class RelevamientoFormViewModel @AssistedInject constructor(
     fun save(draft: RelevamientoDraft, photo: ByteArray?, continueAdding: Boolean = false) {
         if (_uiState.value is RelevamientoFormUiState.Loading) return
         
-        // Validación de tamaño de imagen (límite de 5 MB)
-        val maxSizeInBytes = 5 * 1024 * 1024
-        if (photo != null && photo.size > maxSizeInBytes) {
+        // La foto se achica al subirla (core:data); este tope solo evita intentar con archivos enormes.
+        if (photo != null && photo.size > MAX_FOTO_ORIGINAL_BYTES) {
             _uiState.value = RelevamientoFormUiState.Error(RelevamientoError.ImagenMuyGrande)
             return
         }
@@ -167,7 +166,8 @@ class RelevamientoFormViewModel @AssistedInject constructor(
         }
     }
 
-    private companion object {
-        const val TAG = "RelevamientoFormVM"
+    internal companion object {
+        const val MAX_FOTO_ORIGINAL_BYTES = 20 * 1024 * 1024
+        private const val TAG = "RelevamientoFormVM"
     }
 }

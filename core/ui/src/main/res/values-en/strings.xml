@@ -23,7 +23,7 @@
     <string name="error_relevamiento_fecha">Select inspection date</string>
     <string name="error_relevamiento_not_found">Inspection report not found</string>
     <string name="error_relevamiento_forbidden">You do not have permission to modify this inspection</string>
-    <string name="error_relevamiento_imagen_grande">Image exceeds 5 MB limit</string>
+    <string name="error_relevamiento_imagen_grande">The photo could not be made small enough. Choose another one or take it again.</string>
     <string name="error_tarea_titulo">Enter task title</string>
     <string name="error_tarea_fechas_incompletas">Choose both dates or none</string>
     <string name="error_tarea_fecha_fin_anterior">End date cannot be earlier than start date</string>

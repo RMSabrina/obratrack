@@ -298,4 +298,5 @@
     <string name="relevamiento_detalle_proxima_hora">Próxima visita prevista: %1$s a las %2$s</string>
     <string name="obra_proxima_visita_fecha_hora">Próxima visita: %1$s a las %2$s</string>
     <string name="obra_proxima_visita_atrasada_hora">Próxima visita: %1$s a las %2$s (Atrasada)</string>
+    <string name="pdf_generando">Generando el PDF…</string>
 </resources>
