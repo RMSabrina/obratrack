@@ -21,6 +21,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -90,6 +92,24 @@ fun ObrasListScreen(
         )
     ) { mutableStateOf<EstadoObra?>(null) }
     var showFilterMenu by rememberSaveable { mutableStateOf(false) }
+    var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text(stringResource(R.string.obras_cerrar_sesion_titulo)) },
+            text = { Text(stringResource(R.string.obras_cerrar_sesion_mensaje)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    onLogout()
+                }) { Text(stringResource(R.string.obras_cerrar_sesion)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) { Text(stringResource(R.string.cancelar)) }
+            }
+        )
+    }
     
     // Simple local filter for the list based on the search query and selected state
     val filteredObras = remember(searchQuery, selectedEstado, state.obras) {
@@ -120,7 +140,7 @@ fun ObrasListScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onLogout) {
+                    IconButton(onClick = { showLogoutDialog = true }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Logout,
                             contentDescription = stringResource(R.string.obras_cerrar_sesion)

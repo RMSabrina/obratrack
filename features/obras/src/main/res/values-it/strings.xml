@@ -301,4 +301,6 @@
     <string name="obras_ubicacion_cancelada">Acquisizione della posizione annullata.</string>
     <string name="relevamiento_tarea_repetida">%1$s (n. %2$d · %3$s)</string>
     <string name="relevamiento_tarea_sin_fechas">senza date</string>
+    <string name="obras_cerrar_sesion_titulo">Uscire?</string>
+    <string name="obras_cerrar_sesion_mensaje">Uscirai dal tuo account su questo dispositivo.</string>
 </resources>

@@ -301,4 +301,6 @@
     <string name="obras_ubicacion_cancelada">Location capture cancelled.</string>
     <string name="relevamiento_tarea_repetida">%1$s (#%2$d · %3$s)</string>
     <string name="relevamiento_tarea_sin_fechas">no dates</string>
+    <string name="obras_cerrar_sesion_titulo">Log out?</string>
+    <string name="obras_cerrar_sesion_mensaje">You will be signed out of your account on this device.</string>
 </resources>
