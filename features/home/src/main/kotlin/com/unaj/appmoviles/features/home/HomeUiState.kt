@@ -37,3 +37,7 @@ internal fun relevamientosRecientes(
                 obraNombre = obras.find { it.id == rel.obraId }?.nombre
             )
         }
+
+/** Solo el primer nombre para el saludo; vacío si el nombre está en blanco. */
+internal fun primerNombre(nombreCompleto: String): String =
+    nombreCompleto.trim().substringBefore(' ').substringBefore('\t')

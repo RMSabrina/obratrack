@@ -2,7 +2,9 @@ package com.unaj.appmoviles.features.home
 
 import com.unaj.appmoviles.obratrack.core.domain.error.LecturaFallidaException
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
+import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.toMillisCalendario
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveAgendaVisitasUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
@@ -24,6 +26,7 @@ import org.junit.Before
 import org.junit.Test
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -117,6 +120,25 @@ class HomeViewModelTest {
         assertEquals(listOf("obra-1"), recuperado.obras.map { it.id })
         assertEquals(listOf("r1"), recuperado.recientes.map { it.relevamiento.id })
         assertFalse(recuperado.isLoading)
+    }
+
+    @Test
+    fun conVisitasAtrasadas_laDestacadaEsLaMasAntigua_ynoLaDeHoy() = runTest {
+        fun dia(d: Int) = LocalDate.of(2026, 10, d).toMillisCalendario()
+        val obras = listOf(
+            obraDe("hoy").copy(proximaVisita = dia(22)),
+            obraDe("reciente").copy(proximaVisita = dia(20)),
+            obraDe("antigua").copy(proximaVisita = dia(18))
+        )
+        val viewModel = crearViewModel(FakeObraRepository(obras))
+
+        suscribir(viewModel)
+
+        val state = viewModel.uiState.value
+        assertEquals(2, state.totalVisitasAtrasadas)
+        assertEquals(1, state.totalVisitasHoy)
+        assertEquals("antigua", state.proximaVisitaDestacada?.obra?.id)
+        assertEquals(CategoriaAgendaVisita.URGENTE_VENCIDA, state.proximaVisitaDestacada?.categoria)
     }
 
     @Test

@@ -9,18 +9,8 @@
     <!-- Home -->
     <string name="home_saludo">Hola, %1$s</string>
     <string name="home_subtitulo">¿Qué querés hacer hoy?</string>
-    <plurals name="home_visitas_atrasadas">
-        <item quantity="one">%d visita técnica atrasada</item>
-        <item quantity="other">%d visitas técnicas atrasadas</item>
-    </plurals>
-    <string name="home_visitas_atrasadas_detalle">Hay inspecciones de obra pendientes en tu itinerario</string>
-    <string name="home_ver_agenda">Ver agenda</string>
-    <string name="home_relevar_ahora">Relevar ahora</string>
-    <string name="home_visitas_hoy_conteo">%1$d para hoy</string>
     <string name="home_accion_nuevo_relevamiento">Nuevo relevamiento de campo</string>
-    <string name="home_accion_nuevo_relevamiento_detalle">Fotografías, notas técnicas y geolocalización</string>
     <string name="home_accion_obras_publicas">Explorar obras públicas</string>
-    <string name="home_accion_obras_publicas_detalle">Ver proyectos compartidos por otros usuarios</string>
     <string name="home_relevamientos_recientes">Últimos relevamientos</string>
     <string name="home_ver_todos">Ver todos</string>
     <string name="home_sin_relevamientos">No tenés relevamientos recientes.</string>
@@ -83,4 +73,12 @@
     <string name="agenda_fecha_actual">Fecha: %1$s</string>
     <string name="agenda_cambiar_fecha">Cambiar fecha</string>
     <string name="agenda_guardar">Guardar</string>
+    <plurals name="home_atrasadas_resumen">
+        <item quantity="one">%1$d visita atrasada · %2$s</item>
+        <item quantity="other">%1$d visitas atrasadas · %2$s</item>
+    </plurals>
+    <plurals name="home_hoy_resumen">
+        <item quantity="one">%1$d visita para hoy · %2$s</item>
+        <item quantity="other">%1$d visitas para hoy · %2$s</item>
+    </plurals>
 </resources>

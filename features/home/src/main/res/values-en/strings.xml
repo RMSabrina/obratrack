@@ -9,18 +9,8 @@
     <!-- Home -->
     <string name="home_saludo">Hello, %1$s</string>
     <string name="home_subtitulo">What would you like to do today?</string>
-    <plurals name="home_visitas_atrasadas">
-        <item quantity="one">%d overdue site visit</item>
-        <item quantity="other">%d overdue site visits</item>
-    </plurals>
-    <string name="home_visitas_atrasadas_detalle">There are pending site inspections in your schedule</string>
-    <string name="home_ver_agenda">View schedule</string>
-    <string name="home_relevar_ahora">Inspect now</string>
-    <string name="home_visitas_hoy_conteo">%1$d for today</string>
     <string name="home_accion_nuevo_relevamiento">New field inspection</string>
-    <string name="home_accion_nuevo_relevamiento_detalle">Photos, technical notes and geolocation</string>
     <string name="home_accion_obras_publicas">Explore public projects</string>
-    <string name="home_accion_obras_publicas_detalle">See projects shared by other users</string>
     <string name="home_relevamientos_recientes">Recent inspections</string>
     <string name="home_ver_todos">View all</string>
     <string name="home_sin_relevamientos">You have no recent inspections.</string>
@@ -83,4 +73,12 @@
     <string name="agenda_fecha_actual">Date: %1$s</string>
     <string name="agenda_cambiar_fecha">Change date</string>
     <string name="agenda_guardar">Save</string>
+    <plurals name="home_atrasadas_resumen">
+        <item quantity="one">%1$d overdue visit · %2$s</item>
+        <item quantity="other">%1$d overdue visits · %2$s</item>
+    </plurals>
+    <plurals name="home_hoy_resumen">
+        <item quantity="one">%1$d visit today · %2$s</item>
+        <item quantity="other">%1$d visits today · %2$s</item>
+    </plurals>
 </resources>

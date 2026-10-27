@@ -9,18 +9,8 @@
     <!-- Home -->
     <string name="home_saludo">Ciao, %1$s</string>
     <string name="home_subtitulo">Cosa vuoi fare oggi?</string>
-    <plurals name="home_visitas_atrasadas">
-        <item quantity="one">%d sopralluogo in ritardo</item>
-        <item quantity="other">%d sopralluoghi in ritardo</item>
-    </plurals>
-    <string name="home_visitas_atrasadas_detalle">Nella tua agenda ci sono rilievi in cantiere in sospeso</string>
-    <string name="home_ver_agenda">Vedi agenda</string>
-    <string name="home_relevar_ahora">Rileva ora</string>
-    <string name="home_visitas_hoy_conteo">%1$d per oggi</string>
     <string name="home_accion_nuevo_relevamiento">Nuovo rilievo in cantiere</string>
-    <string name="home_accion_nuevo_relevamiento_detalle">Foto, note tecniche e geolocalizzazione</string>
     <string name="home_accion_obras_publicas">Esplora i cantieri pubblici</string>
-    <string name="home_accion_obras_publicas_detalle">Vedi i cantieri condivisi da altri utenti</string>
     <string name="home_relevamientos_recientes">Rilievi recenti</string>
     <string name="home_ver_todos">Vedi tutti</string>
     <string name="home_sin_relevamientos">Non hai rilievi recenti.</string>
@@ -83,4 +73,12 @@
     <string name="agenda_fecha_actual">Data: %1$s</string>
     <string name="agenda_cambiar_fecha">Cambia data</string>
     <string name="agenda_guardar">Salva</string>
+    <plurals name="home_atrasadas_resumen">
+        <item quantity="one">%1$d sopralluogo in ritardo · %2$s</item>
+        <item quantity="other">%1$d sopralluoghi in ritardo · %2$s</item>
+    </plurals>
+    <plurals name="home_hoy_resumen">
+        <item quantity="one">%1$d sopralluogo oggi · %2$s</item>
+        <item quantity="other">%1$d sopralluoghi oggi · %2$s</item>
+    </plurals>
 </resources>

@@ -13,8 +13,7 @@ fun HomeRoute(
     onNavigateToAgenda: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
     onNavigateToObrasPublicas: () -> Unit,
-    onOpenRelevamiento: (Relevamiento) -> Unit,
-    onIniciarRelevamientoParaObra: (String) -> Unit
+    onOpenRelevamiento: (Relevamiento) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     
@@ -25,7 +24,6 @@ fun HomeRoute(
         onNavigateToObraSelection = onNavigateToObraSelection,
         onNavigateToObrasPublicas = onNavigateToObrasPublicas,
         onOpenRelevamiento = onOpenRelevamiento,
-        onIniciarRelevamientoParaObra = onIniciarRelevamientoParaObra,
         onRetry = viewModel::reintentar
     )
 }

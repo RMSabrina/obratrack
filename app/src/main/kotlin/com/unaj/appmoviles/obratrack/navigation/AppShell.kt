@@ -138,9 +138,6 @@ fun AppShell(
                     onNavigateToAgenda = { navigateTo(AgendaDestination) },
                     onNavigateToObraSelection = { navigateTo(ObraSelectionDestination) },
                     onNavigateToObrasPublicas = { navigateTo(ObrasPublicasDestination) },
-                    onIniciarRelevamientoParaObra = { obraId ->
-                        navigateTo(RelevamientoFormDestination(obraId = obraId))
-                    },
                     onOpenRelevamiento = { relevamiento ->
                         navigateTo(
                             RelevamientoDetailDestination(
