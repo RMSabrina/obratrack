@@ -38,27 +38,23 @@ class LanguagePreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * La fuente de verdad es el idioma de la app que guarda AppCompat (y el sistema en Android 13+).
+     * Las preferencias son solo un espejo para cuando AppCompat no lo conoce: un Worker en
+     * Android 12 o inferior, donde no hay Activity que lo cargue.
+     */
     override fun getLanguage(): AppLanguage {
-        val saved = prefs.getString(KEY_LANGUAGE, null)
-        if (saved != null) {
-            return AppLanguage.entries.firstOrNull { it.code == saved } ?: AppLanguage.SPANISH
-        }
-        val currentLocales = AppCompatDelegate.getApplicationLocales()
-        if (!currentLocales.isEmpty) {
-            val tag = currentLocales.get(0)?.language.orEmpty()
-            if (tag.startsWith("en", ignoreCase = true)) {
-                return AppLanguage.ENGLISH
-            }
-            if (tag.startsWith("it", ignoreCase = true)) {
-                return AppLanguage.ITALIAN
-            }
-        }
-        return AppLanguage.SPANISH
+        val deLaApp = AppCompatDelegate.getApplicationLocales()
+        if (!deLaApp.isEmpty) return idiomaDeCodigo(deLaApp.get(0)?.language) ?: AppLanguage.SPANISH
+        return idiomaDeCodigo(prefs.getString(KEY_LANGUAGE, null)) ?: AppLanguage.SPANISH
     }
 
     override suspend fun setLanguage(language: AppLanguage) {
+        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(language.code))
         prefs.edit().putString(KEY_LANGUAGE, language.code).apply()
-        val appLocale = LocaleListCompat.forLanguageTags(language.code)
-        AppCompatDelegate.setApplicationLocales(appLocale)
     }
 }
+
+/** Idioma de la app para un código ("es", "en" o "it", con o sin región); null si no es uno de ellos. */
+internal fun idiomaDeCodigo(codigo: String?): AppLanguage? =
+    AppLanguage.entries.firstOrNull { codigo != null && codigo.substringBefore('-').equals(it.code, ignoreCase = true) }

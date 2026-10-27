@@ -21,6 +21,7 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.unaj.appmoviles.features.obras.formatFecha
+import com.unaj.appmoviles.features.obras.formatFechaHora
 import com.unaj.appmoviles.features.obras.labelRes
 import com.unaj.appmoviles.features.obras.tareas.labelRes
 import com.unaj.appmoviles.obras.R
@@ -33,8 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDateTime
 import java.util.Locale
 
 object RelevamientoPdfExporter {
@@ -446,7 +446,7 @@ object RelevamientoPdfExporter {
         canvas.drawText("ObraTrack", PADDING + 48f, y + 26f, brandPaint)
 
         // Fecha de emisión alineada a la derecha
-        val fechaEmision = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+        val fechaEmision = formatFechaHora(context, LocalDateTime.now())
         val datePaint = TextPaint().apply {
             color = textMuted
             textSize = 10f

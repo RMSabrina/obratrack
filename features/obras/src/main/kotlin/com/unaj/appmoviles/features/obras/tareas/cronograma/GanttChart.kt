@@ -42,11 +42,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.unaj.appmoviles.features.obras.formatDiaMes
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlin.math.roundToInt
 
 private val ANCHO_DIA = 24.dp
@@ -58,8 +57,6 @@ private val ALTO_ENCABEZADO = 32.dp
 // Alto para el título y las fechas de inicio y fin en dos líneas.
 private val ALTO_FILA = 64.dp
 private val ALTO_BARRA = 24.dp
-
-private val semanaFormatter = DateTimeFormatter.ofPattern("d MMM", Locale.forLanguageTag("es-AR"))
 
 /**
  * Cronograma tipo Gantt: títulos fijos a la izquierda y barras con scroll horizontal.
@@ -190,7 +187,7 @@ private fun EncabezadoSemanas(periodo: PeriodoVisible, semanas: List<Int>, hoyDi
     Box(modifier = Modifier.height(ALTO_ENCABEZADO)) {
         semanas.forEach { dia ->
             Text(
-                text = periodo.inicio.plusDays(dia.toLong()).format(semanaFormatter),
+                text = periodo.inicio.plusDays(dia.toLong()).let(::formatDiaMes),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
