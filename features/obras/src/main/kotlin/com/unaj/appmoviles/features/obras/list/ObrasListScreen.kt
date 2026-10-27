@@ -36,7 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unaj.appmoviles.features.obras.list.components.ObraCard
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
-import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 import com.unaj.appmoviles.obratrack.core.ui.components.SearchBarComponent
 
 import androidx.compose.material3.DropdownMenu
@@ -62,7 +62,8 @@ fun ObrasListRoute(
         onCreate = onCreate,
         onOpen = onOpen,
         onLogout = onLogout,
-        onBack = onBack
+        onBack = onBack,
+        onRetry = viewModel::reintentar
     )
 }
 
@@ -74,6 +75,7 @@ fun ObrasListScreen(
     onOpen: (Obra) -> Unit,
     onLogout: () -> Unit,
     onBack: () -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     BackHandler(onBack = onBack)
@@ -188,10 +190,10 @@ fun ObrasListScreen(
                     LoadingContent(Modifier.weight(1f))
                 }
                 state.error != null && state.obras.isEmpty() -> {
-                    Text(
-                        text = state.error.asMessage(),
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(24.dp)
+                    ErrorCarga(
+                        error = state.error,
+                        onRetry = onRetry,
+                        modifier = Modifier.weight(1f)
                     )
                 }
                 state.obras.isEmpty() -> {

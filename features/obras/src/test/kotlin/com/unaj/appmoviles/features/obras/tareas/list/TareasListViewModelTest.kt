@@ -201,4 +201,24 @@ class TareasListViewModelTest {
         assertFalse(state.isLoading)
         assertEquals(TareaError.Desconocido, state.error)
     }
+
+    @Test
+    fun reintentar_despuesDelErrorVuelveAMostrarLasTareas() = runTest {
+        val repo = FakeTareaRepository(listOf(tarea("a"))).apply {
+            observeError = IllegalStateException("UNAVAILABLE")
+        }
+        val viewModel = crearViewModel(tareaRepo = repo)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(TareaError.Desconocido, viewModel.uiState.value.error)
+
+        repo.observeError = null
+        viewModel.reintentar()
+        assertTrue(viewModel.uiState.value.isLoading)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.error)
+        assertFalse(state.isLoading)
+        assertEquals(listOf("a"), state.tareas.map { it.tarea.id })
+    }
 }

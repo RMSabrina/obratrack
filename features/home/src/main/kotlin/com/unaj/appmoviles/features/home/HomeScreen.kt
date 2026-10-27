@@ -69,6 +69,7 @@ import com.unaj.appmoviles.features.home.components.RelevamientoCard
 import com.unaj.appmoviles.home.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 
 import androidx.compose.material.icons.outlined.CalendarMonth
 import com.unaj.appmoviles.features.obras.formatFecha
@@ -85,6 +86,7 @@ fun HomeScreen(
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onIniciarRelevamientoParaObra: (String) -> Unit = {},
     onTriggerDemoNotification: (() -> Unit)? = null,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -100,6 +102,8 @@ fun HomeScreen(
     ) { padding ->
         if (state.isLoading) {
             LoadingContent(Modifier.padding(padding).fillMaxSize())
+        } else if (state.error != null) {
+            ErrorCarga(error = state.error, onRetry = onRetry, modifier = Modifier.padding(padding))
         } else {
             LazyColumn(
                 modifier = Modifier

@@ -85,7 +85,7 @@
     </plurals>
     <string name="tarea_vinculados_titulo">Relevamientos vinculados (%1$d)</string>
     <string name="tarea_vinculados_vacio">Ningún relevamiento está vinculado a esta tarea.</string>
-    <string name="tarea_vinculados_error">No pudimos cargar los relevamientos vinculados. Volvé a abrir la tarea para reintentar.</string>
+    <string name="tarea_vinculados_error">No pudimos cargar los relevamientos vinculados. Revisá tu conexión.</string>
 
     <!-- Detalle de obra: secciones -->
     <string name="obra_seccion_resumen">Resumen</string>
@@ -97,7 +97,6 @@
     <string name="obra_relevamiento_nuevo">Nuevo relevamiento</string>
     <string name="obra_relevamientos_vacio">Todavía no hay relevamientos.</string>
     <string name="obra_relevamientos_ver_todos">Ver todos (%1$d)</string>
-    <string name="obra_relevamientos_error">No pudimos cargar los relevamientos. Volvé a abrir la obra para reintentar.</string>
     <string name="obra_relevamientos_vacio_titulo">Todavía no hay relevamientos</string>
     <string name="obra_relevamientos_vacio_descripcion">Esta obra no cuenta con relevamientos cargados.</string>
     <string name="obra_relevamientos_agregar_primero">Agregar el primero</string>
@@ -143,7 +142,6 @@
     <string name="obras_lista_vacia">Todavía no cargaste obras.</string>
     <string name="obras_busqueda_vacia">No se encontraron obras para la búsqueda.</string>
     <string name="obras_publicas_vacia">No se encontraron obras públicas.</string>
-    <string name="obras_publicas_error">No pudimos cargar las obras públicas. Volvé a abrir la pantalla para reintentar.</string>
     <string name="estado_obra_activa">Activa</string>
     <string name="estado_obra_pausada">Pausada</string>
     <string name="estado_obra_finalizada">Finalizada</string>
@@ -204,7 +202,6 @@
     <string name="obra_eliminar">Eliminar obra</string>
     <string name="obra_no_encontrada">No encontramos esa obra</string>
     <string name="obra_publica_no_encontrada">No encontramos esta obra o ya no es pública.</string>
-    <string name="obra_publica_error">No pudimos cargar esta obra. Volvé a abrirla para reintentar.</string>
     <string name="obra_fechas">Fechas</string>
     <string name="obra_fecha_inicio">Inicio: %1$s</string>
     <string name="obra_ultima_visita">Última visita: %1$s</string>

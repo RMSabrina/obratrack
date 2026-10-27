@@ -16,6 +16,8 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -51,7 +53,26 @@ class ObrasPublicasListViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(listOf(OBRA_ID), state.obras.map { it.id })
-        assertFalse(state.error)
+        assertNull(state.error)
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun reintentar_despuesDelErrorVuelveAMostrarLasObras() = runTest {
+        val repo = FakeObraRepository(obraDe(DUENO.id, publica = true)).apply {
+            observePublicasError = IllegalStateException("UNAVAILABLE")
+        }
+        val viewModel = ObrasPublicasListViewModel(ObserveObrasPublicasUseCase(repo))
+        suscribir(viewModel)
+        assertNotNull(viewModel.uiState.value.error)
+
+        repo.observePublicasError = null
+        viewModel.reintentar()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.error)
+        assertEquals(listOf(OBRA_ID), state.obras.map { it.id })
         assertFalse(state.isLoading)
     }
 
@@ -65,7 +86,7 @@ class ObrasPublicasListViewModelTest {
         suscribir(viewModel)
 
         val state = viewModel.uiState.value
-        assertTrue(state.error)
+        assertNotNull(state.error)
         assertTrue(state.obras.isEmpty())
         assertFalse(state.isLoading)
     }

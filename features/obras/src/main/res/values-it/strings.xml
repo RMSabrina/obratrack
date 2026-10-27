@@ -84,7 +84,7 @@
     </plurals>
     <string name="tarea_vinculados_titulo">Rilievi collegati (%1$d)</string>
     <string name="tarea_vinculados_vacio">Nessun rilievo è collegato a questa attività.</string>
-    <string name="tarea_vinculados_error">Impossibile caricare i rilievi collegati. Riapri l\'attività per riprovare.</string>
+    <string name="tarea_vinculados_error">Impossibile caricare i rilievi collegati. Controlla la connessione.</string>
 
     <!-- Project details: tabs -->
     <string name="obra_seccion_resumen">Riepilogo</string>
@@ -96,7 +96,6 @@
     <string name="obra_relevamiento_nuevo">Nuovo rilievo</string>
     <string name="obra_relevamientos_vacio">Ancora nessun rilievo.</string>
     <string name="obra_relevamientos_ver_todos">Vedi tutti (%1$d)</string>
-    <string name="obra_relevamientos_error">Impossibile caricare i rilievi. Riapri il cantiere per riprovare.</string>
     <string name="obra_relevamientos_vacio_titulo">Ancora nessun rilievo</string>
     <string name="obra_relevamientos_vacio_descripcion">Questo cantiere non ha rilievi registrati.</string>
     <string name="obra_relevamientos_agregar_primero">Aggiungi il primo</string>
@@ -142,7 +141,6 @@
     <string name="obras_lista_vacia">Non hai ancora aggiunto nessun cantiere.</string>
     <string name="obras_busqueda_vacia">Nessun cantiere corrisponde alla tua ricerca.</string>
     <string name="obras_publicas_vacia">Nessun cantiere pubblico trovato.</string>
-    <string name="obras_publicas_error">Non siamo riusciti a caricare i cantieri pubblici. Riapri la schermata per riprovare.</string>
     <string name="estado_obra_activa">Attivo</string>
     <string name="estado_obra_pausada">In pausa</string>
     <string name="estado_obra_finalizada">Concluso</string>
@@ -203,7 +201,6 @@
     <string name="obra_eliminar">Elimina cantiere</string>
     <string name="obra_no_encontrada">Non abbiamo trovato questo cantiere</string>
     <string name="obra_publica_no_encontrada">Non abbiamo trovato questo cantiere, oppure non è più pubblico.</string>
-    <string name="obra_publica_error">Non siamo riusciti a caricare questo cantiere. Riaprilo per riprovare.</string>
     <string name="obra_fechas">Date</string>
     <string name="obra_fecha_inicio">Inizio: %1$s</string>
     <string name="obra_ultima_visita">Ultimo sopralluogo: %1$s</string>

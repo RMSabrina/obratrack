@@ -29,6 +29,7 @@ fun HomeRoute(
         onNavigateToProfile = onNavigateToProfile,
         onOpenRelevamiento = onOpenRelevamiento,
         onIniciarRelevamientoParaObra = onIniciarRelevamientoParaObra,
-        onTriggerDemoNotification = onTriggerDemoNotification
+        onTriggerDemoNotification = onTriggerDemoNotification,
+        onRetry = viewModel::reintentar
     )
 }

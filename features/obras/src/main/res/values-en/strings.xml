@@ -84,7 +84,7 @@
     </plurals>
     <string name="tarea_vinculados_titulo">Linked reports (%1$d)</string>
     <string name="tarea_vinculados_vacio">No inspection reports are linked to this task.</string>
-    <string name="tarea_vinculados_error">Could not load linked reports. Reopen the task to retry.</string>
+    <string name="tarea_vinculados_error">Could not load the linked reports. Check your connection.</string>
 
     <!-- Project details: tabs -->
     <string name="obra_seccion_resumen">Summary</string>
@@ -96,7 +96,6 @@
     <string name="obra_relevamiento_nuevo">New inspection</string>
     <string name="obra_relevamientos_vacio">No inspections yet.</string>
     <string name="obra_relevamientos_ver_todos">View all (%1$d)</string>
-    <string name="obra_relevamientos_error">Could not load inspections. Reopen project to retry.</string>
     <string name="obra_relevamientos_vacio_titulo">No inspections yet</string>
     <string name="obra_relevamientos_vacio_descripcion">This project has no inspections recorded.</string>
     <string name="obra_relevamientos_agregar_primero">Add the first one</string>
@@ -142,7 +141,6 @@
     <string name="obras_lista_vacia">You haven\'t added any projects yet.</string>
     <string name="obras_busqueda_vacia">No projects match your search.</string>
     <string name="obras_publicas_vacia">No public projects found.</string>
-    <string name="obras_publicas_error">We couldn\'t load the public projects. Open this screen again to retry.</string>
     <string name="estado_obra_activa">Active</string>
     <string name="estado_obra_pausada">Paused</string>
     <string name="estado_obra_finalizada">Completed</string>
@@ -203,7 +201,6 @@
     <string name="obra_eliminar">Delete project</string>
     <string name="obra_no_encontrada">We couldn\'t find that project</string>
     <string name="obra_publica_no_encontrada">We couldn\'t find this project, or it\'s no longer public.</string>
-    <string name="obra_publica_error">We couldn\'t load this project. Open it again to retry.</string>
     <string name="obra_fechas">Dates</string>
     <string name="obra_fecha_inicio">Start: %1$s</string>
     <string name="obra_ultima_visita">Last visit: %1$s</string>

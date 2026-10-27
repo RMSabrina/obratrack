@@ -1,9 +1,11 @@
 package com.unaj.appmoviles.features.home.agenda
 
 import androidx.activity.compose.BackHandler
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -83,6 +85,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.CategoriaAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.ItemAgendaVisita
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,6 +103,7 @@ fun AgendaScreen(
     onCancelarReprogramacion: () -> Unit,
     onConfirmarReprogramacion: (Obra, Long?) -> Unit,
     onClearFeedbackMessage: () -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     BackHandler(onBack = onBack)
@@ -193,6 +197,8 @@ fun AgendaScreen(
     ) { padding ->
         if (state.isLoading) {
             LoadingContent(Modifier.padding(padding).fillMaxSize())
+        } else if (state.error != null) {
+            ErrorCarga(error = state.error, onRetry = onRetry, modifier = Modifier.padding(padding))
         } else {
             LazyColumn(
                 modifier = Modifier
@@ -675,12 +681,13 @@ fun abrirMapa(context: Context, direccion: String, latitud: Double?, longitud: D
     }
     try {
         context.startActivity(mapIntent)
-    } catch (_: Exception) {
+    } catch (e: ActivityNotFoundException) {
+        Log.w("AgendaScreen", "Google Maps no está instalada; se prueba con otra app de mapas", e)
         val fallbackIntent = Intent(Intent.ACTION_VIEW, uri)
         try {
             context.startActivity(fallbackIntent)
-        } catch (_: Exception) {
-            // Manejado silenciosamente si no hay app instalada
+        } catch (e: ActivityNotFoundException) {
+            Log.w("AgendaScreen", "No hay ninguna app que pueda abrir el mapa", e)
         }
     }
 }

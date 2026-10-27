@@ -43,6 +43,7 @@ import com.unaj.appmoviles.features.obras.label
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -59,7 +60,8 @@ fun ObraPublicaDetailRoute(
     ObraPublicaDetailScreen(
         state = state,
         onBack = onBack,
-        onOpenRelevamiento = onOpenRelevamiento
+        onOpenRelevamiento = onOpenRelevamiento,
+        onRetry = viewModel::reintentar
     )
 }
 
@@ -69,6 +71,7 @@ fun ObraPublicaDetailScreen(
     state: ObraPublicaDetailUiState,
     onBack: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit = {},
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val obra = state.obra
@@ -91,13 +94,17 @@ fun ObraPublicaDetailScreen(
         when {
             state.isLoading -> LoadingContent(Modifier.padding(padding))
             obra == null -> {
-                Text(
-                    text = stringResource(if (state.error) R.string.obra_publica_error else R.string.obra_publica_no_encontrada),
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .padding(padding)
-                        .padding(24.dp)
-                )
+                if (state.error != null) {
+                    ErrorCarga(error = state.error, onRetry = onRetry, modifier = Modifier.padding(padding))
+                } else {
+                    Text(
+                        text = stringResource(R.string.obra_publica_no_encontrada),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .padding(padding)
+                            .padding(24.dp)
+                    )
+                }
             }
             else -> Column(
                 modifier = Modifier
@@ -148,8 +155,8 @@ fun ObraPublicaDetailScreen(
                             )
                         }
                     }
-                    if (state.relevamientosError) {
-                        item { RelevamientosErrorMensaje() }
+                    if (state.relevamientosError != null) {
+                        item { RelevamientosErrorMensaje(state.relevamientosError, onRetry) }
                     } else if (relevamientos.isEmpty()) {
                         item { Text(stringResource(R.string.obra_relevamientos_vacio)) }
                     } else {

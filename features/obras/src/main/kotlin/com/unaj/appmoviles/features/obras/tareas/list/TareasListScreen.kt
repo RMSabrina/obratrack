@@ -21,7 +21,7 @@ import com.unaj.appmoviles.features.obras.tareas.list.components.TareaCard
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
-import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 import com.unaj.appmoviles.obratrack.core.ui.components.EmptyState
 
 /** Contenido de la pestaña Tareas del detalle de obra (el Scaffold y el FAB son del detalle). */
@@ -40,6 +40,7 @@ fun TareasListRoute(
         state = state,
         onCreateTarea = onCreateTarea,
         onOpenTarea = onOpenTarea,
+        onRetry = viewModel::reintentar,
         modifier = modifier
     )
 }
@@ -49,15 +50,12 @@ fun TareasListContent(
     state: TareasListUiState,
     onCreateTarea: () -> Unit,
     onOpenTarea: (Tarea) -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     when {
         state.isLoading -> LoadingContent(modifier)
-        state.error != null -> Text(
-            text = state.error.asMessage(),
-            color = MaterialTheme.colorScheme.error,
-            modifier = modifier.padding(24.dp)
-        )
+        state.error != null -> ErrorCarga(error = state.error, onRetry = onRetry, modifier = modifier)
         state.tareas.isEmpty() -> EmptyState(
             icon = Icons.Default.Checklist,
             title = stringResource(R.string.tareas_vacio_titulo),

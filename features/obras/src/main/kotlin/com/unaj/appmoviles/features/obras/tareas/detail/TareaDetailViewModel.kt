@@ -1,11 +1,13 @@
 package com.unaj.appmoviles.features.obras.tareas.detail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.features.obras.tareas.toDraft
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
 import com.unaj.appmoviles.obratrack.core.domain.error.TareaError
+import com.unaj.appmoviles.obratrack.core.domain.error.aErrorDeLectura
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
@@ -90,14 +92,18 @@ class TareaDetailViewModel @AssistedInject constructor(
                             // Un error en los vinculados no oculta la tarea.
                             val vinculados = observeRelevamientosDeTarea(obraId, tareaId)
                                 .map<List<Relevamiento>, List<Relevamiento>?> { it }
-                                .catch { emit(null) }
+                                .catch { e ->
+                                    Log.e(TAG, "No se pudieron leer los relevamientos vinculados", e)
+                                    emit(null)
+                                }
                             combine(observeTarea(obraId, tareaId), vinculados) { tarea, relevamientos ->
                                 Lectura(tarea, if (tarea == null) TareaError.NoEncontrada else null, relevamientos)
                             }
                         }
                     }
-            }.catch {
-                emit(Lectura(null, TareaError.Desconocido))
+            }.catch { e ->
+                Log.e(TAG, "No se pudo leer la tarea", e)
+                emit(Lectura(null, e.aErrorDeLectura(TareaError.Desconocido)))
             }.collect { lectura ->
                 ultimaTarea = lectura.tarea
                 // Durante el borrado se mantiene la tarea en pantalla hasta saber el resultado.
@@ -167,5 +173,9 @@ class TareaDetailViewModel @AssistedInject constructor(
 
     fun onDeleteErrorShown() {
         _uiState.update { it.copy(deleteError = null) }
+    }
+
+    private companion object {
+        const val TAG = "TareaDetailViewModel"
     }
 }

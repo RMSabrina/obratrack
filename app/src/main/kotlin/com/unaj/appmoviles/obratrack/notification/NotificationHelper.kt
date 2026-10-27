@@ -2,6 +2,7 @@ package com.unaj.appmoviles.obratrack.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.util.Log
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -18,6 +19,7 @@ import java.util.Locale
 
 object NotificationHelper {
 
+    private const val TAG = "NotificationHelper"
     const val CHANNEL_ID = "obratrack_reminders"
 
     /** Contexto con el idioma elegido en la app; el de una notificación no lo recibe de ninguna Activity. */
@@ -69,7 +71,8 @@ object NotificationHelper {
 
         val largeIcon = try {
             BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "No se pudo cargar el ícono de la notificación", e)
             null
         }
 
@@ -87,8 +90,9 @@ object NotificationHelper {
 
         try {
             NotificationManagerCompat.from(context).notify(notificationId, builder.build())
-        } catch (_: SecurityException) {
-            // Ignorado si el usuario no autorizó POST_NOTIFICATIONS en Android 13+
+        } catch (e: SecurityException) {
+            // Sin POST_NOTIFICATIONS en Android 13+ no se puede avisar; queda en el log.
+            Log.w(TAG, "Sin permiso para mostrar notificaciones", e)
         }
     }
 

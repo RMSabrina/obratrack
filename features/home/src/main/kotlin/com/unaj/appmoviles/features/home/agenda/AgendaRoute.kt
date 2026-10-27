@@ -32,6 +32,7 @@ fun AgendaRoute(
         onCancelarReprogramacion = viewModel::onCancelarReprogramacion,
         onConfirmarReprogramacion = viewModel::onConfirmarReprogramacion,
         onClearFeedbackMessage = viewModel::onClearFeedbackMessage,
+        onRetry = viewModel::reintentar,
         modifier = modifier
     )
 }

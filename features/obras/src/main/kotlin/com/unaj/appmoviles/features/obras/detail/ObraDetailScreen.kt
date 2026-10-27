@@ -76,11 +76,14 @@ import com.unaj.appmoviles.features.obras.tareas.cronograma.CronogramaRoute
 import com.unaj.appmoviles.features.obras.tareas.list.TareasListRoute
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
+import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
+import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
-import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
+import com.unaj.appmoviles.obratrack.core.domain.ui.asDeleteMessage
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 import com.unaj.appmoviles.obratrack.core.ui.components.EmptyState
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
 import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
@@ -114,6 +117,7 @@ fun ObraDetailRoute(
         onCreateRelevamiento = onCreateRelevamiento,
         onOpenRelevamiento = onOpenRelevamiento,
         onCreateTarea = onCreateTarea,
+        onRetry = viewModel::reintentar,
         onShareInforme = {
             val obra = state.obra
             if (obra != null && !state.isDeleting) {
@@ -170,6 +174,7 @@ fun ObraDetailScreen(
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onCreateTarea: () -> Unit,
+    onRetry: () -> Unit = {},
     onShareInforme: () -> Unit = {},
     tareasTab: @Composable (Modifier) -> Unit,
     cronogramaTab: @Composable (onOpenTareas: () -> Unit, Modifier) -> Unit,
@@ -191,7 +196,7 @@ fun ObraDetailScreen(
         }
     }
 
-    val deleteErrorMessage = state.deleteError?.asMessage()
+    val deleteErrorMessage = state.deleteError?.asDeleteMessage()
     LaunchedEffect(deleteErrorMessage) {
         if (deleteErrorMessage != null) {
             snackbarHostState.showSnackbar(deleteErrorMessage)
@@ -296,12 +301,10 @@ fun ObraDetailScreen(
         when {
             state.isLoading -> LoadingContent(Modifier.padding(padding))
             obra == null -> {
-                Text(
-                    text = state.error?.asMessage() ?: stringResource(R.string.obra_no_encontrada),
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .padding(padding)
-                        .padding(24.dp)
+                ErrorCarga(
+                    error = state.error ?: ObraError.NoEncontrada,
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(padding)
                 )
             }
             else -> Column(
@@ -322,6 +325,7 @@ fun ObraDetailScreen(
                         obra = obra,
                         onOpenRelevamiento = onOpenRelevamiento,
                         onVerTodos = { pestana = ObraDetailTab.RELEVAMIENTOS },
+                        onRetry = onRetry,
                         modifier = contenido
                     )
                     ObraDetailTab.TAREAS -> tareasTab(contenido)
@@ -330,6 +334,7 @@ fun ObraDetailScreen(
                         state = state,
                         onCreateRelevamiento = onCreateRelevamiento,
                         onOpenRelevamiento = onOpenRelevamiento,
+                        onRetry = onRetry,
                         modifier = contenido
                     )
                 }
@@ -423,6 +428,7 @@ private fun ResumenTab(
     obra: Obra,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onVerTodos: () -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val recientes = state.relevamientos.recientes()
@@ -449,8 +455,8 @@ private fun ResumenTab(
         item {
             SectionTitle(stringResource(R.string.obra_seccion_relevamientos))
         }
-        if (state.relevamientosError) {
-            item { RelevamientosErrorMensaje() }
+        if (state.relevamientosError != null) {
+            item { RelevamientosErrorMensaje(state.relevamientosError, onRetry) }
         } else if (recientes.isEmpty()) {
             item {
                 Text(
@@ -479,15 +485,14 @@ private fun ResumenTab(
     }
 }
 
-/** Aviso de la sección cuando fallan los relevamientos (también en la obra pública). */
+/** Error de la sección cuando fallan los relevamientos (también en la obra pública). */
 @Composable
-internal fun RelevamientosErrorMensaje(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(R.string.obra_relevamientos_error),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.error,
-        modifier = modifier
-    )
+internal fun RelevamientosErrorMensaje(
+    error: DomainError,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ErrorCarga(error = error, onRetry = onRetry, modifier = modifier, compact = true)
 }
 
 /** Historial completo de relevamientos, del más nuevo al más viejo. */
@@ -496,11 +501,12 @@ private fun RelevamientosTab(
     state: ObraDetailUiState,
     onCreateRelevamiento: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val puedeCrear = state.isEditable && !state.isDeleting
-    if (state.relevamientosError) {
-        RelevamientosErrorMensaje(modifier.padding(24.dp))
+    if (state.relevamientosError != null) {
+        RelevamientosErrorMensaje(state.relevamientosError, onRetry, modifier)
         return
     }
     if (state.relevamientos.isEmpty()) {

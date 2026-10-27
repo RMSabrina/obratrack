@@ -23,6 +23,10 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        // Los ViewModels loguean los errores con android.util.Log; en los tests no hace nada.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -31,6 +35,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 

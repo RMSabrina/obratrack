@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -71,7 +72,7 @@ class ObraPublicaDetailViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(listOf(relevamiento), state.relevamientos)
-        assertFalse(state.relevamientosError)
+        assertNull(state.relevamientosError)
     }
 
     @Test
@@ -84,7 +85,7 @@ class ObraPublicaDetailViewModelTest {
         suscribir(viewModel)
 
         val state = viewModel.uiState.value
-        assertTrue(state.relevamientosError)
+        assertNotNull(state.relevamientosError)
         assertTrue(state.relevamientos.isEmpty())
         assertFalse(state.isLoading)
         assertEquals(OBRA_ID, state.obra?.id)
@@ -100,8 +101,28 @@ class ObraPublicaDetailViewModelTest {
         suscribir(viewModel)
 
         val state = viewModel.uiState.value
-        assertTrue(state.error)
+        assertNotNull(state.error)
         assertNull(state.obra)
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun reintentar_despuesDelErrorVuelveACargarLaObra() = runTest {
+        val obraRepo = FakeObraRepository(obraDe(DUENO.id, publica = true)).apply {
+            observePublicasError = IllegalStateException("UNAVAILABLE")
+        }
+        val viewModel = crearViewModel(FakeRelevamientoRepository(listOf(relevamiento)), obraRepo)
+        suscribir(viewModel)
+        assertNotNull(viewModel.uiState.value.error)
+
+        obraRepo.observePublicasError = null
+        viewModel.reintentar()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.error)
+        assertEquals(OBRA_ID, state.obra?.id)
+        assertEquals(listOf(relevamiento), state.relevamientos)
         assertFalse(state.isLoading)
     }
 
@@ -115,7 +136,7 @@ class ObraPublicaDetailViewModelTest {
         suscribir(viewModel)
 
         val state = viewModel.uiState.value
-        assertFalse(state.error)
+        assertNull(state.error)
         assertNull(state.obra)
     }
 }

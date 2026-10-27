@@ -3,18 +3,26 @@ package com.unaj.appmoviles.obratrack.core.data.repository
 import com.cloudinary.Cloudinary
 import com.cloudinary.utils.ObjectUtils
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
-import com.unaj.appmoviles.obratrack.core.domain.error.DomainError
+import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obratrack.core.domain.repository.ImageStorageRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.unaj.appmoviles.obratrack.core.data.di.CloudinaryUploadPreset
+import android.util.Log
+import java.io.IOException
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Error genérico para subida de imágenes.
- */
-data object ImageUploadError : DomainError
+private const val TAG = "CloudinaryImageStorage"
+
+/** Sin red o sin respuesta a tiempo se distinguen; cualquier otra falla es desconocida. */
+internal fun Exception.toUploadError(): RelevamientoError = when (this) {
+    is SocketTimeoutException -> RelevamientoError.Timeout
+    is IOException -> RelevamientoError.Red
+    else -> RelevamientoError.Desconocido
+}
 
 @Singleton
 class CloudinaryImageStorageImpl @Inject constructor(
@@ -41,10 +49,13 @@ class CloudinaryImageStorageImpl @Inject constructor(
                 if (secureUrl != null) {
                     AppResult.Success(secureUrl)
                 } else {
-                    AppResult.Error(ImageUploadError)
+                    AppResult.Error(RelevamientoError.Desconocido)
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                AppResult.Error(ImageUploadError)
+                Log.e(TAG, "Fallo al subir la imagen", e)
+                AppResult.Error(e.toUploadError())
             }
         }
     }

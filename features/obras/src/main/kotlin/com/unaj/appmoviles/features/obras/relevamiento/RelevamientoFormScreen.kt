@@ -2,6 +2,7 @@ package com.unaj.appmoviles.features.obras.relevamiento
 
 import android.annotation.SuppressLint
 import android.Manifest
+import android.util.Log
 import android.content.Context
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -259,6 +260,7 @@ fun RelevamientoFormScreen(
                 }
             }
         } catch (e: Exception) {
+            Log.e("RelevamientoFormScreen", "No se pudo leer la foto elegida", e)
             null
         }
     }

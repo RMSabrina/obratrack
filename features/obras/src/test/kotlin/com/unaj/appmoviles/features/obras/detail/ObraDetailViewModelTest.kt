@@ -28,6 +28,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -85,9 +86,9 @@ class ObraDetailViewModelTest {
         user: User? = DUENO,
         tareaRepo: FakeTareaRepository = FakeTareaRepository(),
         relevamientoRepo: FakeRelevamientoRepository = FakeRelevamientoRepository(listOf(relevamiento)),
-        obra: Obra = obraDe(DUENO.id, publica = true)
+        obra: Obra = obraDe(DUENO.id, publica = true),
+        obraRepo: FakeObraRepository = FakeObraRepository(obra)
     ): ObraDetailViewModel {
-        val obraRepo = FakeObraRepository(obra)
         return ObraDetailViewModel(
             obraId = OBRA_ID,
             observeSession = ObserveSessionUseCase(FakeAuthRepository(user)),
@@ -187,7 +188,7 @@ class ObraDetailViewModelTest {
 
         testDispatcher.scheduler.advanceUntilIdle()
 
-        assertFalse(viewModel.uiState.value.relevamientosError)
+        assertNull(viewModel.uiState.value.relevamientosError)
     }
 
     @Test
@@ -203,11 +204,54 @@ class ObraDetailViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertTrue(state.relevamientosError)
+        assertNotNull(state.relevamientosError)
         assertTrue(state.relevamientos.isEmpty())
         assertNull(state.error)
         assertEquals(OBRA_ID, state.obra?.id)
         assertEquals(ResumenTareas(0, 1, 0), state.resumenTareas)
+    }
+
+    @Test
+    fun errorAlLeerLaObra_muestraErrorYReintentarVuelveACargarLosDatos() = runTest {
+        val obraRepo = FakeObraRepository(obraDe(DUENO.id)).apply {
+            observeError = IllegalStateException("UNAVAILABLE")
+        }
+        val viewModel = crearViewModel(obraRepo = obraRepo)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val conError = viewModel.uiState.value
+        assertNotNull(conError.error)
+        assertNull(conError.obra)
+        assertFalse(conError.isLoading)
+
+        obraRepo.observeError = null
+        viewModel.reintentar()
+        assertTrue(viewModel.uiState.value.isLoading)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val recuperado = viewModel.uiState.value
+        assertNull(recuperado.error)
+        assertEquals(OBRA_ID, recuperado.obra?.id)
+        assertFalse(recuperado.isLoading)
+    }
+
+    @Test
+    fun reintentarConRelevamientosCaidos_losRecuperaSinRecrearLaPantalla() = runTest {
+        val relevamientoRepo = FakeRelevamientoRepository(listOf(relevamiento)).apply {
+            observeError = IllegalStateException("UNAVAILABLE")
+        }
+        val viewModel = crearViewModel(relevamientoRepo = relevamientoRepo)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertNotNull(viewModel.uiState.value.relevamientosError)
+
+        relevamientoRepo.observeError = null
+        viewModel.reintentar()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.relevamientosError)
+        assertEquals(listOf(relevamiento), state.relevamientos)
     }
 
     @Test

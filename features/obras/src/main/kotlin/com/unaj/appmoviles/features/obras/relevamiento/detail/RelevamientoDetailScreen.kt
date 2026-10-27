@@ -63,7 +63,9 @@ import com.unaj.appmoviles.features.obras.formatHora
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
-import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
+import com.unaj.appmoviles.obratrack.core.domain.ui.asDeleteMessage
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
+import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
 import com.unaj.appmoviles.obratrack.core.ui.components.MapPreviewCard
 import kotlinx.coroutines.Dispatchers
@@ -95,6 +97,7 @@ fun RelevamientoDetailRoute(
         onDeleteErrorDismissed = viewModel::onDeleteErrorDismissed,
         onEditRelevamiento = onEditRelevamiento,
         snackbarHostState = snackbarHostState,
+        onRetry = viewModel::reintentar,
         onShareClick = {
             val relevamiento = state.relevamiento
             val obra = state.obra
@@ -129,6 +132,7 @@ fun RelevamientoDetailScreen(
     onEditRelevamiento: (Relevamiento) -> Unit,
     snackbarHostState: SnackbarHostState,
     onShareClick: () -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val relevamiento = state.relevamiento
@@ -142,7 +146,7 @@ fun RelevamientoDetailScreen(
         }
     }
 
-    val deleteErrorMessage = state.deleteError?.asMessage()
+    val deleteErrorMessage = state.deleteError?.asDeleteMessage()
     LaunchedEffect(deleteErrorMessage) {
         if (deleteErrorMessage != null) {
             snackbarHostState.showSnackbar(deleteErrorMessage)
@@ -234,19 +238,11 @@ fun RelevamientoDetailScreen(
         when {
             state.isLoading -> LoadingContent(Modifier.padding(padding))
             relevamiento == null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = state.error?.asMessage() ?: stringResource(R.string.relevamiento_no_encontrado),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
+                ErrorCarga(
+                    error = state.error ?: RelevamientoError.NoEncontrado,
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(padding)
+                )
             }
             else -> {
                 Column(

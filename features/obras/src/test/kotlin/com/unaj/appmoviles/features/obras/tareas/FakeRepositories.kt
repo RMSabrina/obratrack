@@ -55,13 +55,23 @@ class FakeAuthRepository(user: User?) : AuthRepository {
 class FakeObraRepository(obra: Obra?) : ObraRepository {
     val obra = MutableStateFlow(obra)
 
-    override fun observeOne(userId: String, obraId: String): Flow<Obra?> =
-        this.obra.map { it?.takeIf { o -> o.id == obraId && o.userId == userId } }
+    /** Si no es null, observe y observeOne fallan con esta excepción (como Firestore). */
+    var observeError: Exception? = null
+
+    override fun observeOne(userId: String, obraId: String): Flow<Obra?> {
+        val error = observeError
+        if (error != null) return flow { throw error }
+        return this.obra.map { it?.takeIf { o -> o.id == obraId && o.userId == userId } }
+    }
 
     /** Si no es null, observePublicas y observePublica fallan con esta excepción (como Firestore). */
     var observePublicasError: Exception? = null
 
-    override fun observe(userId: String): Flow<List<Obra>> = TODO()
+    override fun observe(userId: String): Flow<List<Obra>> {
+        val error = observeError
+        if (error != null) return flow { throw error }
+        return this.obra.map { listOfNotNull(it?.takeIf { o -> o.userId == userId }) }
+    }
     override fun observePublicas(): Flow<List<Obra>> {
         val error = observePublicasError
         if (error != null) return flow { throw error }

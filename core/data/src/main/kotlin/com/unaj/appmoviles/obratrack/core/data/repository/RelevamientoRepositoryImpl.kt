@@ -22,21 +22,25 @@ class RelevamientoRepositoryImpl @Inject constructor(
         remoteDataSource.observeAll(userId).map { relevamientos ->
             relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
         }
+        .conErrorDeLectura(Exception::toRelevamientoError)
 
     override fun observe(userId: String, obraId: String): Flow<List<Relevamiento>> =
         remoteDataSource.observe(userId, obraId).map { relevamientos ->
             relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
         }
+        .conErrorDeLectura(Exception::toRelevamientoError)
 
     override fun observeByObra(obraId: String): Flow<List<Relevamiento>> =
         remoteDataSource.observeByObra(obraId).map { relevamientos ->
             relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
         }
+        .conErrorDeLectura(Exception::toRelevamientoError)
 
     override fun observeByTarea(obraId: String, tareaId: String): Flow<List<Relevamiento>> =
         remoteDataSource.observeByTarea(obraId, tareaId).map { relevamientos ->
             relevamientos.map(RelevamientoDto::toDomain).sortedByDescending { it.fecha }
         }
+        .conErrorDeLectura(Exception::toRelevamientoError)
 
     override suspend fun create(
         userId: String,

@@ -49,3 +49,12 @@ fun DomainError.asMessage(): String = stringResource(
         else -> R.string.error_unknown
     }
 )
+
+/** Como [asMessage], pero un timeout al borrar habla de la eliminación (que quizá sí se hizo). */
+@Composable
+fun DomainError.asDeleteMessage(): String =
+    if (this == ObraError.Timeout || this == RelevamientoError.Timeout) {
+        stringResource(R.string.error_eliminacion_timeout)
+    } else {
+        asMessage()
+    }

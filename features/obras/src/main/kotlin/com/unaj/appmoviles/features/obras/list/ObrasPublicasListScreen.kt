@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unaj.appmoviles.features.obras.list.components.ObraCard
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -43,7 +44,8 @@ fun ObrasPublicasListRoute(
     ObrasPublicasListScreen(
         state = state,
         onOpen = onOpen,
-        onBack = onBack
+        onBack = onBack,
+        onRetry = viewModel::reintentar
     )
 }
 
@@ -53,6 +55,7 @@ fun ObrasPublicasListScreen(
     state: ObrasPublicasListUiState,
     onOpen: (Obra) -> Unit,
     onBack: () -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -80,7 +83,13 @@ fun ObrasPublicasListScreen(
         if (state.isLoading) {
             LoadingContent(Modifier.padding(paddingValues))
         } else {
-            if (state.error || state.obras.isEmpty()) {
+            if (state.error != null) {
+                ErrorCarga(
+                    error = state.error,
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(paddingValues)
+                )
+            } else if (state.obras.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -91,14 +100,7 @@ fun ObrasPublicasListScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (state.error) {
-                            Text(
-                                text = stringResource(R.string.obras_publicas_error),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        } else {
-                            Text(stringResource(R.string.obras_publicas_vacia))
-                        }
+                        Text(stringResource(R.string.obras_publicas_vacia))
                     }
                 }
             } else {

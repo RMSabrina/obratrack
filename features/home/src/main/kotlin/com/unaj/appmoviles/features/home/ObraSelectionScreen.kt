@@ -30,6 +30,7 @@ import com.unaj.appmoviles.features.obras.list.ObrasListViewModel
 import com.unaj.appmoviles.features.obras.list.components.ObraCard
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.ui.components.ErrorCarga
 
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -44,7 +45,8 @@ fun ObraSelectionRoute(
     ObraSelectionScreen(
         state = state,
         onObraSelected = onObraSelected,
-        onBack = onBack
+        onBack = onBack,
+        onRetry = viewModel::reintentar
     )
 }
 
@@ -54,6 +56,7 @@ fun ObraSelectionScreen(
     state: ObrasListUiState,
     onObraSelected: (Obra) -> Unit,
     onBack: () -> Unit,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -90,8 +93,11 @@ fun ObraSelectionScreen(
                 color = Color.Gray
             )
 
+            val error = state.error
             if (state.isLoading) {
                 LoadingContent(Modifier.weight(1f))
+            } else if (error != null) {
+                ErrorCarga(error = error, onRetry = onRetry, modifier = Modifier.weight(1f))
             } else if (state.obras.isEmpty()) {
                 Text(
                     text = stringResource(R.string.obra_seleccion_vacia),

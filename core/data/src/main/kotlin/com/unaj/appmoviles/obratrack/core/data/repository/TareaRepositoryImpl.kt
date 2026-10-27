@@ -23,9 +23,11 @@ class TareaRepositoryImpl @Inject constructor(
         remoteDataSource.observeByObra(obraId).map { tareas ->
             tareas.map(TareaDto::toDomain).ordenadas()
         }
+        .conErrorDeLectura(Exception::toTareaError)
 
     override fun observeOne(obraId: String, tareaId: String): Flow<Tarea?> =
         remoteDataSource.observeOne(obraId, tareaId).map { it?.toDomain() }
+        .conErrorDeLectura(Exception::toTareaError)
 
     override suspend fun create(userId: String, obraId: String, draft: TareaDraft): AppResult<Tarea> =
         remoteDataSource.create(draft.toDto(userId, obraId)).toAppResult()

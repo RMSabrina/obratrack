@@ -2,6 +2,7 @@ package com.unaj.appmoviles.obratrack.core.ui.components
 
 import android.content.Intent
 import android.location.Geocoder
+import android.util.Log
 import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
@@ -109,7 +110,8 @@ fun MapPreviewCard(
                             addressText = formatted
                         }
                     }
-                } catch (_: Exception) {
+                } catch (e: Exception) {
+                    Log.w("MapPreviewCard", "No se pudo obtener la dirección", e)
                     addressText = null
                 }
             }

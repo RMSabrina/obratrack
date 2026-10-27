@@ -1,9 +1,12 @@
 package com.unaj.appmoviles.features.obras.detail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
+import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
+import com.unaj.appmoviles.obratrack.core.domain.error.aErrorDeLectura
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
@@ -58,9 +61,12 @@ class ObraDetailViewModel @AssistedInject constructor(
     private val _uiState = MutableStateFlow(ObraDetailUiState())
     val uiState: StateFlow<ObraDetailUiState> = _uiState.asStateFlow()
 
+    /** Cada incremento vuelve a leer la obra, relevamientos y tareas; solo lo hace "Reintentar". */
+    private val reintentos = MutableStateFlow(0)
+
     init {
         viewModelScope.launch {
-            observeSession().collectLatest { user ->
+            observeSession().combine(reintentos) { user, _ -> user }.collectLatest { user ->
                 if (user == null) {
                     _uiState.update { it.copy(isLoading = false, error = ObraError.NoAutorizada) }
                     return@collectLatest
@@ -71,8 +77,8 @@ class ObraDetailViewModel @AssistedInject constructor(
                     observeTareasOError(user.id)
                 ) { obra, relevamientos, tareas ->
                     val esDueno = obra?.userId == user.id
-                    // tareas == null: no se pudieron leer; el resumen se oculta.
-                    val resumenTareas = if (esDueno) tareas?.resumen(LocalDate.now(clock)) else null
+                    // Si no se pudieron leer las tareas, el resumen se oculta (la falla ya quedó en el log).
+                    val resumenTareas = if (esDueno) tareas.getOrNull()?.resumen(LocalDate.now(clock)) else null
                     val proximaVisitaAtrasada = obra?.proximaVisita?.let { proxima ->
                         val fecha = proxima.toFechaCalendario()
                         val hora = obra.horaVisita
@@ -94,9 +100,9 @@ class ObraDetailViewModel @AssistedInject constructor(
                             isLoading = false,
                             isEditable = esDueno,
                             obra = obra,
-                            relevamientos = relevamientos.orEmpty(),
-                            relevamientosError = relevamientos == null,
-                            tareas = if (esDueno) tareas.orEmpty() else emptyList(),
+                            relevamientos = relevamientos.getOrNull().orEmpty(),
+                            relevamientosError = relevamientos.exceptionOrNull()?.aErrorDeLectura(RelevamientoError.Desconocido),
+                            tareas = if (esDueno) tareas.getOrNull().orEmpty() else emptyList(),
                             resumenTareas = resumenTareas,
                             proximaVisitaAtrasada = proximaVisitaAtrasada,
                             error = if (obra == null) ObraError.NoEncontrada else null,
@@ -105,9 +111,10 @@ class ObraDetailViewModel @AssistedInject constructor(
                             deleteError = current.deleteError
                         )
                     }
-                }.catch {
+                }.catch { e ->
+                    Log.e(TAG, "No se pudo leer la obra", e)
                     if (!_uiState.value.isDeleting) {
-                        _uiState.update { it.copy(isLoading = false, error = ObraError.Desconocido) }
+                        _uiState.update { it.copy(isLoading = false, error = e.aErrorDeLectura()) }
                     }
                 }.collect { newState ->
                     _uiState.value = newState
@@ -116,31 +123,43 @@ class ObraDetailViewModel @AssistedInject constructor(
         }
     }
 
+    fun reintentar() {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        reintentos.update { it + 1 }
+    }
+
     /**
-     * null si fallan los relevamientos: la obra se sigue mostrando y la sección avisa del error
-     * (si no, el error cortaría el combine y la lista quedaría vacía como si no hubiera ninguno).
+     * Result.failure si fallan los relevamientos: la obra se sigue mostrando y la sección avisa
+     * del error (si no, el error cortaría el combine y la lista quedaría vacía como si no
+     * hubiera ninguno).
      */
-    private fun observeRelevamientosOError(userId: String): Flow<List<Relevamiento>?> =
+    private fun observeRelevamientosOError(userId: String): Flow<Result<List<Relevamiento>>> =
         observeRelevamientos(userId, obraId)
-            .map<List<Relevamiento>, List<Relevamiento>?> { it }
-            .catch { emit(null) }
+            .map { Result.success(it) }
+            .catch { e ->
+                Log.e(TAG, "No se pudieron leer los relevamientos", e)
+                emit(Result.failure(e))
+            }
 
     /**
      * Las tareas son privadas: solo se observan si el usuario es dueño (si no, Firestore
-     * rechaza la lectura). Un error de tareas devuelve null (se oculta el resumen) sin
-     * afectar al resto.
+     * rechaza la lectura). Un error de tareas devuelve Result.failure (se oculta el resumen)
+     * sin afectar al resto.
      */
-    private fun observeTareasOError(userId: String): Flow<List<Tarea>?> =
+    private fun observeTareasOError(userId: String): Flow<Result<List<Tarea>>> =
         observeObra(userId, obraId)
             .map { obra -> obra?.userId == userId }
             .distinctUntilChanged()
             .flatMapLatest { esDueno ->
                 if (!esDueno) {
-                    flowOf(emptyList())
+                    flowOf<Result<List<Tarea>>>(Result.success(emptyList()))
                 } else {
                     observeTareas(obraId)
-                        .map<List<Tarea>, List<Tarea>?> { it }
-                        .catch { emit(null) }
+                        .map { Result.success(it) }
+                        .catch { e ->
+                            Log.e(TAG, "No se pudieron leer las tareas", e)
+                            emit(Result.failure(e))
+                        }
                 }
             }
 
@@ -169,5 +188,9 @@ class ObraDetailViewModel @AssistedInject constructor(
 
     fun onDeleteErrorDismissed() {
         _uiState.update { it.copy(deleteError = null) }
+    }
+
+    private companion object {
+        const val TAG = "ObraDetailViewModel"
     }
 }

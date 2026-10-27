@@ -1,9 +1,11 @@
 package com.unaj.appmoviles.features.obras.relevamiento.detail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unaj.appmoviles.obratrack.core.domain.error.AppResult
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
+import com.unaj.appmoviles.obratrack.core.domain.error.aErrorDeLectura
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraPublicaUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
@@ -47,9 +49,12 @@ class RelevamientoDetailViewModel @AssistedInject constructor(
     private val _uiState = MutableStateFlow(RelevamientoDetailUiState())
     val uiState: StateFlow<RelevamientoDetailUiState> = _uiState.asStateFlow()
 
+    /** Cada incremento vuelve a leer la obra y el relevamiento; solo lo hace "Reintentar". */
+    private val reintentos = MutableStateFlow(0)
+
     init {
         viewModelScope.launch {
-            observeSession().collectLatest { user ->
+            observeSession().combine(reintentos) { user, _ -> user }.collectLatest { user ->
                 val obraFlow = if (user != null) {
                     observeObra(user.id, obraId).flatMapLatest { obraPropia ->
                         if (obraPropia != null) flowOf(obraPropia)
@@ -83,15 +88,21 @@ class RelevamientoDetailViewModel @AssistedInject constructor(
                             deleteError = current.deleteError
                         )
                     }
-                }.catch {
+                }.catch { e ->
+                    Log.e(TAG, "No se pudo leer el relevamiento", e)
                     if (!_uiState.value.isDeleting) {
-                        _uiState.update { it.copy(isLoading = false, error = RelevamientoError.Desconocido) }
+                        _uiState.update { it.copy(isLoading = false, error = e.aErrorDeLectura(RelevamientoError.Desconocido)) }
                     }
                 }.collect {
                     _uiState.value = it
                 }
             }
         }
+    }
+
+    fun reintentar() {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        reintentos.update { it + 1 }
     }
 
     fun deleteRelevamiento() {
@@ -119,5 +130,9 @@ class RelevamientoDetailViewModel @AssistedInject constructor(
 
     fun onDeleteErrorDismissed() {
         _uiState.update { it.copy(deleteError = null) }
+    }
+
+    private companion object {
+        const val TAG = "RelevamientoDetailVM"
     }
 }
