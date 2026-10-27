@@ -34,7 +34,6 @@
     <!-- Agenda de visitas -->
     <string name="agenda_titulo">Visit Schedule</string>
     <string name="agenda_subtitulo">Itinerary and technical field control</string>
-    <string name="agenda_guardar_fecha">Save date</string>
     <string name="agenda_quitar_fecha">Remove date</string>
     <string name="agenda_filtro_todas">All</string>
     <string name="agenda_filtro_urgentes_y_hoy">🚨 Urgent and today</string>
@@ -65,7 +64,6 @@
     <string name="agenda_ultimo_relevamiento">Last inspection: %1$s</string>
     <string name="agenda_relevar">Inspect</string>
     <string name="agenda_mapa">Map</string>
-    <string name="agenda_cambiar">Change</string>
     <string name="agenda_agendar">Schedule</string>
     <string name="agenda_visita_programada">Site visit scheduled for %1$s</string>
     <string name="agenda_visita_cancelada">Next visit canceled for %1$s</string>
@@ -89,4 +87,9 @@
     <string name="agenda_quitar_confirmar_mensaje">The date and time of the next visit to %1$s will be removed.</string>
     <string name="agenda_guardando">Saving…</string>
     <string name="aceptar">OK</string>
+    <string name="agenda_reprogramar">Reschedule</string>
+    <string name="agenda_reprogramar_titulo">Reschedule visit</string>
+    <string name="agenda_fecha_actual">Date: %1$s</string>
+    <string name="agenda_cambiar_fecha">Change date</string>
+    <string name="agenda_guardar">Save</string>
 </resources>

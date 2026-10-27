@@ -34,7 +34,6 @@
     <!-- Agenda de visitas -->
     <string name="agenda_titulo">Agenda de Visitas</string>
     <string name="agenda_subtitulo">Itinerario y control técnico de campo</string>
-    <string name="agenda_guardar_fecha">Guardar Fecha</string>
     <string name="agenda_quitar_fecha">Quitar fecha</string>
     <string name="agenda_filtro_todas">Todas</string>
     <string name="agenda_filtro_urgentes_y_hoy">🚨 Urgentes y Hoy</string>
@@ -65,7 +64,6 @@
     <string name="agenda_ultimo_relevamiento">Último relevamiento: %1$s</string>
     <string name="agenda_relevar">Relevar</string>
     <string name="agenda_mapa">Mapa</string>
-    <string name="agenda_cambiar">Cambiar</string>
     <string name="agenda_agendar">Agendar</string>
     <string name="agenda_visita_programada">Visita técnica programada con éxito para %1$s</string>
     <string name="agenda_visita_cancelada">Próxima visita cancelada para %1$s</string>
@@ -89,4 +87,9 @@
     <string name="agenda_quitar_confirmar_mensaje">Se quitarán la fecha y la hora de la próxima visita a %1$s.</string>
     <string name="agenda_guardando">Guardando…</string>
     <string name="aceptar">Aceptar</string>
+    <string name="agenda_reprogramar">Reprogramar</string>
+    <string name="agenda_reprogramar_titulo">Reprogramar visita</string>
+    <string name="agenda_fecha_actual">Fecha: %1$s</string>
+    <string name="agenda_cambiar_fecha">Cambiar fecha</string>
+    <string name="agenda_guardar">Guardar</string>
 </resources>

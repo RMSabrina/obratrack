@@ -34,7 +34,6 @@
     <!-- Agenda de visitas -->
     <string name="agenda_titulo">Agenda dei sopralluoghi</string>
     <string name="agenda_subtitulo">Itinerario e controllo tecnico in cantiere</string>
-    <string name="agenda_guardar_fecha">Salva data</string>
     <string name="agenda_quitar_fecha">Rimuovi data</string>
     <string name="agenda_filtro_todas">Tutti</string>
     <string name="agenda_filtro_urgentes_y_hoy">🚨 Urgenti e oggi</string>
@@ -65,7 +64,6 @@
     <string name="agenda_ultimo_relevamiento">Ultimo rilievo: %1$s</string>
     <string name="agenda_relevar">Rileva</string>
     <string name="agenda_mapa">Mappa</string>
-    <string name="agenda_cambiar">Cambia</string>
     <string name="agenda_agendar">Programma</string>
     <string name="agenda_visita_programada">Sopralluogo programmato per %1$s</string>
     <string name="agenda_visita_cancelada">Prossimo sopralluogo annullato per %1$s</string>
@@ -89,4 +87,9 @@
     <string name="agenda_quitar_confirmar_mensaje">Verranno rimosse la data e l\'ora della prossima visita a %1$s.</string>
     <string name="agenda_guardando">Salvataggio…</string>
     <string name="aceptar">OK</string>
+    <string name="agenda_reprogramar">Riprogramma</string>
+    <string name="agenda_reprogramar_titulo">Riprogramma il sopralluogo</string>
+    <string name="agenda_fecha_actual">Data: %1$s</string>
+    <string name="agenda_cambiar_fecha">Cambia data</string>
+    <string name="agenda_guardar">Salva</string>
 </resources>

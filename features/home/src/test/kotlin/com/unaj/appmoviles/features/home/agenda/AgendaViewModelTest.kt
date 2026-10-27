@@ -162,6 +162,22 @@ class AgendaViewModelTest {
     }
 
     @Test
+    fun reprogramar_sinHora_guardaLaFechaYBorraLaHora() = runTest {
+        val obra = obraDe().copy(proximaVisita = medianocheDelDia, horaVisita = 600)
+        val repo = FakeObraRepository(listOf(obra))
+        val viewModel = crearViewModel(repo)
+        suscribir(viewModel)
+
+        val nueva = medianocheDelDia + 86_400_000L
+        viewModel.onConfirmarReprogramacion(obra, nueva, null)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(nueva, repo.actualizaciones.single().proximaVisita)
+        assertNull(repo.actualizaciones.single().horaVisita)
+        assertEquals(FeedbackAgenda.VisitaProgramada(obra.nombre), viewModel.uiState.value.mensajeFeedback)
+    }
+
+    @Test
     fun quitarLaFecha_borraFechaYHora_yAvisaQueSeCancelo() = runTest {
         val obra = obraDe().copy(proximaVisita = medianocheDelDia, horaVisita = 600)
         val repo = FakeObraRepository(listOf(obra))

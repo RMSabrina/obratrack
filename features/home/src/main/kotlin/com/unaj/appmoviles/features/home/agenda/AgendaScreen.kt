@@ -8,7 +8,9 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.DirectionsCar
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.LocationOn
@@ -73,6 +77,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -569,7 +574,7 @@ fun AgendaVisitaCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = stringResource(if (item.fechaProgramadaMillis != null) R.string.agenda_cambiar else R.string.agenda_agendar),
+                        text = stringResource(if (item.fechaProgramadaMillis != null) R.string.agenda_reprogramar else R.string.agenda_agendar),
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
@@ -600,7 +605,11 @@ fun abrirMapa(context: Context, direccion: String, latitud: Double?, longitud: D
     }
 }
 
-/** Elegir la fecha y la hora de la próxima visita. La hora que ya tenía la obra se conserva por defecto. */
+/**
+ * Reprogramar la próxima visita. Fecha y hora son dos filas que abren su propio selector: el
+ * calendario ocupa casi todo el alto de su diálogo y no deja lugar para otros controles.
+ * La hora es opcional: se puede guardar sin hora ("Quitar hora"). La que ya tenía la obra se conserva.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DialogReprogramar(
@@ -611,12 +620,29 @@ private fun DialogReprogramar(
     onConfirmar: (Obra, Long?, Int?) -> Unit
 ) {
     val context = LocalContext.current
-    val pickerState = rememberDatePickerState(
-        initialSelectedDateMillis = obra.proximaVisita ?: hoyMillis
-    )
+    var fecha by rememberSaveable(obra.id) { mutableStateOf(obra.proximaVisita ?: hoyMillis) }
     var hora by rememberSaveable(obra.id) { mutableStateOf(obra.horaVisita) }
+    var eligiendoFecha by rememberSaveable { mutableStateOf(false) }
     var eligiendoHora by rememberSaveable { mutableStateOf(false) }
     var confirmandoQuitar by rememberSaveable { mutableStateOf(false) }
+
+    if (eligiendoFecha) {
+        val pickerState = rememberDatePickerState(initialSelectedDateMillis = fecha)
+        DatePickerDialog(
+            onDismissRequest = { eligiendoFecha = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { fecha = it }
+                    eligiendoFecha = false
+                }) { Text(stringResource(R.string.aceptar)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { eligiendoFecha = false }) { Text(stringResource(R.string.cancelar)) }
+            }
+        ) {
+            DatePicker(state = pickerState)
+        }
+    }
 
     if (eligiendoHora) {
         val inicial = hora ?: HORA_VISITA_POR_DEFECTO_MINUTOS
@@ -661,52 +687,81 @@ private fun DialogReprogramar(
         )
     }
 
-    DatePickerDialog(
+    AlertDialog(
         onDismissRequest = { if (!guardando) onCancelar() },
-        confirmButton = {
-            Button(
-                enabled = !guardando,
-                onClick = { onConfirmar(obra, pickerState.selectedDateMillis, hora) }
-            ) {
-                Text(stringResource(if (guardando) R.string.agenda_guardando else R.string.agenda_guardar_fecha))
-            }
-        },
-        dismissButton = {
-            Row {
-                if (obra.proximaVisita != null) {
-                    TextButton(enabled = !guardando, onClick = { confirmandoQuitar = true }) {
-                        Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error)
-                    }
-                }
-                TextButton(enabled = !guardando, onClick = onCancelar) {
-                    Text(stringResource(R.string.cancelar))
-                }
-            }
-        }
-    ) {
-        Column {
-            DatePicker(state = pickerState)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp)
-            ) {
-                Text(
-                    text = hora?.let { stringResource(R.string.agenda_hora_actual, formatHora(context, it)) }
-                        ?: stringResource(R.string.agenda_sin_hora),
-                    modifier = Modifier.weight(1f)
+        title = { Text(stringResource(R.string.agenda_reprogramar_titulo)) },
+        text = {
+            // Con fuente grande o pantalla chica el contenido hace scroll en vez de recortarse.
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                FilaVisita(
+                    icono = Icons.Outlined.EditCalendar,
+                    texto = stringResource(R.string.agenda_fecha_actual, formatFecha(fecha)),
+                    accion = stringResource(R.string.agenda_cambiar_fecha),
+                    habilitada = !guardando,
+                    onClick = { eligiendoFecha = true }
                 )
-                TextButton(enabled = !guardando, onClick = { eligiendoHora = true }) {
-                    Text(stringResource(if (hora == null) R.string.agenda_elegir_hora else R.string.agenda_cambiar_hora))
-                }
+                FilaVisita(
+                    icono = Icons.Outlined.Schedule,
+                    texto = hora?.let { stringResource(R.string.agenda_hora_actual, formatHora(context, it)) }
+                        ?: stringResource(R.string.agenda_sin_hora),
+                    accion = stringResource(if (hora == null) R.string.agenda_elegir_hora else R.string.agenda_cambiar_hora),
+                    habilitada = !guardando,
+                    onClick = { eligiendoHora = true }
+                )
                 if (hora != null) {
                     TextButton(enabled = !guardando, onClick = { hora = null }) {
                         Text(stringResource(R.string.agenda_quitar_hora))
                     }
                 }
+                if (obra.proximaVisita != null) {
+                    TextButton(enabled = !guardando, onClick = { confirmandoQuitar = true }) {
+                        Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error)
+                    }
+                }
             }
+        },
+        confirmButton = {
+            Button(enabled = !guardando, onClick = { onConfirmar(obra, fecha, hora) }) {
+                Text(stringResource(if (guardando) R.string.agenda_guardando else R.string.agenda_guardar))
+            }
+        },
+        dismissButton = {
+            TextButton(enabled = !guardando, onClick = onCancelar) { Text(stringResource(R.string.cancelar)) }
         }
+    )
+}
+
+/** Fila táctil (mínimo 56 dp) que muestra un valor y abre su selector. [accion] es lo que anuncia TalkBack. */
+@Composable
+private fun FilaVisita(
+    icono: ImageVector,
+    texto: String,
+    accion: String,
+    habilitada: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clickable(enabled = habilitada, onClickLabel = accion, role = Role.Button, onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icono,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = texto,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.Outlined.Edit,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
