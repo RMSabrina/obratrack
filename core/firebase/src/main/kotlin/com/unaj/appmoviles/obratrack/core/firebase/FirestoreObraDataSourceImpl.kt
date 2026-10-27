@@ -18,7 +18,8 @@ import javax.inject.Inject
 
 class FirestoreObraDataSourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val fallos: FallosEscritura
 ) : FirestoreObraDataSource {
 
     override fun observe(userId: String): Flow<List<ObraDto>> = callbackFlow {
@@ -111,7 +112,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
                 batch.delete(suscriptorRef)
                 batch.delete(indiceRef)
             }
-            batch.commit().await()
+            batch.commit().sinEsperar(fallos)
             FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -124,7 +125,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
         return try {
             val ref = firestore.collection(COLLECTION).document()
             val stored = dto.copy(id = ref.id)
-            ref.set(stored.toCreateMap()).await()
+            ref.set(stored.toCreateMap()).sinEsperar(fallos)
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
             throw e
@@ -136,23 +137,26 @@ class FirestoreObraDataSourceImpl @Inject constructor(
     override suspend fun update(userId: String, obraId: String, dto: ObraDto): FirebaseResult<ObraDto> {
         return try {
             val ref = firestore.collection(COLLECTION).document(obraId)
-            val snapshot = ref.get().await()
-            if (!snapshot.exists()) return FirebaseResult.Error(ObraNotFoundException())
-            if (snapshot.getString(FIELD_USER_ID) != userId) {
-                return FirebaseResult.Error(ObraForbiddenException())
+            // Sin red y sin la obra en el caché no se puede verificar: decide el servidor al sincronizar.
+            val snapshot = ref.getParaVerificar()
+            if (snapshot != null) {
+                if (!snapshot.exists()) return FirebaseResult.Error(ObraNotFoundException())
+                if (snapshot.getString(FIELD_USER_ID) != userId) {
+                    return FirebaseResult.Error(ObraForbiddenException())
+                }
             }
             // Fecha y hora van juntas: sin fecha se borran ambas, sin hora se borra la hora (nunca un null explícito).
             val campos = dto.toUpdateMap().toMutableMap<String, Any>()
             if (dto.proximaVisitaMillis == null) campos[FIELD_PROXIMA_VISITA] = FieldValue.delete()
             if (dto.proximaVisitaMillis == null || dto.horaVisita == null) campos[FIELD_HORA_VISITA] = FieldValue.delete()
-            ref.update(campos).await()
+            ref.update(campos).sinEsperar(fallos)
             FirebaseResult.Success(
                 dto.copy(
                     id = obraId,
                     userId = userId,
-                    fechaInicioMillis = snapshot.getTimestamp(FIELD_FECHA_INICIO)?.toDate()?.time
+                    fechaInicioMillis = snapshot?.getTimestamp(FIELD_FECHA_INICIO)?.toDate()?.time
                         ?: dto.fechaInicioMillis,
-                    ultimaVisitaMillis = snapshot.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
+                    ultimaVisitaMillis = snapshot?.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time,
                 )
             )
         } catch (e: CancellationException) {
@@ -239,7 +243,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
     override suspend fun delete(obraId: String): FirebaseResult<Unit> {
         return try {
             if (auth.uid == null) return FirebaseResult.Error(ObraForbiddenException())
-            firestore.collection(COLLECTION).document(obraId).delete().await()
+            firestore.collection(COLLECTION).document(obraId).delete().sinEsperar(fallos)
             FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -261,7 +265,7 @@ class FirestoreObraDataSourceImpl @Inject constructor(
                 docs.chunked(BATCH_SIZE).forEach { chunk ->
                     val batch = firestore.batch()
                     chunk.forEach { doc -> batch.delete(doc.reference) }
-                    batch.commit().await()
+                    batch.commit().sinEsperar(fallos)
                 }
             }
             FirebaseResult.Success(Unit)

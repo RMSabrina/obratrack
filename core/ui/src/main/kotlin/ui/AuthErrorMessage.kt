@@ -50,11 +50,13 @@ fun DomainError.asMessage(): String = stringResource(
     }
 )
 
-/** Como [asMessage], pero un timeout al borrar habla de la eliminación (que quizá sí se hizo). */
+/**
+ * Como [asMessage], pero un timeout al borrar habla de la eliminación (que quizá sí se hizo) y un
+ * error de red avisa que eliminar (obra, o tarea con relevamientos vinculados) necesita conexión.
+ */
 @Composable
-fun DomainError.asDeleteMessage(): String =
-    if (this == ObraError.Timeout || this == RelevamientoError.Timeout) {
-        stringResource(R.string.error_eliminacion_timeout)
-    } else {
-        asMessage()
-    }
+fun DomainError.asDeleteMessage(): String = when (this) {
+    ObraError.Timeout, RelevamientoError.Timeout -> stringResource(R.string.error_eliminacion_timeout)
+    ObraError.Red, RelevamientoError.Red, TareaError.Red -> stringResource(R.string.error_eliminar_requiere_conexion)
+    else -> asMessage()
+}

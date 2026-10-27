@@ -64,4 +64,5 @@
     <string name="descartar_mensaje">If you leave now, what you entered and have not saved will be lost.</string>
     <string name="descartar_confirmar">Discard</string>
     <string name="descartar_seguir">Keep editing</string>
+    <string name="error_eliminar_requiere_conexion">You need an internet connection to delete this</string>
 </resources>

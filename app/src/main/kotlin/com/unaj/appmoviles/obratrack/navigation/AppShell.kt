@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,7 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -43,6 +47,8 @@ import com.unaj.appmoviles.features.obras.tareas.form.TareaFormRoute
 import com.unaj.appmoviles.features.home.HomeRoute
 import com.unaj.appmoviles.features.home.ObraSelectionRoute
 import com.unaj.appmoviles.features.home.agenda.AgendaRoute
+import com.unaj.appmoviles.obratrack.R
+import com.unaj.appmoviles.obratrack.core.domain.model.MotivoFalloEscritura
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.features.obras.toStorageValue
 
@@ -55,6 +61,27 @@ fun AppShell(
 ) {
     val backStack = rememberNavBackStack(HomeDestination)
     val appContext = LocalContext.current
+
+    // Cambios guardados sin esperar al servidor que este rechazó después: se avisa en un snackbar global.
+    val snackbarHostState = remember { SnackbarHostState() }
+    val fallosViewModel: FallosEscrituraViewModel = hiltViewModel()
+    // El contador distingue dos fallos seguidos con el mismo motivo.
+    var falloEscritura by remember { mutableStateOf<Pair<MotivoFalloEscritura, Int>?>(null) }
+    LaunchedEffect(fallosViewModel) {
+        fallosViewModel.fallos.collect { motivo ->
+            falloEscritura = motivo to ((falloEscritura?.second ?: 0) + 1)
+        }
+    }
+    val mensajeSinPermiso = stringResource(R.string.escritura_fallo_permiso)
+    val mensajeOtroFallo = stringResource(R.string.escritura_fallo_otro)
+    LaunchedEffect(falloEscritura) {
+        val mensaje = when (falloEscritura?.first) {
+            MotivoFalloEscritura.SIN_PERMISO -> mensajeSinPermiso
+            MotivoFalloEscritura.OTRO -> mensajeOtroFallo
+            null -> return@LaunchedEffect
+        }
+        snackbarHostState.showSnackbar(mensaje)
+    }
 
     // Android 13+: sin este permiso los avisos de visita no se muestran.
     val avisosPermissionLauncher = rememberLauncherForActivityResult(
@@ -110,6 +137,7 @@ fun AppShell(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             AnimatedVisibility(
                 visible = conBarra,

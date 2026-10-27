@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
 import kotlinx.coroutines.channels.awaitClose
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 class FirestoreTareaDataSourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val fallos: FallosEscritura
 ) : FirestoreTareaDataSource {
 
     override fun observeByObra(obraId: String): Flow<List<TareaDto>> = callbackFlow {
@@ -45,15 +47,18 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
 
     override suspend fun create(dto: TareaDto): FirebaseResult<TareaDto> {
         return try {
-            val obra = firestore.collection(OBRAS).document(dto.obraId).get().await()
-            if (!obra.exists()) return FirebaseResult.Error(ObraNotFoundException())
-            if (obra.getString(FIELD_USER_ID) != dto.userId) {
-                return FirebaseResult.Error(ObraForbiddenException())
+            // Sin red y sin la obra en el caché no se puede verificar: decide el servidor al sincronizar.
+            val obra = firestore.collection(OBRAS).document(dto.obraId).getParaVerificar()
+            if (obra != null) {
+                if (!obra.exists()) return FirebaseResult.Error(ObraNotFoundException())
+                if (obra.getString(FIELD_USER_ID) != dto.userId) {
+                    return FirebaseResult.Error(ObraForbiddenException())
+                }
             }
 
             val ref = tareas(dto.obraId).document()
             val stored = dto.copy(id = ref.id)
-            ref.set(stored.toMap()).await()
+            ref.set(stored.toMap()).sinEsperar(fallos)
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
             throw e
@@ -64,21 +69,25 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
 
     override suspend fun update(userId: String, dto: TareaDto): FirebaseResult<TareaDto> {
         return try {
-            val obra = firestore.collection(OBRAS).document(dto.obraId).get().await()
-            if (!obra.exists()) return FirebaseResult.Error(ObraNotFoundException())
-            if (obra.getString(FIELD_USER_ID) != userId) {
-                return FirebaseResult.Error(ObraForbiddenException())
+            val obra = firestore.collection(OBRAS).document(dto.obraId).getParaVerificar()
+            if (obra != null) {
+                if (!obra.exists()) return FirebaseResult.Error(ObraNotFoundException())
+                if (obra.getString(FIELD_USER_ID) != userId) {
+                    return FirebaseResult.Error(ObraForbiddenException())
+                }
             }
 
             val ref = tareas(dto.obraId).document(dto.id)
-            val snapshot = ref.get().await()
-            if (!snapshot.exists()) return FirebaseResult.Error(TareaNotFoundException())
-            if (snapshot.getString(FIELD_USER_ID) != userId) {
-                return FirebaseResult.Error(TareaForbiddenException())
+            val snapshot = ref.getParaVerificar()
+            if (snapshot != null) {
+                if (!snapshot.exists()) return FirebaseResult.Error(TareaNotFoundException())
+                if (snapshot.getString(FIELD_USER_ID) != userId) {
+                    return FirebaseResult.Error(TareaForbiddenException())
+                }
             }
             val stored = dto.copy(userId = userId)
             // toMap() escribe las fechas null explícitamente para que merge las borre.
-            ref.set(stored.toMap(), SetOptions.merge()).await()
+            ref.set(stored.toMap(), SetOptions.merge()).sinEsperar(fallos)
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
             throw e
@@ -94,11 +103,18 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
     ): FirebaseResult<Unit> {
         return try {
             if (auth.uid == null) return FirebaseResult.Error(TareaForbiddenException())
-            // Del servidor y no del caché: sin conexión falla en vez de dejar vínculos sin ver.
-            val vinculados = firestore.collection(OBRAS).document(obraId).collection(RELEVAMIENTOS)
+            // Del servidor y no del caché: el caché puede estar incompleto y dejar vínculos sin ver.
+            // Sin red, si en el caché hay vinculados hace falta conexión (error de red); si no hay
+            // ninguno, se borra la tarea sola.
+            val vinculadosQuery = firestore.collection(OBRAS).document(obraId).collection(RELEVAMIENTOS)
                 .whereEqualTo(RELEVAMIENTO_FIELD_TAREA_ID, tareaId)
-                .get(Source.SERVER).await()
-                .documents
+            val vinculados = try {
+                vinculadosQuery.get(Source.SERVER).await().documents
+            } catch (e: FirebaseFirestoreException) {
+                if (e.code != FirebaseFirestoreException.Code.UNAVAILABLE) throw e
+                if (vinculadosQuery.get(Source.CACHE).await().documents.isNotEmpty()) throw e
+                emptyList()
+            }
             // Un batch admite hasta 500 escrituras: los vinculados + la tarea + la obra (su última
             // visita, si se borran relevamientos). Partirlo dejaría de ser atómico, así que se rechaza
             // (no se espera llegar a este número).
@@ -133,7 +149,7 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
                         valorUltimaVisita(ultimaVisita)
                     )
                 }
-            }.commit().await()
+            }.commit().sinEsperar(fallos)
             FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -149,7 +165,7 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
             docs.chunked(BATCH_SIZE).forEach { chunk ->
                 val batch = firestore.batch()
                 chunk.forEach { doc -> batch.delete(doc.reference) }
-                batch.commit().await()
+                batch.commit().sinEsperar(fallos)
             }
             FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {

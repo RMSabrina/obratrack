@@ -20,7 +20,8 @@ import javax.inject.Inject
 
 class FirestoreRelevamientoDataSourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val fallos: FallosEscritura
 ) : FirestoreRelevamientoDataSource {
 
     override fun observeAll(userId: String): Flow<List<RelevamientoDto>> = callbackFlow {
@@ -84,15 +85,18 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
     override suspend fun create(dto: RelevamientoDto, photo: ByteArray?): FirebaseResult<RelevamientoDto> {
         return try {
             val obraRef = firestore.collection(OBRAS).document(dto.obraId)
-            val obra = obraRef.get().await()
-            if (!obra.exists()) return FirebaseResult.Error(ObraNotFoundException())
-            if (obra.getString(FIELD_USER_ID) != dto.userId) {
-                return FirebaseResult.Error(ObraForbiddenException())
+            // Sin red y sin la obra en el caché no se puede verificar: decide el servidor al sincronizar.
+            val obra = obraRef.getParaVerificar()
+            if (obra != null) {
+                if (!obra.exists()) return FirebaseResult.Error(ObraNotFoundException())
+                if (obra.getString(FIELD_USER_ID) != dto.userId) {
+                    return FirebaseResult.Error(ObraForbiddenException())
+                }
             }
 
             val relevamientoRef = relevamientos(dto.obraId).document()
             val stored = dto.copy(id = relevamientoRef.id)
-            val currentUltimaVisita = obra.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time
+            val currentUltimaVisita = obra?.getTimestamp(FIELD_ULTIMA_VISITA)?.toDate()?.time
             val ultimaVisita = maxOf(stored.fechaMillis, currentUltimaVisita ?: stored.fechaMillis)
 
             firestore.batch().apply {
@@ -100,7 +104,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
                 update(obraRef, FIELD_ULTIMA_VISITA, Timestamp(Date(ultimaVisita)))
                 val visita = camposVisitaObra(alCrear = true, stored.proximaVisitaMillis, stored.horaVisita)
                 if (visita.isNotEmpty()) update(obraRef, visita)
-            }.commit().await()
+            }.commit().sinEsperar(fallos)
 
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
@@ -117,17 +121,21 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
     ): FirebaseResult<RelevamientoDto> {
         return try {
             val obraRef = firestore.collection(OBRAS).document(dto.obraId)
-            val obra = obraRef.get().await()
-            if (!obra.exists()) return FirebaseResult.Error(ObraNotFoundException())
-            if (obra.getString(FIELD_USER_ID) != userId) {
-                return FirebaseResult.Error(ObraForbiddenException())
+            val obra = obraRef.getParaVerificar()
+            if (obra != null) {
+                if (!obra.exists()) return FirebaseResult.Error(ObraNotFoundException())
+                if (obra.getString(FIELD_USER_ID) != userId) {
+                    return FirebaseResult.Error(ObraForbiddenException())
+                }
             }
 
             val ref = relevamientos(dto.obraId).document(dto.id)
-            val snapshot = ref.get().await()
-            if (!snapshot.exists()) return FirebaseResult.Error(RelevamientoNotFoundException())
-            if (snapshot.getString(FIELD_USER_ID) != userId) {
-                return FirebaseResult.Error(RelevamientoForbiddenException())
+            val snapshot = ref.getParaVerificar()
+            if (snapshot != null) {
+                if (!snapshot.exists()) return FirebaseResult.Error(RelevamientoNotFoundException())
+                if (snapshot.getString(FIELD_USER_ID) != userId) {
+                    return FirebaseResult.Error(RelevamientoForbiddenException())
+                }
             }
             val stored = dto.copy(userId = userId)
             // Con merge, omitir un campo conserva el valor viejo: para desvincular la tarea o
@@ -148,7 +156,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             firestore.batch().apply {
                 set(ref, campos, SetOptions.merge())
                 update(obraRef, visita + (FIELD_ULTIMA_VISITA to valorUltimaVisita(ultimaVisita)))
-            }.commit().await()
+            }.commit().sinEsperar(fallos)
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
             throw e
@@ -232,7 +240,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             firestore.batch().apply {
                 delete(relevamientos(obraId).document(relevamientoId))
                 update(obraRef, FIELD_ULTIMA_VISITA, valorUltimaVisita(ultimaVisita))
-            }.commit().await()
+            }.commit().sinEsperar(fallos)
             FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -250,7 +258,7 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
                 docs.chunked(BATCH_SIZE).forEach { chunk ->
                     val batch = firestore.batch()
                     chunk.forEach { doc -> batch.delete(doc.reference) }
-                    batch.commit().await()
+                    batch.commit().sinEsperar(fallos)
                 }
             }
             FirebaseResult.Success(Unit)

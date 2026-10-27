@@ -26,4 +26,6 @@
     <string name="nav_obras">Cantieri</string>
     <string name="nav_agenda">Agenda</string>
     <string name="nav_perfil">Profilo</string>
+    <string name="escritura_fallo_permiso">Una modifica salvata sul telefono è stata rifiutata dal server (nessun permesso) e annullata</string>
+    <string name="escritura_fallo_otro">Una modifica salvata sul telefono non è stato possibile sincronizzarla con il server</string>
 </resources>

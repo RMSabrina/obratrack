@@ -26,4 +26,6 @@
     <string name="nav_obras">Obras</string>
     <string name="nav_agenda">Agenda</string>
     <string name="nav_perfil">Perfil</string>
+    <string name="escritura_fallo_permiso">Un cambio guardado en el teléfono fue rechazado por el servidor (sin permiso) y se deshizo</string>
+    <string name="escritura_fallo_otro">Un cambio guardado en el teléfono no se pudo sincronizar con el servidor</string>
 </resources>

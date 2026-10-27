@@ -2,11 +2,13 @@ package com.unaj.appmoviles.obratrack.core.data.di
 
 import com.unaj.appmoviles.obratrack.core.data.repository.AuthRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.CloudinaryImageStorageImpl
+import com.unaj.appmoviles.obratrack.core.data.repository.FallosEscrituraRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.ObraRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.OpenMeteoPronosticoRepository
 import com.unaj.appmoviles.obratrack.core.data.repository.RelevamientoRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.data.repository.TareaRepositoryImpl
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.FallosEscrituraRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ImageStorageRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.PronosticoRepository
@@ -25,6 +27,11 @@ abstract class DataModule {
     abstract fun bindAuthRepository(
         impl: AuthRepositoryImpl
     ): AuthRepository
+
+    @Binds
+    abstract fun bindFallosEscrituraRepository(
+        impl: FallosEscrituraRepositoryImpl
+    ): FallosEscrituraRepository
 
     @Binds
     abstract fun bindObraRepository(

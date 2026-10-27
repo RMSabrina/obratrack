@@ -64,4 +64,5 @@
     <string name="descartar_mensaje">Si salís ahora, se pierde lo que cargaste y todavía no guardaste.</string>
     <string name="descartar_confirmar">Descartar</string>
     <string name="descartar_seguir">Seguir editando</string>
+    <string name="error_eliminar_requiere_conexion">Para eliminar necesitás conexión a internet</string>
 </resources>

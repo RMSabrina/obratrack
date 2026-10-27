@@ -68,6 +68,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.RelevamientosVinculados
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.ui.LoadingContent
+import com.unaj.appmoviles.obratrack.core.domain.ui.asDeleteMessage
 import com.unaj.appmoviles.obratrack.core.domain.ui.asMessage
 import com.unaj.appmoviles.obratrack.core.ui.components.InfoRow
 import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
@@ -126,7 +127,7 @@ fun TareaDetailScreen(
         if (state.isDeleted) onDeleteSuccess()
     }
 
-    val deleteErrorMessage = state.deleteError?.asMessage()
+    val deleteErrorMessage = state.deleteError?.asDeleteMessage()
     LaunchedEffect(deleteErrorMessage) {
         if (deleteErrorMessage != null) {
             snackbarHostState.showSnackbar(deleteErrorMessage)
