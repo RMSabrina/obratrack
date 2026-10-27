@@ -53,6 +53,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -103,6 +104,7 @@ import kotlinx.coroutines.withContext
 import com.unaj.appmoviles.features.obras.export.FotosEnUso
 import com.unaj.appmoviles.features.obras.export.limpiarFotosTemporales
 import com.unaj.appmoviles.features.obras.leerFoto
+import com.unaj.appmoviles.features.obras.millisUtcToLocalDate
 import com.unaj.appmoviles.features.obras.rememberCapturaUbicacion
 import com.unaj.appmoviles.features.obras.rememberSalidaConConfirmacion
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
@@ -301,7 +303,14 @@ fun RelevamientoFormScreen(
     )
 
     if (showDatePicker) {
-        val pickerState = rememberDatePickerState(initialSelectedDateMillis = fecha)
+        // El relevamiento es de algo ya observado: no se pueden elegir días futuros (hoy es medianoche UTC).
+        val pickerState = rememberDatePickerState(
+            initialSelectedDateMillis = fecha,
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis <= hoyMillisUtc
+                override fun isSelectableYear(year: Int) = year <= millisUtcToLocalDate(hoyMillisUtc).year
+            }
+        )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
