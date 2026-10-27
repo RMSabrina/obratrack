@@ -12,3 +12,23 @@ fun MutableList<NavKey>.navegarA(destino: NavKey): Boolean {
     add(destino)
     return true
 }
+
+/** Pantallas con barra inferior: Inicio, Obras, Agenda y Perfil. El resto (detalles, formularios) no la muestra. */
+fun NavKey.esDeNivelSuperior(): Boolean =
+    this is HomeDestination || this is ObrasDestination || this is AgendaDestination || this is ProfileDestination
+
+/**
+ * Cambia a la pestaña [destino] dejando la pila en `[Home]` o `[Home, destino]`: lo que había encima se
+ * descarta, así "atrás" desde una pestaña vuelve a Inicio. Si [destino] ya está arriba no hace nada
+ * (un doble toque no apila). Devuelve si cambió la pila.
+ */
+fun MutableList<NavKey>.cambiarDePestana(destino: NavKey): Boolean {
+    if (lastOrNull() == destino) return false
+    if (firstOrNull() != HomeDestination) {
+        clear()
+        add(HomeDestination)
+    }
+    while (size > 1) removeAt(lastIndex)
+    if (destino != HomeDestination) add(destino)
+    return true
+}

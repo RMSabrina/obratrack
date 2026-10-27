@@ -21,4 +21,9 @@
         <item quantity="one">La obra para \'%1$s\' lleva %2$d día sin visitas registradas.</item>
         <item quantity="other">La obra para \'%1$s\' lleva %2$d días sin visitas registradas.</item>
     </plurals>
+    <!-- Barra inferior -->
+    <string name="nav_inicio">Inicio</string>
+    <string name="nav_obras">Obras</string>
+    <string name="nav_agenda">Agenda</string>
+    <string name="nav_perfil">Perfil</string>
 </resources>

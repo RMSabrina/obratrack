@@ -13,7 +13,6 @@ fun HomeRoute(
     onNavigateToAgenda: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
     onNavigateToObrasPublicas: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onIniciarRelevamientoParaObra: (String) -> Unit
 ) {
@@ -25,7 +24,6 @@ fun HomeRoute(
         onNavigateToAgenda = onNavigateToAgenda,
         onNavigateToObraSelection = onNavigateToObraSelection,
         onNavigateToObrasPublicas = onNavigateToObrasPublicas,
-        onNavigateToProfile = onNavigateToProfile,
         onOpenRelevamiento = onOpenRelevamiento,
         onIniciarRelevamientoParaObra = onIniciarRelevamientoParaObra,
         onRetry = viewModel::reintentar

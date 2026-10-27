@@ -5,8 +5,20 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -89,7 +101,30 @@ fun AppShell(
         onObraAbierta()
     }
 
+    // La barra se define una sola vez, aquí: se ve en las pantallas de nivel superior y se oculta en el resto.
+    val actual = backStack.lastOrNull()
+    val conBarra = actual?.esDeNivelSuperior() == true
+    // Pestaña que se marca; se recuerda para que no cambie mientras la barra se oculta con animación.
+    var pestanaMarcada by remember { mutableStateOf<NavKey>(HomeDestination) }
+    if (actual != null && conBarra) pestanaMarcada = actual
+
+    Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        bottomBar = {
+            AnimatedVisibility(
+                visible = conBarra,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                BarraInferior(
+                    seleccionado = pestanaMarcada,
+                    onSeleccionar = { backStack.cambiarDePestana(it) }
+                )
+            }
+        }
+    ) { innerPadding ->
     NavDisplay(
+        modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding),
         backStack = backStack,
         onBack = ::goBack,
         entryDecorators = listOf(
@@ -103,7 +138,6 @@ fun AppShell(
                     onNavigateToAgenda = { navigateTo(AgendaDestination) },
                     onNavigateToObraSelection = { navigateTo(ObraSelectionDestination) },
                     onNavigateToObrasPublicas = { navigateTo(ObrasPublicasDestination) },
-                    onNavigateToProfile = { navigateTo(ProfileDestination) },
                     onIniciarRelevamientoParaObra = { obraId ->
                         navigateTo(RelevamientoFormDestination(obraId = obraId))
                     },
@@ -120,15 +154,6 @@ fun AppShell(
             entry<AgendaDestination> {
                 AgendaRoute(
                     onBack = ::popToHome,
-                    onNavigateToHome = ::popToHome,
-                    onNavigateToObras = {
-                        popToHome()
-                        navigateTo(ObrasDestination)
-                    },
-                    onNavigateToProfile = {
-                        popToHome()
-                        navigateTo(ProfileDestination)
-                    },
                     onOpenObra = { obraId ->
                         navigateTo(ObraDetailDestination(obraId))
                     },
@@ -329,4 +354,5 @@ fun AppShell(
             }
         }
     )
+    }
 }

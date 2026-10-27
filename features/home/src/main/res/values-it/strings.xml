@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Barra inferior (Home y Agenda) -->
-    <string name="nav_inicio">Home</string>
-    <string name="nav_obras">Cantieri</string>
-    <string name="nav_agenda">Agenda</string>
-    <string name="nav_perfil">Profilo</string>
-
     <!-- Comunes -->
     <string name="volver">Indietro</string>
     <string name="cancelar">Annulla</string>

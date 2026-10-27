@@ -17,9 +17,6 @@ private const val INTERVALO_REFRESCO_MS = 30_000L
 fun AgendaRoute(
     viewModel: AgendaViewModel = hiltViewModel(),
     onBack: () -> Unit,
-    onNavigateToHome: () -> Unit,
-    onNavigateToObras: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onOpenObra: (String) -> Unit,
     onIniciarRelevamiento: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -41,9 +38,6 @@ fun AgendaRoute(
     AgendaScreen(
         state = state,
         onBack = onBack,
-        onNavigateToHome = onNavigateToHome,
-        onNavigateToObras = onNavigateToObras,
-        onNavigateToProfile = onNavigateToProfile,
         onOpenObra = onOpenObra,
         onIniciarRelevamiento = onIniciarRelevamiento,
         onFiltroChanged = viewModel::onFiltroChanged,

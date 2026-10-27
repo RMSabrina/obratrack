@@ -21,4 +21,9 @@
         <item quantity="one">The project for \'%1$s\' has gone %2$d day without recorded visits.</item>
         <item quantity="other">The project for \'%1$s\' has gone %2$d days without recorded visits.</item>
     </plurals>
+    <!-- Barra inferior -->
+    <string name="nav_inicio">Home</string>
+    <string name="nav_obras">Projects</string>
+    <string name="nav_agenda">Schedule</string>
+    <string name="nav_perfil">Profile</string>
 </resources>

@@ -36,9 +36,6 @@ import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Business
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material.icons.outlined.ChevronRight
@@ -47,9 +44,6 @@ import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -81,7 +75,6 @@ fun HomeScreen(
     onNavigateToAgenda: () -> Unit,
     onNavigateToObraSelection: () -> Unit,
     onNavigateToObrasPublicas: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onOpenRelevamiento: (Relevamiento) -> Unit,
     onIniciarRelevamientoParaObra: (String) -> Unit = {},
     onRetry: () -> Unit = {},
@@ -89,14 +82,7 @@ fun HomeScreen(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            HomeBottomNavigation(
-                onNavigateToObras = onNavigateToObras,
-                onNavigateToAgenda = onNavigateToAgenda,
-                onNavigateToProfile = onNavigateToProfile
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         if (state.isLoading) {
             LoadingContent(Modifier.padding(padding).fillMaxSize())
@@ -473,67 +459,5 @@ fun BannerLocation(
                 tint = MaterialTheme.colorScheme.primary
             )
         }
-    }
-}
-
-@Composable
-fun HomeBottomNavigation(
-    onNavigateToObras: () -> Unit,
-    onNavigateToAgenda: () -> Unit,
-    onNavigateToProfile: () -> Unit
-) {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.primary
-    ) {
-        NavigationBarItem(
-            selected = true,
-            onClick = { },
-            icon = { Icon(Icons.Outlined.Home, contentDescription = stringResource(R.string.nav_inicio)) },
-            label = { Text(stringResource(R.string.nav_inicio), fontWeight = FontWeight.Bold) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToObras,
-            icon = { Icon(Icons.Outlined.Business, contentDescription = stringResource(R.string.nav_obras)) },
-            label = { Text(stringResource(R.string.nav_obras)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToAgenda,
-            icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = stringResource(R.string.nav_agenda)) },
-            label = { Text(stringResource(R.string.nav_agenda)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onNavigateToProfile,
-            icon = { Icon(Icons.Outlined.Person, contentDescription = stringResource(R.string.nav_perfil)) },
-            label = { Text(stringResource(R.string.nav_perfil)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
     }
 }
