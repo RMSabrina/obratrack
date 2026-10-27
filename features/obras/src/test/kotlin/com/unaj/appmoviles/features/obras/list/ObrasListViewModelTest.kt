@@ -3,11 +3,13 @@ package com.unaj.appmoviles.features.obras.list
 import com.unaj.appmoviles.features.obras.tareas.DUENO
 import com.unaj.appmoviles.features.obras.tareas.FakeAuthRepository
 import com.unaj.appmoviles.features.obras.tareas.FakeObraRepository
+import com.unaj.appmoviles.features.obras.tareas.FakePendientesRepository
 import com.unaj.appmoviles.features.obras.tareas.OBRA_ID
 import com.unaj.appmoviles.features.obras.tareas.obraDe
 import com.unaj.appmoviles.obratrack.core.domain.error.LecturaFallidaException
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.sync.ObservePendientesUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,9 +40,13 @@ class ObrasListViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun crearViewModel(repo: FakeObraRepository) = ObrasListViewModel(
+    private fun crearViewModel(
+        repo: FakeObraRepository,
+        pendientes: FakePendientesRepository = FakePendientesRepository()
+    ) = ObrasListViewModel(
         observeSession = ObserveSessionUseCase(FakeAuthRepository(DUENO)),
-        observeObras = ObserveObrasUseCase(repo)
+        observeObras = ObserveObrasUseCase(repo),
+        observePendientes = ObservePendientesUseCase(pendientes)
     )
 
     @Test
@@ -116,5 +122,21 @@ class ObrasListViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(ObraError.Desconocido, viewModel.uiState.value.error)
+    }
+
+    @Test
+    fun marcaLasObrasPendientes_yLasQuitaCuandoElServidorConfirma() = runTest {
+        val pendientes = FakePendientesRepository(setOf(OBRA_ID))
+        val viewModel = crearViewModel(FakeObraRepository(obraDe(DUENO.id)), pendientes)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(setOf(OBRA_ID), viewModel.uiState.value.pendientes)
+        assertEquals(listOf(OBRA_ID), viewModel.uiState.value.obras.map { it.id })
+
+        pendientes.ids.value = emptySet()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(emptySet<String>(), viewModel.uiState.value.pendientes)
+        assertEquals(listOf(OBRA_ID), viewModel.uiState.value.obras.map { it.id })
     }
 }

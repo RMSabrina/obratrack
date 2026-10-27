@@ -202,7 +202,11 @@ fun ObrasListScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(filteredObras, key = { it.id }) { obra ->
-                            ObraCard(obra = obra, onClick = { onOpen(obra) })
+                            ObraCard(
+                                obra = obra,
+                                onClick = { onOpen(obra) },
+                                pendiente = obra.id in state.pendientes
+                            )
                         }
                     }
                 }

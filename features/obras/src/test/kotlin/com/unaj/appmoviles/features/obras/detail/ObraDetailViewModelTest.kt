@@ -3,6 +3,7 @@ package com.unaj.appmoviles.features.obras.detail
 import com.unaj.appmoviles.features.obras.tareas.DUENO
 import com.unaj.appmoviles.features.obras.tareas.FakeAuthRepository
 import com.unaj.appmoviles.features.obras.tareas.FakeObraRepository
+import com.unaj.appmoviles.features.obras.tareas.FakePendientesRepository
 import com.unaj.appmoviles.features.obras.tareas.FakeRelevamientoRepository
 import com.unaj.appmoviles.features.obras.tareas.FakeTareaRepository
 import com.unaj.appmoviles.features.obras.tareas.OBRA_ID
@@ -23,6 +24,7 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObtenerPronostico
 import com.unaj.appmoviles.obratrack.core.domain.repository.PronosticoRepository
 import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRelevamientosUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareasUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.sync.ObservePendientesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -92,6 +94,7 @@ class ObraDetailViewModelTest {
         relevamientoRepo: FakeRelevamientoRepository = FakeRelevamientoRepository(listOf(relevamiento)),
         obra: Obra = obraDe(DUENO.id, publica = true),
         obraRepo: FakeObraRepository = FakeObraRepository(obra),
+        pendientes: FakePendientesRepository = FakePendientesRepository(),
         pronosticoRepository: PronosticoRepository = object : PronosticoRepository {
             override suspend fun obtenerParaVisita(latitud: Double, longitud: Double, fecha: LocalDate, hora: Int?) =
                 PronosticoVisita(fecha, hora ?: 720, 20.0, 10, 8.0, 1)
@@ -103,6 +106,7 @@ class ObraDetailViewModelTest {
             observeObra = ObserveObraUseCase(obraRepo),
             observeRelevamientos = ObserveRelevamientosUseCase(relevamientoRepo),
             observeTareas = ObserveTareasUseCase(tareaRepo),
+            observePendientes = ObservePendientesUseCase(pendientes),
             deleteObraUseCase = DeleteObraUseCase(obraRepo, relevamientoRepo, tareaRepo),
             obtenerPronosticoVisita = ObtenerPronosticoVisitaUseCase(pronosticoRepository),
             clock = clock
@@ -302,5 +306,21 @@ class ObraDetailViewModelTest {
         assertFalse(state.isEditable)
         assertNull(state.resumenTareas)
         assertEquals(0, repo.observeByObraCalls)
+    }
+
+    @Test
+    fun marcaLosRelevamientosPendientes_yLosQuitaCuandoElServidorConfirma() = runTest {
+        val pendientes = FakePendientesRepository(setOf(relevamiento.id))
+        val viewModel = crearViewModel(pendientes = pendientes)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(setOf(relevamiento.id), viewModel.uiState.value.relevamientosPendientes)
+        assertEquals(listOf(relevamiento.id), viewModel.uiState.value.relevamientos.map { it.id })
+
+        pendientes.ids.value = emptySet()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(emptySet<String>(), viewModel.uiState.value.relevamientosPendientes)
+        assertEquals(listOf(relevamiento.id), viewModel.uiState.value.relevamientos.map { it.id })
     }
 }

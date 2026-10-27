@@ -78,6 +78,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.unaj.appmoviles.obratrack.core.ui.components.PendienteBadge
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.formatHora
 import com.unaj.appmoviles.features.obras.label
@@ -516,7 +517,8 @@ private fun ResumenTab(
                 RelevamientoCard(
                     relevamiento = relevamiento,
                     isEditable = state.isEditable && !state.isDeleting,
-                    onClick = { if (!state.isDeleting) onOpenRelevamiento(relevamiento) }
+                    onClick = { if (!state.isDeleting) onOpenRelevamiento(relevamiento) },
+                    pendiente = relevamiento.id in state.relevamientosPendientes
                 )
             }
         }
@@ -718,7 +720,8 @@ private fun RelevamientosTab(
             RelevamientoCard(
                 relevamiento = relevamiento,
                 isEditable = puedeCrear,
-                onClick = { if (!state.isDeleting) onOpenRelevamiento(relevamiento) }
+                onClick = { if (!state.isDeleting) onOpenRelevamiento(relevamiento) },
+                pendiente = relevamiento.id in state.relevamientosPendientes
             )
         }
     }
@@ -883,6 +886,7 @@ private fun RelevamientoCard(
     relevamiento: Relevamiento,
     isEditable: Boolean,
     onClick: () -> Unit,
+    pendiente: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -915,6 +919,7 @@ private fun RelevamientoCard(
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (pendiente) PendienteBadge()
                 
                 if (relevamiento.nota.isNotBlank()) {
                     Text(

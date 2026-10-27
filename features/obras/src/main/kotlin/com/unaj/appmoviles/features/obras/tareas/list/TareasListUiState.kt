@@ -12,5 +12,7 @@ data class TareaItem(
 data class TareasListUiState(
     val isLoading: Boolean = true,
     val tareas: List<TareaItem> = emptyList(),
-    val error: DomainError? = null
+    val error: DomainError? = null,
+    /** Ids de tareas con cambios guardados en el teléfono que el servidor aún no confirmó. */
+    val pendientes: Set<String> = emptySet()
 )

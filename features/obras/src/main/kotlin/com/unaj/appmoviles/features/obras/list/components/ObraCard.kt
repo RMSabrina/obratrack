@@ -38,6 +38,7 @@ import com.unaj.appmoviles.features.obras.label
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
+import com.unaj.appmoviles.obratrack.core.ui.components.PendienteBadge
 import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
 import java.time.Clock
 
@@ -53,6 +54,8 @@ fun ObraCard(
     followEnabled: Boolean = true,
     onFollowToggle: (() -> Unit)? = null,
     mostrarVisita: Boolean = true,
+    /** Hay cambios de esta obra guardados en el teléfono que el servidor aún no confirmó. */
+    pendiente: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -95,6 +98,7 @@ fun ObraCard(
                         backgroundColor = bgColor
                     )
                 }
+                if (pendiente) PendienteBadge()
                 if (obra.cliente.isNotBlank()) {
                     Text(
                         text = obra.cliente,

@@ -13,6 +13,7 @@ import com.unaj.appmoviles.obratrack.core.domain.error.aErrorDeLectura
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.sync.ObservePendientesUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.DeleteObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoFechaVisita
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.EstadoVisitaConHora
@@ -55,6 +56,7 @@ class ObraDetailViewModel @AssistedInject constructor(
     private val observeObra: ObserveObraUseCase,
     private val observeRelevamientos: ObserveRelevamientosUseCase,
     private val observeTareas: ObserveTareasUseCase,
+    observePendientes: ObservePendientesUseCase,
     private val deleteObraUseCase: DeleteObraUseCase,
     private val obtenerPronosticoVisita: ObtenerPronosticoVisitaUseCase,
     private val clock: Clock
@@ -82,6 +84,11 @@ class ObraDetailViewModel @AssistedInject constructor(
     private val reintentos = MutableStateFlow(0)
 
     init {
+        viewModelScope.launch {
+            observePendientes.relevamientos(obraId).collect { ids ->
+                _uiState.update { it.copy(relevamientosPendientes = ids) }
+            }
+        }
         viewModelScope.launch {
             observeSession().combine(reintentos) { user, _ -> user }.collectLatest { user ->
                 if (user == null) {
@@ -138,7 +145,8 @@ class ObraDetailViewModel @AssistedInject constructor(
                 }.collect { newState ->
                     val sameVisit = mismoContextoVisita(newState, _uiState.value)
                     _uiState.value = newState.copy(
-                        pronosticoVisita = _uiState.value.pronosticoVisita.takeIf { sameVisit }
+                        pronosticoVisita = _uiState.value.pronosticoVisita.takeIf { sameVisit },
+                        relevamientosPendientes = _uiState.value.relevamientosPendientes
                     )
                     actualizarPronostico(newState)
                 }

@@ -28,4 +28,5 @@
     <string name="nav_perfil">Perfil</string>
     <string name="escritura_fallo_permiso">Un cambio guardado en el teléfono fue rechazado por el servidor (sin permiso) y se deshizo</string>
     <string name="escritura_fallo_otro">Un cambio guardado en el teléfono no se pudo sincronizar con el servidor</string>
+    <string name="sin_conexion_banner">Sin conexión. Los cambios se guardan en el teléfono y se sincronizan al volver la red.</string>
 </resources>

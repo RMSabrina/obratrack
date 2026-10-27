@@ -23,6 +23,7 @@ import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.tareas.labelRes
 import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoTarea
+import com.unaj.appmoviles.obratrack.core.ui.components.PendienteBadge
 import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
 import com.unaj.appmoviles.features.obras.tareas.list.TareaItem
 
@@ -30,6 +31,7 @@ import com.unaj.appmoviles.features.obras.tareas.list.TareaItem
 fun TareaCard(
     item: TareaItem,
     onClick: () -> Unit,
+    pendiente: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val tarea = item.tarea
@@ -66,6 +68,8 @@ fun TareaCard(
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
+
+            if (pendiente) PendienteBadge()
 
             Text(
                 text = stringResource(tarea.categoria.labelRes()),

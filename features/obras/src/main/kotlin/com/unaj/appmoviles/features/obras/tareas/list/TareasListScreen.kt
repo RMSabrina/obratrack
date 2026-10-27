@@ -73,7 +73,8 @@ fun TareasListContent(
             items(state.tareas, key = { it.tarea.id }) { item ->
                 TareaCard(
                     item = item,
-                    onClick = { onOpenTarea(item.tarea) }
+                    onClick = { onOpenTarea(item.tarea) },
+                    pendiente = item.tarea.id in state.pendientes
                 )
             }
         }

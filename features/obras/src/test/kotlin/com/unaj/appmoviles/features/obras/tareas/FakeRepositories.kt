@@ -14,6 +14,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.TareaDraft
 import com.unaj.appmoviles.obratrack.core.domain.model.User
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
+import com.unaj.appmoviles.obratrack.core.domain.repository.PendientesRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import kotlinx.coroutines.delay
@@ -241,3 +242,11 @@ private fun RelevamientoDraft.toRelevamiento(id: String, obraId: String, userId:
     nota = nota,
     tareaId = tareaId
 )
+
+/** Ids pendientes que el test cambia a mano; los mismos para obras, relevamientos y tareas. */
+class FakePendientesRepository(inicial: Set<String> = emptySet()) : PendientesRepository {
+    val ids = MutableStateFlow(inicial)
+    override fun obras(userId: String): Flow<Set<String>> = ids
+    override fun relevamientos(obraId: String): Flow<Set<String>> = ids
+    override fun tareas(obraId: String): Flow<Set<String>> = ids
+}

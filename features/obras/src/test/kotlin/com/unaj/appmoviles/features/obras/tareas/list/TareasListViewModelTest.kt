@@ -3,6 +3,7 @@ package com.unaj.appmoviles.features.obras.tareas.list
 import com.unaj.appmoviles.features.obras.tareas.DUENO
 import com.unaj.appmoviles.features.obras.tareas.FakeAuthRepository
 import com.unaj.appmoviles.features.obras.tareas.FakeObraRepository
+import com.unaj.appmoviles.features.obras.tareas.FakePendientesRepository
 import com.unaj.appmoviles.features.obras.tareas.FakeTareaRepository
 import com.unaj.appmoviles.features.obras.tareas.OBRA_ID
 import com.unaj.appmoviles.features.obras.tareas.OTRO_USUARIO
@@ -15,6 +16,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.User
 import com.unaj.appmoviles.obratrack.core.domain.usecase.auth.ObserveSessionUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObraUseCase
 import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.ObserveTareasUseCase
+import com.unaj.appmoviles.obratrack.core.domain.usecase.sync.ObservePendientesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -71,12 +73,14 @@ class TareasListViewModelTest {
     private fun crearViewModel(
         user: User? = DUENO,
         obra: Obra? = obraDe(DUENO.id),
-        tareaRepo: FakeTareaRepository = FakeTareaRepository()
+        tareaRepo: FakeTareaRepository = FakeTareaRepository(),
+        pendientes: FakePendientesRepository = FakePendientesRepository()
     ) = TareasListViewModel(
         obraId = OBRA_ID,
         observeSession = ObserveSessionUseCase(FakeAuthRepository(user)),
         observeObra = ObserveObraUseCase(FakeObraRepository(obra)),
         observeTareas = ObserveTareasUseCase(tareaRepo),
+        observePendientes = ObservePendientesUseCase(pendientes),
         clock = clockArgentina
     )
 
@@ -220,5 +224,24 @@ class TareasListViewModelTest {
         assertNull(state.error)
         assertFalse(state.isLoading)
         assertEquals(listOf("a"), state.tareas.map { it.tarea.id })
+    }
+
+    @Test
+    fun marcaLasTareasPendientes_yLasQuitaCuandoElServidorConfirma() = runTest {
+        val pendientes = FakePendientesRepository(setOf("b"))
+        val viewModel = crearViewModel(
+            tareaRepo = FakeTareaRepository(listOf(tarea("a"), tarea("b"))),
+            pendientes = pendientes
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(setOf("b"), viewModel.uiState.value.pendientes)
+        assertEquals(listOf("a", "b"), viewModel.uiState.value.tareas.map { it.tarea.id })
+
+        pendientes.ids.value = emptySet()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(emptySet<String>(), viewModel.uiState.value.pendientes)
+        assertEquals(listOf("a", "b"), viewModel.uiState.value.tareas.map { it.tarea.id })
     }
 }

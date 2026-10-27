@@ -28,4 +28,5 @@
     <string name="nav_perfil">Profilo</string>
     <string name="escritura_fallo_permiso">Una modifica salvata sul telefono è stata rifiutata dal server (nessun permesso) e annullata</string>
     <string name="escritura_fallo_otro">Una modifica salvata sul telefono non è stato possibile sincronizzarla con il server</string>
+    <string name="sin_conexion_banner">Offline. Le modifiche vengono salvate sul telefono e sincronizzate al ritorno della rete.</string>
 </resources>

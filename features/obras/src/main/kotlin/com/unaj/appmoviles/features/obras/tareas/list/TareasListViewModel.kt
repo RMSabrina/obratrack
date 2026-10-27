@@ -12,6 +12,7 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.tareas.estaAtrasada
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.unaj.appmoviles.obratrack.core.domain.usecase.sync.ObservePendientesUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +35,7 @@ class TareasListViewModel @AssistedInject constructor(
     observeSession: ObserveSessionUseCase,
     observeObra: ObserveObraUseCase,
     observeTareas: ObserveTareasUseCase,
+    observePendientes: ObservePendientesUseCase,
     private val clock: Clock
 ) : ViewModel() {
 
@@ -75,13 +77,16 @@ class TareasListViewModel @AssistedInject constructor(
                         emit(TareasListUiState(isLoading = false, error = e.aErrorDeLectura(TareaError.Desconocido)))
                     }
             }.collect { newState ->
-                _uiState.value = newState
+                _uiState.value = newState.copy(pendientes = _uiState.value.pendientes)
             }
+        }
+        viewModelScope.launch {
+            observePendientes.tareas(obraId).collect { ids -> _uiState.update { it.copy(pendientes = ids) } }
         }
     }
 
     fun reintentar() {
-        _uiState.value = TareasListUiState()
+        _uiState.update { TareasListUiState(pendientes = it.pendientes) }
         reintentos.update { it + 1 }
     }
 

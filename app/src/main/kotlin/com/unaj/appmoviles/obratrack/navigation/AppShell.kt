@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -83,6 +85,9 @@ fun AppShell(
         snackbarHostState.showSnackbar(mensaje)
     }
 
+    val conexionViewModel: ConexionViewModel = hiltViewModel()
+    val sinConexion by conexionViewModel.sinConexion.collectAsStateWithLifecycle()
+
     // Android 13+: sin este permiso los avisos de visita no se muestran.
     val avisosPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -139,15 +144,18 @@ fun AppShell(
         contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            AnimatedVisibility(
-                visible = conBarra,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                BarraInferior(
-                    seleccionado = pestanaMarcada,
-                    onSeleccionar = { backStack.cambiarDePestana(it) }
-                )
+            Column {
+                BannerSinConexion(visible = sinConexion, conBarraInferior = conBarra)
+                AnimatedVisibility(
+                    visible = conBarra,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    BarraInferior(
+                        seleccionado = pestanaMarcada,
+                        onSeleccionar = { backStack.cambiarDePestana(it) }
+                    )
+                }
             }
         }
     ) { innerPadding ->

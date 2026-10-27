@@ -65,4 +65,5 @@
     <string name="descartar_confirmar">Descartar</string>
     <string name="descartar_seguir">Seguir editando</string>
     <string name="error_eliminar_requiere_conexion">Para eliminar necesitás conexión a internet</string>
+    <string name="sync_pendiente">Sin sincronizar</string>
 </resources>
