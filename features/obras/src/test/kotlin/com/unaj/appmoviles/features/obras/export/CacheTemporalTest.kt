@@ -92,4 +92,26 @@ class CacheTemporalTest {
 
         assertTrue(sub.exists())
     }
+
+    @Test
+    fun limpiarFotosTemporales_noTocaLasFotosPendientesDeSubir() {
+        // fotos_pendientes vive en filesDir; aunque estuviera junto a la caché, la limpieza solo mira
+        // los archivos sueltos con el prefijo de la cámara y nunca baja a subcarpetas.
+        val pendientes = carpeta.newFolder("fotos_pendientes", "obra-1")
+        val viejaPendiente = File(pendientes, "relevamiento-r1.jpg").also {
+            it.writeBytes(byteArrayOf(1))
+            it.setLastModified(ahora - TimeUnit.HOURS.toMillis(500))
+        }
+        val tambienViejaPendiente = File(carpeta.root, "fotos_pendientes/r2.jpg").also {
+            it.writeBytes(byteArrayOf(2))
+            it.setLastModified(ahora - TimeUnit.HOURS.toMillis(500))
+        }
+        val temporalVieja = archivo("relevamiento-9.jpg", horasDeAntiguedad = 72)
+
+        limpiarFotosTemporales(carpeta.root, enUso = emptySet(), ahoraMs = ahora)
+
+        assertTrue(viejaPendiente.exists())
+        assertTrue(tambienViejaPendiente.exists())
+        assertFalse(temporalVieja.exists())
+    }
 }

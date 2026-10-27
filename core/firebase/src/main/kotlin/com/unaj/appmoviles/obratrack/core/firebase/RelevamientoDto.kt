@@ -17,5 +17,7 @@ data class RelevamientoDto(
     /** Minutos desde la medianoche; los documentos anteriores no lo tienen y se leen como null. */
     val horaVisita: Int? = null,
     /** Campo opcional: los documentos anteriores a la Etapa 4 no lo tienen y se leen como null. */
-    val tareaId: String? = null
+    val tareaId: String? = null,
+    /** Solo al editar: no tocar el campo de la foto (hay una en espera de subirse). */
+    val conservarFoto: Boolean = false
 )

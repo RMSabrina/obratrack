@@ -920,6 +920,7 @@ private fun RelevamientoCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (pendiente) PendienteBadge()
+                if (relevamiento.fotoPendiente) PendienteBadge(texto = com.unaj.appmoviles.obratrack.core.ui.R.string.sync_foto_pendiente)
                 
                 if (relevamiento.nota.isNotBlank()) {
                     Text(

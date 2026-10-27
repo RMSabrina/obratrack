@@ -12,5 +12,10 @@ data class Relevamiento(
     /** Minutos desde la medianoche (0..1439) de la próxima visita; null = sin hora. */
     val horaVisita: Int? = null,
     /** Tarea vinculada (opcional). Los relevamientos anteriores a la Etapa 4 no la tienen. */
-    val tareaId: String? = null
+    val tareaId: String? = null,
+    /**
+     * La foto está en el teléfono esperando subirse: [fotoUrl] es la ruta local (file://) y no la
+     * URL de Cloudinary. Nunca se guarda en Firestore.
+     */
+    val fotoPendiente: Boolean = false
 )

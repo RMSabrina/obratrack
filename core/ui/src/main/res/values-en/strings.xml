@@ -66,4 +66,5 @@
     <string name="descartar_seguir">Keep editing</string>
     <string name="error_eliminar_requiere_conexion">You need an internet connection to delete this</string>
     <string name="sync_pendiente">Not synced</string>
+    <string name="sync_foto_pendiente">Photo waiting to upload</string>
 </resources>

@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.unaj.appmoviles.obratrack.core.ui.components.PendienteBadge
 import com.unaj.appmoviles.features.obras.export.RelevamientoPdfExporter
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.formatHora
@@ -330,6 +331,12 @@ fun RelevamientoDetailScreen(
                                         .fillMaxWidth()
                                         .height(280.dp)
                                 )
+                                if (relevamiento.fotoPendiente) {
+                                    PendienteBadge(
+                                        texto = com.unaj.appmoviles.obratrack.core.ui.R.string.sync_foto_pendiente,
+                                        modifier = Modifier.padding(12.dp)
+                                    )
+                                }
                             } else {
                                 Column(
                                     modifier = Modifier

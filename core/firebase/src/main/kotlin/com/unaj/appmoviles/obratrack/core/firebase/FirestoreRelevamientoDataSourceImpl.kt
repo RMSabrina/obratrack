@@ -142,11 +142,13 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
             // quitar la foto, la ubicación o la próxima visita hay que borrar el campo explícitamente.
             val campos = stored.toMap() + mapOf(
                 FIELD_TAREA_ID to valorTareaIdParaMerge(stored.tareaId),
-                FIELD_FOTO_URL to valorOpcionalParaMerge(stored.fotoUrl),
                 FIELD_UBICACION to ubicacionParaMerge(stored.latitud, stored.longitud),
                 FIELD_PROXIMA_VISITA to valorOpcionalParaMerge(stored.proximaVisitaMillis?.let { Timestamp(Date(it)) }),
                 FIELD_HORA_VISITA to valorOpcionalParaMerge(stored.horaVisita)
-            )
+            ).let { campos ->
+                // Con una foto en espera de subirse, el campo se deja como está.
+                if (stored.conservarFoto) campos else campos + (FIELD_FOTO_URL to valorOpcionalParaMerge(stored.fotoUrl))
+            }
             // La última visita de la obra sigue a la fecha del relevamiento: si se movió el más reciente
             // (hacia atrás o adelante) cambia. Todo en un batch, sin transacción, para que ande sin conexión.
             val fechas = fechasPorId(relevamientos(dto.obraId).get().await().documents)

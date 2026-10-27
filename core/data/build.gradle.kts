@@ -19,7 +19,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
+    testOptions {
+        // El código de datos loguea con android.util.Log; en los tests no hace nada.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
