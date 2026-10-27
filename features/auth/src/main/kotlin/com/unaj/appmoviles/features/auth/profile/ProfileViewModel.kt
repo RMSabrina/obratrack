@@ -42,7 +42,7 @@ class ProfileViewModel @Inject constructor(
 
     val uiState: StateFlow<ProfileUiState> = combine(
         observeSessionUseCase(),
-        languagePreferencesRepository.observeLanguage(),
+        languagePreferencesRepository.observeLanguageChoice(),
         avisoPreferencesRepository.observeAnticipacion(),
         themePreferencesRepository.observeModo(),
         internalState
@@ -66,7 +66,7 @@ class ProfileViewModel @Inject constructor(
         initialValue = ProfileUiState(isLoading = true)
     )
 
-    fun onLanguageChange(language: AppLanguage) {
+    fun onLanguageChange(language: AppLanguage?) {
         viewModelScope.launch {
             languagePreferencesRepository.setLanguage(language)
         }

@@ -28,6 +28,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
@@ -105,14 +106,31 @@ class ProfileViewModelTest {
         val viewModel = crearViewModel()
         backgroundScope.launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
-        assertEquals(AppLanguage.SPANISH, viewModel.uiState.value.selectedLanguage)
+        // Sin elección: "idioma del sistema".
+        assertNull(viewModel.uiState.value.selectedLanguage)
 
         viewModel.onLanguageChange(AppLanguage.ENGLISH)
         advanceUntilIdle()
 
-        assertEquals(AppLanguage.ENGLISH, languageRepo.getLanguage())
+        assertEquals(AppLanguage.ENGLISH, languageRepo.idioma.value)
         assertEquals(AppLanguage.ENGLISH, viewModel.uiState.value.selectedLanguage)
     }
+
+    @Test
+    fun onLanguageChange_conNull_vuelveAlIdiomaDelSistema() = runTest(testDispatcher) {
+        val viewModel = crearViewModel()
+        backgroundScope.launch { viewModel.uiState.collect {} }
+        viewModel.onLanguageChange(AppLanguage.ITALIAN)
+        advanceUntilIdle()
+        assertEquals(AppLanguage.ITALIAN, viewModel.uiState.value.selectedLanguage)
+
+        viewModel.onLanguageChange(null)
+        advanceUntilIdle()
+
+        assertNull(languageRepo.idioma.value)
+        assertNull(viewModel.uiState.value.selectedLanguage)
+    }
+
 
     @Test
     fun onTemaChange_guardaYMuestraElModoElegido() = runTest(testDispatcher) {
@@ -135,12 +153,11 @@ class ProfileViewModelTest {
 }
 
 private class FakeLanguageRepo : LanguagePreferencesRepository {
-    private val idioma = MutableStateFlow(AppLanguage.SPANISH)
-    override fun observeLanguage(): Flow<AppLanguage> = idioma
-    override fun getLanguage(): AppLanguage = idioma.value
-    override fun getBackgroundLanguage(): AppLanguage = idioma.value
+    val idioma = MutableStateFlow<AppLanguage?>(null)
+    override fun observeLanguageChoice(): Flow<AppLanguage?> = idioma
+    override fun getBackgroundLanguage(): AppLanguage = idioma.value ?: AppLanguage.SPANISH
     override fun sincronizarEspejo() = Unit
-    override suspend fun setLanguage(language: AppLanguage) {
+    override suspend fun setLanguage(language: AppLanguage?) {
         idioma.value = language
     }
 }

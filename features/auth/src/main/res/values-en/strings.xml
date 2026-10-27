@@ -61,4 +61,5 @@
     <string name="auth_seccion_preferencias">Preferences</string>
     <string name="auth_logout_confirmar_titulo">Log out?</string>
     <string name="auth_logout_confirmar_mensaje">You will be signed out of your account on this device.</string>
+    <string name="auth_idioma_sistema">System language</string>
 </resources>

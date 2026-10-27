@@ -22,7 +22,8 @@ data class ProfileUiState(
     val showDeleteAccountDialog: Boolean = false,
     val showReAuthDialog: Boolean = false,
     val pendingAction: PendingAction = PendingAction.NONE,
-    val selectedLanguage: com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage = com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage.SPANISH,
+    /** Idioma elegido en la app; null = "idioma del sistema". */
+    val selectedLanguage: com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage? = null,
     val selectedTema: com.unaj.appmoviles.obratrack.core.domain.model.ModoTema =
         com.unaj.appmoviles.obratrack.core.domain.model.ModoTema.SISTEMA,
     val selectedAnticipacion: com.unaj.appmoviles.obratrack.core.domain.model.AnticipacionAviso =

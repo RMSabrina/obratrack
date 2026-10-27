@@ -93,7 +93,7 @@ fun ProfileScreen(
     onReauthenticateAndRetry: (String) -> Unit,
     onClearMessage: () -> Unit,
     onClearError: () -> Unit,
-    onLanguageChange: (AppLanguage) -> Unit,
+    onLanguageChange: (AppLanguage?) -> Unit,
     onTemaChange: (ModoTema) -> Unit,
     onAnticipacionChange: (AnticipacionAviso) -> Unit,
     onBack: () -> Unit,
@@ -129,7 +129,7 @@ fun ProfileScreen(
     if (showIdiomaDialog) {
         DialogoOpciones(
             titulo = stringResource(R.string.auth_idioma_titulo),
-            opciones = AppLanguage.entries,
+            opciones = listOf<AppLanguage?>(null) + AppLanguage.entries,
             seleccionada = state.selectedLanguage,
             etiqueta = { stringResource(it.labelRes()) },
             onElegir = onLanguageChange,
@@ -498,7 +498,8 @@ private fun <T> DialogoOpciones(
     )
 }
 
-private fun AppLanguage.labelRes(): Int = when (this) {
+private fun AppLanguage?.labelRes(): Int = when (this) {
+    null -> R.string.auth_idioma_sistema
     AppLanguage.SPANISH -> R.string.auth_idioma_espanol
     AppLanguage.ENGLISH -> R.string.auth_idioma_ingles
     AppLanguage.ITALIAN -> R.string.auth_idioma_italiano

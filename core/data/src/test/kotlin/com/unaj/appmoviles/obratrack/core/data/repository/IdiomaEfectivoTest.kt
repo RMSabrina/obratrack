@@ -101,4 +101,33 @@ class IdiomaEfectivoTest {
     fun espejo_conIdiomaNoSoportado_seBorra() {
         assertNull(espejoTrasSincronizar(listOf("fr"), espejoActual = "es", appCompatEsLaFuente = false))
     }
+
+    // --- eleccionDeIdioma (lo que marca el selector; null = idioma del sistema) ---
+
+    @Test
+    fun eleccion_sinNada_esIdiomaDelSistema() {
+        assertNull(eleccionDeIdioma(emptyList(), espejo = null, usarEspejo = true))
+    }
+
+    @Test
+    fun eleccion_conIdiomaDeLaApp_esEse() {
+        assertEquals(AppLanguage.ENGLISH, eleccionDeIdioma(listOf("en"), espejo = "es", usarEspejo = false))
+    }
+
+    @Test
+    fun eleccion_idiomaDeLaAppNoSoportado_noEsUnaEleccion() {
+        assertNull(eleccionDeIdioma(listOf("fr"), espejo = null, usarEspejo = false))
+    }
+
+    @Test
+    fun eleccion_sinIdiomaDeLaApp_usaElEspejoSoloSiCorresponde() {
+        assertEquals(AppLanguage.ITALIAN, eleccionDeIdioma(emptyList(), espejo = "it", usarEspejo = true))
+        assertNull(eleccionDeIdioma(emptyList(), espejo = "it", usarEspejo = false))
+    }
+
+    @Test
+    fun eleccion_elSistemaNuncaCuentaComoEleccion() {
+        // El sistema en inglés y nada elegido: el selector marca "Idioma del sistema", no English.
+        assertNull(eleccionDeIdioma(emptyList(), espejo = null, usarEspejo = true))
+    }
 }

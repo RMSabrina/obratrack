@@ -11,9 +11,10 @@ import androidx.core.os.LocaleListCompat
 import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
 import com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,28 +30,22 @@ class LanguagePreferencesRepositoryImpl @Inject constructor(
         private const val KEY_LANGUAGE = "selected_language"
     }
 
-    override fun observeLanguage(): Flow<AppLanguage> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_LANGUAGE) {
-                trySend(getLanguage())
-            }
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        trySend(getLanguage())
-        awaitClose {
-            prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+    /** Avisa de los cambios hechos con [setLanguage] a quien esté observando la elección. */
+    private val cambios = MutableSharedFlow<AppLanguage?>(extraBufferCapacity = 1)
 
     /**
-     * Idioma que ve el usuario. La fuente de verdad es el idioma de la app que guarda AppCompat;
-     * sin elección sigue al sistema, como los recursos. Solo en Android 12 o inferior, donde
-     * AppCompat puede no tener cargado el idioma antes de abrir una Activity, se mira antes el espejo.
+     * Idioma que eligió el usuario para la app; null = "idioma del sistema" (sin elección). Sale de
+     * AppCompat; solo en Android 12 o inferior, donde puede no tenerlo cargado antes de abrir una
+     * Activity, se mira también el espejo.
      */
-    override fun getLanguage(): AppLanguage = idiomaEfectivo(
+    override fun observeLanguageChoice(): Flow<AppLanguage?> = flow {
+        emit(leerEleccion())
+        emitAll(cambios)
+    }
+
+    private fun leerEleccion(): AppLanguage? = eleccionDeIdioma(
         idiomasApp = codigosDe(AppCompatDelegate.getApplicationLocales()),
         espejo = prefs.getString(KEY_LANGUAGE, null),
-        idiomasSistema = codigosDeSistema(),
         usarEspejo = Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2
     )
 
@@ -76,9 +71,15 @@ class LanguagePreferencesRepositoryImpl @Inject constructor(
         prefs.edit().apply { if (nuevo == null) remove(KEY_LANGUAGE) else putString(KEY_LANGUAGE, nuevo) }.apply()
     }
 
-    override suspend fun setLanguage(language: AppLanguage) {
-        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(language.code))
-        prefs.edit().putString(KEY_LANGUAGE, language.code).apply()
+    /** [language] null = "idioma del sistema": se borra el idioma de la app y el espejo. */
+    override suspend fun setLanguage(language: AppLanguage?) {
+        AppCompatDelegate.setApplicationLocales(
+            if (language == null) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(language.code)
+        )
+        prefs.edit().apply {
+            if (language == null) remove(KEY_LANGUAGE) else putString(KEY_LANGUAGE, language.code)
+        }.apply()
+        cambios.tryEmit(language)
     }
 
     private fun codigosDe(locales: LocaleListCompat): List<String> =
@@ -139,3 +140,12 @@ internal fun espejoTrasSincronizar(
 /** Idioma de la app para un código ("es", "en" o "it", con o sin región); null si no es uno de ellos. */
 internal fun idiomaDeCodigo(codigo: String?): AppLanguage? =
     AppLanguage.entries.firstOrNull { codigo != null && codigo.substringBefore('-').equals(it.code, ignoreCase = true) }
+
+/**
+ * Lo que eligió el usuario en la app (null = "idioma del sistema"): el idioma de la app si es uno de
+ * los nuestros; si no, el espejo cuando [usarEspejo]. A diferencia de [idiomaEfectivo], no mira al sistema.
+ */
+internal fun eleccionDeIdioma(idiomasApp: List<String>, espejo: String?, usarEspejo: Boolean): AppLanguage? {
+    idiomasApp.firstOrNull()?.let { return idiomaDeCodigo(it) }
+    return if (usarEspejo) idiomaDeCodigo(espejo) else null
+}
