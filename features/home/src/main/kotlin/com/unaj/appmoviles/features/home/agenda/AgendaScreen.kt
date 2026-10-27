@@ -177,21 +177,11 @@ fun AgendaScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    // Métricas ejecutivas de la agenda
-                    ResumenAgendaHeader(
-                        totalHoy = state.totalHoy,
-                        totalVencidas = state.totalVencidas,
-                        totalEstaSemana = state.totalEstaSemana,
-                        totalSinProgramar = state.totalSinProgramar
-                    )
-                }
-
-                item {
-                    // Filtros horizontales
+                    // Filtros horizontales; el número es el conteo de cada uno
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(top = 8.dp)
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -208,6 +198,9 @@ fun AgendaScreen(
                                         FiltroAgenda.SIN_PROGRAMAR -> state.totalSinProgramar
                                     }
                                     Text("${stringResource(filtro.labelRes)} ($count)")
+                                },
+                                leadingIcon = filtro.icono()?.let { icono ->
+                                    { Icon(imageVector = icono, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) }
                                 },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -282,90 +275,20 @@ fun AgendaScreen(
     }
 }
 
+/** Ícono Material de cada filtro (en lugar de emojis en el texto); "Todas" no lleva. */
+private fun FiltroAgenda.icono(): ImageVector? = when (this) {
+    FiltroAgenda.TODAS -> null
+    FiltroAgenda.URGENTES_Y_HOY -> Icons.Outlined.Warning
+    FiltroAgenda.ESTA_SEMANA -> Icons.Outlined.Event
+    FiltroAgenda.PROXIMAS -> Icons.Outlined.Schedule
+    FiltroAgenda.SIN_PROGRAMAR -> Icons.Outlined.EditCalendar
+}
+
 @Composable
 private fun feedbackTexto(feedback: FeedbackAgenda): String = when (feedback) {
     is FeedbackAgenda.VisitaProgramada -> stringResource(R.string.agenda_visita_programada, feedback.obraNombre)
     is FeedbackAgenda.VisitaCancelada -> stringResource(R.string.agenda_visita_cancelada, feedback.obraNombre)
     is FeedbackAgenda.ErrorAlProgramar -> stringResource(R.string.agenda_error_programar, feedback.error.asMessage())
-}
-
-@Composable
-fun ResumenAgendaHeader(
-    totalHoy: Int,
-    totalVencidas: Int,
-    totalEstaSemana: Int,
-    totalSinProgramar: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        MetricaAgendaCard(
-            label = stringResource(R.string.agenda_metrica_hoy),
-            valor = totalHoy.toString(),
-            colorFondo = if (totalHoy > 0) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-            colorTexto = if (totalHoy > 0) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        MetricaAgendaCard(
-            label = stringResource(R.string.agenda_metrica_atrasadas),
-            valor = totalVencidas.toString(),
-            colorFondo = if (totalVencidas > 0) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surface,
-            colorTexto = if (totalVencidas > 0) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        MetricaAgendaCard(
-            label = stringResource(R.string.agenda_metrica_esta_semana),
-            valor = totalEstaSemana.toString(),
-            colorFondo = MaterialTheme.colorScheme.surface,
-            colorTexto = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        MetricaAgendaCard(
-            label = stringResource(R.string.agenda_metrica_sin_fecha),
-            valor = totalSinProgramar.toString(),
-            colorFondo = if (totalSinProgramar > 0) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surface,
-            colorTexto = if (totalSinProgramar > 0) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-@Composable
-private fun MetricaAgendaCard(
-    label: String,
-    valor: String,
-    colorFondo: Color,
-    colorTexto: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = colorFondo),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp, horizontal = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = valor,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = colorTexto
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = colorTexto.copy(alpha = 0.85f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
 }
 
 @Composable
@@ -408,7 +331,7 @@ fun AgendaVisitaCard(
             val dias = item.diasDiferencia.toInt()
             pluralStringResource(R.plurals.agenda_badge_esta_semana, dias, dias, fechaProgramada)
         }
-        CategoriaAgendaVisita.PROXIMAS -> "⏳ $fechaProgramada"
+        CategoriaAgendaVisita.PROXIMAS -> fechaProgramada
         CategoriaAgendaVisita.SIN_PROGRAMAR -> {
             val dias = (item.diasSinVisita ?: 0L).toInt()
             pluralStringResource(R.plurals.agenda_badge_sin_fecha, dias, dias)
