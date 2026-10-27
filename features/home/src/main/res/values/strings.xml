@@ -15,12 +15,12 @@
         <item quantity="other">⚠️ %d visitas técnicas atrasadas</item>
     </plurals>
     <string name="home_visitas_atrasadas_detalle">Hay inspecciones de obra pendientes en tu itinerario</string>
-    <string name="home_ver_agenda">Ver Agenda</string>
-    <string name="home_relevar_ahora">Relevar Ahora</string>
+    <string name="home_ver_agenda">Ver agenda</string>
+    <string name="home_relevar_ahora">Relevar ahora</string>
     <string name="home_visitas_hoy_conteo">%1$d para hoy</string>
-    <string name="home_accion_nuevo_relevamiento">Nuevo Relevamiento de Campo</string>
+    <string name="home_accion_nuevo_relevamiento">Nuevo relevamiento de campo</string>
     <string name="home_accion_nuevo_relevamiento_detalle">Fotografías, notas técnicas y geolocalización</string>
-    <string name="home_accion_obras_publicas">Explorar Obras Públicas</string>
+    <string name="home_accion_obras_publicas">Explorar obras públicas</string>
     <string name="home_accion_obras_publicas_detalle">Ver proyectos compartidos por otros usuarios</string>
     <string name="home_relevamientos_recientes">Últimos relevamientos</string>
     <string name="home_ver_todos">Ver todos</string>
@@ -28,11 +28,11 @@
     <string name="home_foto_relevamiento">Foto relevamiento</string>
 
     <!-- Agenda de visitas -->
-    <string name="agenda_titulo">Agenda de Visitas</string>
+    <string name="agenda_titulo">Agenda de visitas</string>
     <string name="agenda_subtitulo">Itinerario y control técnico de campo</string>
     <string name="agenda_quitar_fecha">Quitar fecha</string>
     <string name="agenda_filtro_todas">Todas</string>
-    <string name="agenda_filtro_urgentes_y_hoy">Urgentes y Hoy</string>
+    <string name="agenda_filtro_urgentes_y_hoy">Urgentes y hoy</string>
     <string name="agenda_filtro_esta_semana">Esta semana</string>
     <string name="agenda_filtro_proximas">Próximas</string>
     <string name="agenda_filtro_sin_programar">Sin programar</string>
@@ -51,7 +51,7 @@
         <item quantity="one">⚠️ SIN FECHA (%d DÍA SIN RELEVAMIENTO)</item>
         <item quantity="other">⚠️ SIN FECHA (%d DÍAS SIN RELEVAMIENTO)</item>
     </plurals>
-    <string name="agenda_ver_obra">Ver Obra</string>
+    <string name="agenda_ver_obra">Ver obra</string>
     <string name="agenda_cliente">Cliente: %1$s</string>
     <string name="agenda_ultimo_relevamiento">Último relevamiento: %1$s</string>
     <string name="agenda_relevar">Relevar</string>
@@ -62,7 +62,7 @@
     <string name="agenda_error_programar">Error al programar la visita: %1$s</string>
 
     <!-- Selección de obra -->
-    <string name="obra_seleccion_titulo">Seleccionar Obra</string>
+    <string name="obra_seleccion_titulo">Seleccionar obra</string>
     <string name="obra_seleccion_instruccion">Elegí a qué obra querés agregar el nuevo relevamiento.</string>
     <string name="obra_seleccion_vacia">No tenés obras disponibles.</string>
 

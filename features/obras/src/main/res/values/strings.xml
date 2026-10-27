@@ -129,11 +129,11 @@
 
     <!-- Títulos, listas y formularios -->
     <string name="obra_detalle_titulo">Detalle de obra</string>
-    <string name="obra_publica_detalle_titulo">Detalle Público</string>
+    <string name="obra_publica_detalle_titulo">Detalle público</string>
     <string name="obra_publica_estado">%1$s · Pública</string>
-    <string name="relevamiento_detalle_titulo">Detalle de Relevamiento</string>
+    <string name="relevamiento_detalle_titulo">Detalle de relevamiento</string>
     <string name="obras_lista_titulo">Mis obras</string>
-    <string name="obras_publicas_titulo">Explorar Obras Públicas</string>
+    <string name="obras_publicas_titulo">Explorar obras públicas</string>
     <string name="obras_cerrar_sesion">Cerrar sesión</string>
     <string name="obras_nueva_obra">Nueva obra</string>
     <string name="obras_editar_obra">Editar obra</string>
@@ -150,8 +150,8 @@
     <string name="estado_obra_pausada">Pausada</string>
     <string name="estado_obra_finalizada">Finalizada</string>
     <string name="guardando">Guardando...</string>
-    <string name="obra_form_guardar">Guardar Obra</string>
-    <string name="obra_form_info_general">Información General</string>
+    <string name="obra_form_guardar">Guardar obra</string>
+    <string name="obra_form_info_general">Información general</string>
     <string name="obra_form_nombre">Nombre</string>
     <string name="obra_form_cliente">Cliente</string>
     <string name="obra_form_direccion">Dirección</string>
@@ -160,10 +160,10 @@
     <string name="obra_form_sin_coordenadas">No se encontraron coordenadas exactas. Podés ajustar el punto en el mapa.</string>
     <string name="obra_form_direccion_actualizada">Dirección actualizada desde el mapa/GPS</string>
     <string name="obra_form_usar_detectada">Usar detectada: %1$s</string>
-    <string name="obra_form_ubicacion_gps">Ubicación Geográfica (GPS)</string>
+    <string name="obra_form_ubicacion_gps">Ubicación geográfica (GPS)</string>
     <string name="obra_form_coordenadas_mapa">Coordenadas seleccionadas desde el mapa</string>
     <string name="obra_form_direccion_detectada">Dirección detectada desde el mapa</string>
-    <string name="obra_form_proxima_visita">Próxima Visita Técnica</string>
+    <string name="obra_form_proxima_visita">Próxima visita técnica</string>
     <string name="obra_form_fecha_programada">Fecha programada: %1$s</string>
     <string name="obra_form_quitar_recordatorio">Quitar recordatorio</string>
     <string name="obra_form_cambiar_fecha">Cambiar fecha</string>
@@ -179,10 +179,10 @@
     <string name="relevamiento_form_guardar_y_otra">Guardar y otra foto</string>
     <string name="relevamiento_form_finalizar">Finalizar</string>
     <string name="relevamiento_form_salir">Salir</string>
-    <string name="relevamiento_form_guardar_cambios">Guardar Cambios</string>
+    <string name="relevamiento_form_guardar_cambios">Guardar cambios</string>
     <string name="relevamiento_form_fecha">Fecha</string>
     <string name="relevamiento_form_seleccionar_fecha">Seleccionar fecha</string>
-    <string name="relevamiento_form_evidencia">Evidencia Fotográfica</string>
+    <string name="relevamiento_form_evidencia">Evidencia fotográfica</string>
     <string name="relevamiento_form_foto">Foto del relevamiento</string>
     <string name="relevamiento_form_error_vista_previa">No se pudo cargar la vista previa</string>
     <string name="relevamiento_form_cambiar">Cambiar</string>
@@ -191,13 +191,13 @@
     <string name="relevamiento_form_camara">Cámara</string>
     <string name="relevamiento_form_galeria">Galería</string>
     <string name="relevamiento_form_ubicacion">Ubicación</string>
-    <string name="relevamiento_form_proxima_visita">Próxima Visita (Recordatorio)</string>
+    <string name="relevamiento_form_proxima_visita">Próxima visita (recordatorio)</string>
     <string name="relevamiento_form_programada_para">Programada para: %1$s</string>
     <string name="relevamiento_form_quitar_fecha">Quitar fecha</string>
     <string name="relevamiento_form_cambiar_proxima">Cambiar fecha de próxima visita</string>
     <string name="relevamiento_form_proxima_ayuda">Opcional: define cuándo debería ser el próximo relevamiento para recibir un recordatorio automático en el dispositivo.</string>
     <string name="relevamiento_form_programar_proxima">Programar próxima visita</string>
-    <string name="relevamiento_form_nota">Nota u Observaciones</string>
+    <string name="relevamiento_form_nota">Nota u observaciones</string>
     <string name="relevamiento_form_nota_placeholder">Escribe una descripción del avance o problema...</string>
 
     <!-- Diálogos de borrado y cuerpo de los detalles -->
@@ -237,7 +237,7 @@
     <string name="pronostico_clima_tormenta">Tormenta</string>
     <string name="pronostico_clima_variable">Condiciones variables</string>
     <string name="ver_en_mapa">Ver en el mapa</string>
-    <string name="relevamiento_eliminar_titulo">Eliminar Relevamiento</string>
+    <string name="relevamiento_eliminar_titulo">Eliminar relevamiento</string>
     <string name="relevamiento_eliminar_confirmacion">¿Eliminar este relevamiento? Esta acción no se puede deshacer.</string>
     <string name="relevamiento_eliminar">Eliminar relevamiento</string>
     <string name="relevamiento_no_encontrado">No pudimos encontrar este relevamiento</string>
@@ -248,7 +248,7 @@
     <string name="relevamiento_detalle_fecha">Fecha de visita: %1$s</string>
     <string name="relevamiento_detalle_proxima">Próxima visita planificada: %1$s</string>
     <string name="relevamiento_detalle_sin_notas">Sin notas registradas.</string>
-    <string name="relevamiento_detalle_ubicacion">Ubicación del Relevamiento</string>
+    <string name="relevamiento_detalle_ubicacion">Ubicación del relevamiento</string>
     <string name="tarea_registrar_evidencia">Registrar evidencia con foto</string>
     <string name="tarea_foto_evidencia">Foto evidencia</string>
     <string name="tarea_sin_nota">Sin nota descriptiva</string>

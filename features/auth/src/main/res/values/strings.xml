@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="auth_perfil_titulo">Mi Perfil</string>
+    <string name="auth_perfil_titulo">Mi perfil</string>
     <string name="auth_nombre">Nombre</string>
     <string name="auth_email">Correo electrónico</string>
     <string name="auth_guardar_cambios">Guardar cambios</string>

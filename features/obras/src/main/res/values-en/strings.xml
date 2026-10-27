@@ -66,7 +66,7 @@
     <string name="cancelar">Cancel</string>
 
     <!-- Tasks: detail -->
-    <string name="tarea_detalle_titulo">Task Details</string>
+    <string name="tarea_detalle_titulo">Task details</string>
     <string name="tarea_descripcion">Description</string>
     <string name="tarea_sin_descripcion">No description</string>
     <string name="tarea_marcar_completada">Mark as completed</string>
@@ -132,7 +132,7 @@
     <string name="obra_publica_estado">%1$s · Public</string>
     <string name="relevamiento_detalle_titulo">Inspection details</string>
     <string name="obras_lista_titulo">My projects</string>
-    <string name="obras_publicas_titulo">Explore Public Projects</string>
+    <string name="obras_publicas_titulo">Explore public projects</string>
     <string name="obras_cerrar_sesion">Log out</string>
     <string name="obras_nueva_obra">New project</string>
     <string name="obras_editar_obra">Edit project</string>
