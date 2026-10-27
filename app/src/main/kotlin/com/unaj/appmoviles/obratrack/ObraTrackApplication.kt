@@ -1,10 +1,13 @@
 package com.unaj.appmoviles.obratrack
 
 import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.unaj.appmoviles.features.obras.export.limpiarPdfsTemporales
+import com.unaj.appmoviles.obratrack.core.domain.repository.ThemePreferencesRepository
 import com.unaj.appmoviles.obratrack.notification.NotificationHelper
+import com.unaj.appmoviles.obratrack.ui.theme.aNightMode
 import com.unaj.appmoviles.obratrack.worker.AvisosVisitaSincronizador
 import com.unaj.appmoviles.obratrack.worker.RelevamientoReminderWorker
 import dagger.hilt.android.HiltAndroidApp
@@ -19,6 +22,7 @@ class ObraTrackApplication : Application(), Configuration.Provider {
     
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var avisosVisitaSincronizador: AvisosVisitaSincronizador
+    @Inject lateinit var temaPreferences: ThemePreferencesRepository
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -29,6 +33,9 @@ class ObraTrackApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        // Solo al arrancar: los recursos XML (values-night) coinciden con el tema elegido desde la primera
+        // pantalla. Cambiar el tema en vivo lo hace Compose, sin recrear la Activity.
+        AppCompatDelegate.setDefaultNightMode(temaPreferences.getModo().aNightMode())
         NotificationHelper.createNotificationChannels(this)
         RelevamientoReminderWorker.schedulePeriodic(this)
         avisosVisitaSincronizador.iniciar(appScope)
