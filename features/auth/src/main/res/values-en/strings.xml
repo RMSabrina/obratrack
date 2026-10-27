@@ -57,4 +57,6 @@
     <string name="auth_tema_sistema">System default</string>
     <string name="auth_tema_claro">Light</string>
     <string name="auth_tema_oscuro">Dark</string>
+    <string name="auth_seccion_cuenta">Account</string>
+    <string name="auth_seccion_preferencias">Preferences</string>
 </resources>

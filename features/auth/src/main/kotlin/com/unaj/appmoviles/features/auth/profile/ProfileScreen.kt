@@ -68,14 +68,18 @@ import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.auth.R
 import com.unaj.appmoviles.obratrack.core.domain.model.AnticipacionAviso
 import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     state: ProfileUiState,
@@ -102,7 +106,9 @@ fun ProfileScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val user = state.user
+    var showIdiomaDialog by rememberSaveable { mutableStateOf(false) }
     var showTemaDialog by rememberSaveable { mutableStateOf(false) }
+    var showAvisoDialog by rememberSaveable { mutableStateOf(false) }
 
     val errorMessage = state.error?.asMessage()
     val successMessage = state.successMessage?.let { stringResource(it) }
@@ -121,38 +127,36 @@ fun ProfileScreen(
         }
     }
 
+    if (showIdiomaDialog) {
+        DialogoOpciones(
+            titulo = stringResource(R.string.auth_idioma_titulo),
+            opciones = AppLanguage.entries,
+            seleccionada = state.selectedLanguage,
+            etiqueta = { stringResource(it.labelRes()) },
+            onElegir = onLanguageChange,
+            onCerrar = { showIdiomaDialog = false }
+        )
+    }
+
     if (showTemaDialog) {
-        AlertDialog(
-            onDismissRequest = { showTemaDialog = false },
-            title = { Text(stringResource(R.string.auth_tema_titulo)) },
-            text = {
-                Column(modifier = Modifier.selectableGroup()) {
-                    ModoTema.entries.forEach { opcion ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(
-                                    selected = state.selectedTema == opcion,
-                                    onClick = {
-                                        onTemaChange(opcion)
-                                        showTemaDialog = false
-                                    },
-                                    role = Role.RadioButton
-                                )
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(selected = state.selectedTema == opcion, onClick = null)
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(stringResource(opcion.labelRes()))
-                        }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showTemaDialog = false }) { Text(stringResource(R.string.auth_cancelar)) }
-            }
+        DialogoOpciones(
+            titulo = stringResource(R.string.auth_tema_titulo),
+            opciones = ModoTema.entries,
+            seleccionada = state.selectedTema,
+            etiqueta = { stringResource(it.labelRes()) },
+            onElegir = onTemaChange,
+            onCerrar = { showTemaDialog = false }
+        )
+    }
+
+    if (showAvisoDialog) {
+        DialogoOpciones(
+            titulo = stringResource(R.string.auth_aviso_titulo),
+            opciones = AnticipacionAviso.entries,
+            seleccionada = state.selectedAnticipacion,
+            etiqueta = { stringResource(it.labelRes()) },
+            onElegir = onAnticipacionChange,
+            onCerrar = { showAvisoDialog = false }
         )
     }
 
@@ -177,244 +181,83 @@ fun ProfileScreen(
             LoadingContent(Modifier.padding(padding))
         } else if (user != null) {
             Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .imePadding()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-                // Avatar Estático con Iniciales
-                val initials = user.name
-                    .split(" ")
-                    .mapNotNull { it.firstOrNull()?.uppercase() }
-                    .take(2)
-                    .joinToString("")
-                    .ifEmpty { "U" }
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                EncabezadoPerfil(nombre = user.name, email = user.email)
 
-                Box(
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = initials,
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Selector de Idioma (i18n)
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Text(
-                            text = stringResource(R.string.auth_idioma_titulo),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            FilterChip(
-                                selected = state.selectedLanguage == AppLanguage.SPANISH,
-                                onClick = { onLanguageChange(AppLanguage.SPANISH) },
-                                label = { Text(stringResource(R.string.auth_idioma_espanol)) },
-                                modifier = Modifier.weight(1f)
-                            )
-                            FilterChip(
-                                selected = state.selectedLanguage == AppLanguage.ENGLISH,
-                                onClick = { onLanguageChange(AppLanguage.ENGLISH) },
-                                label = { Text(stringResource(R.string.auth_idioma_ingles)) },
-                                modifier = Modifier.weight(1f)
-                            )
-                            FilterChip(
-                                selected = state.selectedLanguage == AppLanguage.ITALIAN,
-                                onClick = { onLanguageChange(AppLanguage.ITALIAN) },
-                                label = { Text(stringResource(R.string.auth_idioma_italiano)) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Tema: una fila que abre un diálogo con las tres opciones
-                Card(
-                    onClick = { showTemaDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                SeccionTitulo(stringResource(R.string.auth_seccion_cuenta))
+                TarjetaSeccion {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.auth_tema_titulo),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = stringResource(state.selectedTema.labelRes()),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Anticipación del aviso de visitas
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Text(
-                            text = stringResource(R.string.auth_aviso_titulo),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        FlowRow(
+                        OutlinedTextField(
+                            value = state.nameInput,
+                            onValueChange = onNameChange,
+                            label = { Text(stringResource(R.string.auth_nombre)) },
+                            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            singleLine = true,
+                            enabled = !state.isSavingName
+                        )
+                        val isNameChanged = state.nameInput.trim() != user.name && state.nameInput.isNotBlank()
+                        Button(
+                            onClick = onSaveName,
+                            modifier = Modifier.align(Alignment.End),
+                            enabled = isNameChanged && !state.isSavingName
                         ) {
-                            AnticipacionAviso.entries.forEach { opcion ->
-                                FilterChip(
-                                    selected = state.selectedAnticipacion == opcion,
-                                    onClick = { onAnticipacionChange(opcion) },
-                                    label = { Text(stringResource(opcion.labelRes())) }
+                            if (state.isSavingName) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 2.dp
                                 )
+                            } else {
+                                Text(stringResource(R.string.auth_guardar_cambios))
                             }
                         }
                     }
+                    HorizontalDivider()
+                    FilaPerfil(
+                        titulo = stringResource(R.string.auth_cambiar_password),
+                        icono = Icons.Default.Lock,
+                        onClick = onShowChangePasswordDialog
+                    )
+                }
+
+                SeccionTitulo(stringResource(R.string.auth_seccion_preferencias))
+                TarjetaSeccion {
+                    FilaPerfil(
+                        titulo = stringResource(R.string.auth_idioma_titulo),
+                        valor = stringResource(state.selectedLanguage.labelRes()),
+                        onClick = { showIdiomaDialog = true }
+                    )
+                    HorizontalDivider()
+                    FilaPerfil(
+                        titulo = stringResource(R.string.auth_tema_titulo),
+                        valor = stringResource(state.selectedTema.labelRes()),
+                        onClick = { showTemaDialog = true }
+                    )
+                    HorizontalDivider()
+                    FilaPerfil(
+                        titulo = stringResource(R.string.auth_aviso_titulo),
+                        valor = stringResource(state.selectedAnticipacion.labelRes()),
+                        onClick = { showAvisoDialog = true }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // Campo Editable: Nombre completo
-                OutlinedTextField(
-                    value = state.nameInput,
-                    onValueChange = onNameChange,
-                    label = { Text(stringResource(R.string.auth_nombre)) },
-                    leadingIcon = {
-                        Icon(Icons.Default.Person, contentDescription = null)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = !state.isSavingName
-                )
-
-                // Campo Read-Only: Correo Electrónico
-                OutlinedTextField(
-                    value = user.email,
-                    onValueChange = {},
-                    label = { Text(stringResource(R.string.auth_email)) },
-                    readOnly = true,
-                    enabled = false,
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = stringResource(R.string.auth_verificado),
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.size(4.dp))
-                            Text(
-                                text = stringResource(R.string.auth_verificado),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-                )
-
-                // Botón Guardar Cambios
-                val isNameChanged = state.nameInput.trim() != user.name && state.nameInput.isNotBlank()
-
-                Button(
-                    onClick = onSaveName,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    enabled = isNameChanged && !state.isSavingName,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    if (state.isSavingName) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text(stringResource(R.string.auth_guardar_cambios), fontWeight = FontWeight.Bold)
-                    }
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                // Opciones de Cuenta
-                OutlinedButton(
-                    onClick = onShowChangePasswordDialog,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text(stringResource(R.string.auth_cambiar_password), fontWeight = FontWeight.Bold)
-                }
-
                 OutlinedButton(
                     onClick = onLogout,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .heightIn(min = 50.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
@@ -426,6 +269,9 @@ fun ProfileScreen(
                     Text(stringResource(R.string.auth_logout), fontWeight = FontWeight.Bold)
                 }
 
+                // La acción destructiva va aparte, al final y sin parecer un botón principal.
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider()
                 TextButton(
                     onClick = onShowDeleteAccountDialog,
                     modifier = Modifier.fillMaxWidth()
@@ -466,6 +312,188 @@ fun ProfileScreen(
             onConfirm = onReauthenticateAndRetry
         )
     }
+}
+
+/** Avatar con las iniciales, el nombre y el correo (solo lectura) con su marca de verificado. */
+@Composable
+private fun EncabezadoPerfil(nombre: String, email: String) {
+    val initials = nombre
+        .split(" ")
+        .mapNotNull { it.firstOrNull()?.uppercase() }
+        .take(2)
+        .joinToString("")
+        .ifEmpty { "U" }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(72.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = initials,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = nombre,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = email,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = stringResource(R.string.auth_verificado),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SeccionTitulo(texto: String) {
+    Text(
+        text = texto,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .padding(start = 4.dp, top = 8.dp)
+            .semantics { heading() }
+    )
+}
+
+@Composable
+private fun TarjetaSeccion(contenido: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        content = contenido
+    )
+}
+
+/** Fila táctil (mínimo 56 dp): título, el valor actual debajo si hay, y un ícono al final. */
+@Composable
+private fun FilaPerfil(
+    titulo: String,
+    onClick: () -> Unit,
+    valor: String? = null,
+    icono: ImageVector? = null
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        if (icono != null) {
+            Icon(imageVector = icono, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = titulo,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (valor != null) {
+                Text(
+                    text = valor,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/** Diálogo con una opción por fila (radio). Elegir una aplica el cambio y cierra. */
+@Composable
+private fun <T> DialogoOpciones(
+    titulo: String,
+    opciones: List<T>,
+    seleccionada: T,
+    etiqueta: @Composable (T) -> String,
+    onElegir: (T) -> Unit,
+    onCerrar: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onCerrar,
+        title = { Text(titulo) },
+        text = {
+            Column(modifier = Modifier.selectableGroup()) {
+                opciones.forEach { opcion ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .selectable(
+                                selected = seleccionada == opcion,
+                                onClick = {
+                                    onElegir(opcion)
+                                    onCerrar()
+                                },
+                                role = Role.RadioButton
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = seleccionada == opcion, onClick = null)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(etiqueta(opcion))
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onCerrar) { Text(stringResource(R.string.auth_cancelar)) }
+        }
+    )
+}
+
+private fun AppLanguage.labelRes(): Int = when (this) {
+    AppLanguage.SPANISH -> R.string.auth_idioma_espanol
+    AppLanguage.ENGLISH -> R.string.auth_idioma_ingles
+    AppLanguage.ITALIAN -> R.string.auth_idioma_italiano
 }
 
 @Composable
