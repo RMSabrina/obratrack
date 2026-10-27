@@ -344,20 +344,24 @@ fun AgendaVisitaCard(
             // Header: Badge de estado + Botón ver obra
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    color = accentColor.copy(alpha = 0.15f),
-                    shape = RoundedCornerShape(6.dp)
-                ) {
-                    Text(
-                        text = badgeText,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = textoAcento,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
+                // El badge se parte en líneas dentro del espacio que deja el botón; si no, un texto largo
+                // lo dejaba sin ancho y "Ver obra" se rompía letra por letra.
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                    Surface(
+                        color = accentColor.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text(
+                            text = badgeText,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = textoAcento,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
 
                 TextButton(
@@ -365,7 +369,9 @@ fun AgendaVisitaCard(
                 ) {
                     Text(
                         text = stringResource(R.string.agenda_ver_obra),
-                        style = MaterialTheme.typography.labelMedium
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }
