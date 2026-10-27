@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -46,10 +47,13 @@ class ObraPublicaDetailViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun crearViewModel(relevamientoRepo: FakeRelevamientoRepository) =
+    private fun crearViewModel(
+        relevamientoRepo: FakeRelevamientoRepository,
+        obraRepo: FakeObraRepository = FakeObraRepository(obraDe(DUENO.id, publica = true))
+    ) =
         ObraPublicaDetailViewModel(
             obraId = OBRA_ID,
-            observeObraPublicaUseCase = ObserveObraPublicaUseCase(FakeObraRepository(obraDe(DUENO.id, publica = true))),
+            observeObraPublicaUseCase = ObserveObraPublicaUseCase(obraRepo),
             observeRelevamientosUseCase = ObserveRelevamientosDeObraUseCase(relevamientoRepo)
         )
 
@@ -84,5 +88,34 @@ class ObraPublicaDetailViewModelTest {
         assertTrue(state.relevamientos.isEmpty())
         assertFalse(state.isLoading)
         assertEquals(OBRA_ID, state.obra?.id)
+    }
+
+    @Test
+    fun errorAlLeerLaObra_noCierraLaAppYAvisa() = runTest {
+        val obraRepo = FakeObraRepository(obraDe(DUENO.id, publica = true)).apply {
+            observePublicasError = IllegalStateException("PERMISSION_DENIED")
+        }
+        val viewModel = crearViewModel(FakeRelevamientoRepository(listOf(relevamiento)), obraRepo)
+
+        suscribir(viewModel)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.error)
+        assertNull(state.obra)
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun obraQueNoEsPublica_noEsError() = runTest {
+        val viewModel = crearViewModel(
+            FakeRelevamientoRepository(),
+            FakeObraRepository(obraDe(DUENO.id, publica = false))
+        )
+
+        suscribir(viewModel)
+
+        val state = viewModel.uiState.value
+        assertFalse(state.error)
+        assertNull(state.obra)
     }
 }

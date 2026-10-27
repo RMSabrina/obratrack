@@ -143,6 +143,7 @@
     <string name="obras_lista_vacia">Todavía no cargaste obras.</string>
     <string name="obras_busqueda_vacia">No se encontraron obras para la búsqueda.</string>
     <string name="obras_publicas_vacia">No se encontraron obras públicas.</string>
+    <string name="obras_publicas_error">No pudimos cargar las obras públicas. Volvé a abrir la pantalla para reintentar.</string>
     <string name="estado_obra_activa">Activa</string>
     <string name="estado_obra_pausada">Pausada</string>
     <string name="estado_obra_finalizada">Finalizada</string>
@@ -203,6 +204,7 @@
     <string name="obra_eliminar">Eliminar obra</string>
     <string name="obra_no_encontrada">No encontramos esa obra</string>
     <string name="obra_publica_no_encontrada">No encontramos esta obra o ya no es pública.</string>
+    <string name="obra_publica_error">No pudimos cargar esta obra. Volvé a abrirla para reintentar.</string>
     <string name="obra_fechas">Fechas</string>
     <string name="obra_fecha_inicio">Inicio: %1$s</string>
     <string name="obra_ultima_visita">Última visita: %1$s</string>

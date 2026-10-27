@@ -7,13 +7,16 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.ObserveObrasPubli
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 data class ObrasPublicasListUiState(
     val obras: List<Obra> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    /** No se pudieron leer las obras: la pantalla muestra un mensaje, no "vacío". */
+    val error: Boolean = false
 )
 
 @HiltViewModel
@@ -28,6 +31,8 @@ class ObrasPublicasListViewModel @Inject constructor(
                 isLoading = false
             )
         }
+        // Sin el catch, el error del Flow (por ejemplo, sin permisos) cerraría la app.
+        .catch { emit(ObrasPublicasListUiState(isLoading = false, error = true)) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

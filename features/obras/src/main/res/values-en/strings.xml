@@ -142,6 +142,7 @@
     <string name="obras_lista_vacia">You haven\'t added any projects yet.</string>
     <string name="obras_busqueda_vacia">No projects match your search.</string>
     <string name="obras_publicas_vacia">No public projects found.</string>
+    <string name="obras_publicas_error">We couldn\'t load the public projects. Open this screen again to retry.</string>
     <string name="estado_obra_activa">Active</string>
     <string name="estado_obra_pausada">Paused</string>
     <string name="estado_obra_finalizada">Completed</string>
@@ -202,6 +203,7 @@
     <string name="obra_eliminar">Delete project</string>
     <string name="obra_no_encontrada">We couldn\'t find that project</string>
     <string name="obra_publica_no_encontrada">We couldn\'t find this project, or it\'s no longer public.</string>
+    <string name="obra_publica_error">We couldn\'t load this project. Open it again to retry.</string>
     <string name="obra_fechas">Dates</string>
     <string name="obra_fecha_inicio">Start: %1$s</string>
     <string name="obra_ultima_visita">Last visit: %1$s</string>

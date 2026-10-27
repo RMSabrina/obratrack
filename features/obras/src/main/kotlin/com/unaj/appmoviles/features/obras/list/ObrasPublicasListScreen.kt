@@ -80,7 +80,7 @@ fun ObrasPublicasListScreen(
         if (state.isLoading) {
             LoadingContent(Modifier.padding(paddingValues))
         } else {
-            if (state.obras.isEmpty()) {
+            if (state.error || state.obras.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -91,7 +91,14 @@ fun ObrasPublicasListScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(stringResource(R.string.obras_publicas_vacia))
+                        if (state.error) {
+                            Text(
+                                text = stringResource(R.string.obras_publicas_error),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        } else {
+                            Text(stringResource(R.string.obras_publicas_vacia))
+                        }
                     }
                 }
             } else {

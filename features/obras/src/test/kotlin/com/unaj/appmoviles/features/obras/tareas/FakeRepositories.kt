@@ -58,10 +58,20 @@ class FakeObraRepository(obra: Obra?) : ObraRepository {
     override fun observeOne(userId: String, obraId: String): Flow<Obra?> =
         this.obra.map { it?.takeIf { o -> o.id == obraId && o.userId == userId } }
 
+    /** Si no es null, observePublicas y observePublica fallan con esta excepción (como Firestore). */
+    var observePublicasError: Exception? = null
+
     override fun observe(userId: String): Flow<List<Obra>> = TODO()
-    override fun observePublicas(): Flow<List<Obra>> = TODO()
-    override fun observePublica(obraId: String): Flow<Obra?> =
-        this.obra.map { it?.takeIf { o -> o.id == obraId && o.publica } }
+    override fun observePublicas(): Flow<List<Obra>> {
+        val error = observePublicasError
+        if (error != null) return flow { throw error }
+        return this.obra.map { listOfNotNull(it?.takeIf { o -> o.publica }) }
+    }
+    override fun observePublica(obraId: String): Flow<Obra?> {
+        val error = observePublicasError
+        if (error != null) return flow { throw error }
+        return this.obra.map { it?.takeIf { o -> o.id == obraId && o.publica } }
+    }
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> = TODO()

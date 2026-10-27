@@ -92,7 +92,7 @@ fun ObraPublicaDetailScreen(
             state.isLoading -> LoadingContent(Modifier.padding(padding))
             obra == null -> {
                 Text(
-                    text = state.error?.message ?: stringResource(R.string.obra_publica_no_encontrada),
+                    text = stringResource(if (state.error) R.string.obra_publica_error else R.string.obra_publica_no_encontrada),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier
                         .padding(padding)

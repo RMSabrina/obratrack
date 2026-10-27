@@ -9,7 +9,6 @@ import com.unaj.appmoviles.obratrack.core.domain.usecase.relevamientos.ObserveRe
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -23,7 +22,8 @@ data class ObraPublicaDetailUiState(
     /** No se pudieron leer los relevamientos: la sección muestra un mensaje, no "vacío". */
     val relevamientosError: Boolean = false,
     val isLoading: Boolean = true,
-    val error: Throwable? = null
+    /** No se pudo leer la obra (distinto de "no existe o ya no es pública"). */
+    val error: Boolean = false
 )
 
 @HiltViewModel(assistedFactory = ObraPublicaDetailViewModel.Factory::class)
@@ -38,22 +38,27 @@ class ObraPublicaDetailViewModel @AssistedInject constructor(
         fun create(obraId: String): ObraPublicaDetailViewModel
     }
 
-    private val internalError = MutableStateFlow<Throwable?>(null)
+    private sealed interface LecturaObra {
+        data class Leida(val obra: Obra?) : LecturaObra
+        data object Error : LecturaObra
+    }
 
+    // Los dos Flows atrapan su error: sin el catch, cerraría la app en vez de avisar.
     val uiState: StateFlow<ObraPublicaDetailUiState> = combine(
-        observeObraPublicaUseCase(obraId),
-        // null si fallan: sin el catch, el error del Flow cerraría la app en vez de avisar.
+        observeObraPublicaUseCase(obraId)
+            .map<Obra?, LecturaObra> { LecturaObra.Leida(it) }
+            .catch { emit(LecturaObra.Error) },
+        // null si fallan los relevamientos.
         observeRelevamientosUseCase(obraId)
             .map<List<Relevamiento>, List<Relevamiento>?> { it }
-            .catch { emit(null) },
-        internalError
-    ) { obra, relevamientos, error ->
+            .catch { emit(null) }
+    ) { lectura, relevamientos ->
         ObraPublicaDetailUiState(
-            obra = obra,
+            obra = (lectura as? LecturaObra.Leida)?.obra,
             relevamientos = relevamientos.orEmpty(),
             relevamientosError = relevamientos == null,
             isLoading = false,
-            error = error
+            error = lectura is LecturaObra.Error
         )
     }.stateIn(
         scope = viewModelScope,
