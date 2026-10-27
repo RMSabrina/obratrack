@@ -99,10 +99,23 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
                 .whereEqualTo(RELEVAMIENTO_FIELD_TAREA_ID, tareaId)
                 .get(Source.SERVER).await()
                 .documents
-            // Un batch admite hasta 500 escrituras: los vinculados + la tarea. Partirlo dejaría
-            // de ser atómico, así que se rechaza (no se espera llegar a este número).
-            if (vinculados.size + 1 > BATCH_SIZE) {
+            // Un batch admite hasta 500 escrituras: los vinculados + la tarea + la obra (su última
+            // visita, si se borran relevamientos). Partirlo dejaría de ser atómico, así que se rechaza
+            // (no se espera llegar a este número).
+            val borraRelevamientos = eliminarRelevamientos && vinculados.isNotEmpty()
+            if (vinculados.size + (if (borraRelevamientos) 2 else 1) > BATCH_SIZE) {
                 return FirebaseResult.Error(DemasiadosVinculadosException())
+            }
+            // Al borrar relevamientos, la última visita de la obra pasa a la del más reciente que queda.
+            // Se lee del servidor, igual que los vinculados: acá no hay caché incompleto que valga.
+            val ultimaVisita = if (borraRelevamientos) {
+                val todos = fechasPorId(
+                    firestore.collection(OBRAS).document(obraId).collection(RELEVAMIENTOS)
+                        .get(Source.SERVER).await().documents
+                )
+                ultimaVisitaTras(todos, quitar = vinculados.map { it.id }.toSet())
+            } else {
+                null
             }
             firestore.batch().apply {
                 vinculados.forEach { doc ->
@@ -113,6 +126,13 @@ class FirestoreTareaDataSourceImpl @Inject constructor(
                     }
                 }
                 delete(tareas(obraId).document(tareaId))
+                if (borraRelevamientos) {
+                    update(
+                        firestore.collection(OBRAS).document(obraId),
+                        OBRA_FIELD_ULTIMA_VISITA,
+                        valorUltimaVisita(ultimaVisita)
+                    )
+                }
             }.commit().await()
             FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {

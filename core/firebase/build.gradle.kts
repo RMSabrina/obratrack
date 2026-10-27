@@ -37,6 +37,7 @@ dependencies {
 
     implementation(libs.material)
     testImplementation(libs.junit)
+    testImplementation(project(":core:domain"))   // solo para comprobar que las fechas coinciden con toFechaCalendario()
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 

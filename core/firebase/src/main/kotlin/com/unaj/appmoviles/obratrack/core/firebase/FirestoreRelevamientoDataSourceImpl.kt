@@ -139,10 +139,16 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
                 FIELD_PROXIMA_VISITA to valorOpcionalParaMerge(stored.proximaVisitaMillis?.let { Timestamp(Date(it)) }),
                 FIELD_HORA_VISITA to valorOpcionalParaMerge(stored.horaVisita)
             )
-            ref.set(campos, SetOptions.merge()).await()
+            // La última visita de la obra sigue a la fecha del relevamiento: si se movió el más reciente
+            // (hacia atrás o adelante) cambia. Todo en un batch, sin transacción, para que ande sin conexión.
+            val fechas = fechasPorId(relevamientos(dto.obraId).get().await().documents)
+            val ultimaVisita = ultimaVisitaTras(fechas, cambiar = stored.id to stored.fechaMillis)
             // Editar no vuelve a proponer la visita: pisaría la vigente de la obra.
             val visita = camposVisitaObra(alCrear = false, stored.proximaVisitaMillis, stored.horaVisita)
-            if (visita.isNotEmpty()) obraRef.update(visita).await()
+            firestore.batch().apply {
+                set(ref, campos, SetOptions.merge())
+                update(obraRef, visita + (FIELD_ULTIMA_VISITA to valorUltimaVisita(ultimaVisita)))
+            }.commit().await()
             FirebaseResult.Success(stored)
         } catch (e: CancellationException) {
             throw e
@@ -218,7 +224,15 @@ class FirestoreRelevamientoDataSourceImpl @Inject constructor(
     override suspend fun delete(obraId: String, relevamientoId: String): FirebaseResult<Unit> {
         return try {
             if (auth.uid == null) return FirebaseResult.Error(RelevamientoForbiddenException())
-            relevamientos(obraId).document(relevamientoId).delete().await()
+            // La última visita de la obra pasa a ser la del relevamiento más reciente que queda (o se
+            // borra si no queda ninguno). No toca proximaVisita ni horaVisita. Un batch, sin transacción.
+            val fechas = fechasPorId(relevamientos(obraId).get().await().documents)
+            val ultimaVisita = ultimaVisitaTras(fechas, quitar = setOf(relevamientoId))
+            val obraRef = firestore.collection(OBRAS).document(obraId)
+            firestore.batch().apply {
+                delete(relevamientos(obraId).document(relevamientoId))
+                update(obraRef, FIELD_ULTIMA_VISITA, valorUltimaVisita(ultimaVisita))
+            }.commit().await()
             FirebaseResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
