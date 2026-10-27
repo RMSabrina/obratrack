@@ -248,6 +248,24 @@ class RelevamientoFormViewModelTest {
     }
 
     @Test
+    fun guardar_leeLaFotoYaEnGuardando_yNoLaLeeDosVeces() = runTest {
+        val relevamientoRepo = FakeRelevamientoRepository()
+        val viewModel = crearViewModel(relevamientoRepo = relevamientoRepo)
+        testDispatcher.scheduler.advanceUntilIdle()
+        var lecturas = 0
+
+        viewModel.guardar(draft, { lecturas++; ByteArray(10) })
+        // El estado "guardando" se ve antes de leer la foto; la lectura corre en la corrutina.
+        assertEquals(RelevamientoFormUiState.Loading, viewModel.uiState.value)
+        assertEquals(0, lecturas)
+        viewModel.guardar(draft, { lecturas++; ByteArray(10) })
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, lecturas)
+        assertEquals(1, relevamientoRepo.created.size)
+    }
+
+    @Test
     fun foto_enorme_noSeIntentaSubirYMuestraElError() = runTest {
         val relevamientoRepo = FakeRelevamientoRepository()
         val viewModel = crearViewModel(relevamientoRepo = relevamientoRepo)

@@ -1,10 +1,17 @@
 package com.unaj.appmoviles.features.home.agenda
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+
+private const val INTERVALO_REFRESCO_MS = 30_000L
 
 @Composable
 fun AgendaRoute(
@@ -18,6 +25,18 @@ fun AgendaRoute(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Con la pantalla a la vista, recalcula cada tanto qué visitas ya pasaron de hora.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner, viewModel) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.refrescarHora()
+            while (true) {
+                delay(INTERVALO_REFRESCO_MS)
+                viewModel.refrescarHora()
+            }
+        }
+    }
 
     AgendaScreen(
         state = state,

@@ -117,17 +117,21 @@ class RelevamientoFormViewModel @AssistedInject constructor(
         }
     }
 
-    fun save(draft: RelevamientoDraft, photo: ByteArray?, continueAdding: Boolean = false) {
+    fun save(draft: RelevamientoDraft, photo: ByteArray?, continueAdding: Boolean = false) =
+        guardar(draft, { photo }, continueAdding)
+
+    /** [cargarFoto] lee la foto elegida (fuera del hilo principal); se llama una vez ya en "guardando". */
+    fun guardar(draft: RelevamientoDraft, cargarFoto: suspend () -> ByteArray?, continueAdding: Boolean = false) {
         if (_uiState.value is RelevamientoFormUiState.Loading) return
-        
-        // La foto se achica al subirla (core:data); este tope solo evita intentar con archivos enormes.
-        if (photo != null && photo.size > MAX_FOTO_ORIGINAL_BYTES) {
-            _uiState.value = RelevamientoFormUiState.Error(RelevamientoError.ImagenMuyGrande)
-            return
-        }
-        
+
         _uiState.value = RelevamientoFormUiState.Loading
         viewModelScope.launch {
+            val photo = cargarFoto()
+            // La foto se achica al subirla (core:data); este tope solo evita intentar con archivos enormes.
+            if (photo != null && photo.size > MAX_FOTO_ORIGINAL_BYTES) {
+                _uiState.value = RelevamientoFormUiState.Error(RelevamientoError.ImagenMuyGrande)
+                return@launch
+            }
             val user = observeSession().first()
             if (user == null) {
                 _uiState.value = RelevamientoFormUiState.Error(RelevamientoError.NoAutorizado)

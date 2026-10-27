@@ -40,6 +40,14 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.unaj.appmoviles.obratrack.core.domain.usecase.obras.HORA_VISITA_POR_DEFECTO_MINUTOS
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -101,7 +109,7 @@ fun AgendaScreen(
     onFiltroChanged: (FiltroAgenda) -> Unit,
     onIniciarReprogramacion: (Obra) -> Unit,
     onCancelarReprogramacion: () -> Unit,
-    onConfirmarReprogramacion: (Obra, Long?) -> Unit,
+    onConfirmarReprogramacion: (Obra, Long?, Int?) -> Unit,
     onClearFeedbackMessage: () -> Unit,
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -120,41 +128,14 @@ fun AgendaScreen(
         }
     }
 
-    if (state.obraParaReprogramar != null) {
-        val obra = state.obraParaReprogramar
-        val pickerState = rememberDatePickerState(
-            initialSelectedDateMillis = obra.proximaVisita ?: System.currentTimeMillis()
+    state.obraParaReprogramar?.let { obra ->
+        DialogReprogramar(
+            obra = obra,
+            guardando = state.isUpdating,
+            hoyMillis = state.hoyMillis,
+            onCancelar = onCancelarReprogramacion,
+            onConfirmar = onConfirmarReprogramacion
         )
-        DatePickerDialog(
-            onDismissRequest = onCancelarReprogramacion,
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onConfirmarReprogramacion(obra, pickerState.selectedDateMillis)
-                    }
-                ) {
-                    Text(stringResource(R.string.agenda_guardar_fecha))
-                }
-            },
-            dismissButton = {
-                Row {
-                    if (obra.proximaVisita != null) {
-                        TextButton(
-                            onClick = {
-                                onConfirmarReprogramacion(obra, null)
-                            }
-                        ) {
-                            Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                    TextButton(onClick = onCancelarReprogramacion) {
-                        Text(stringResource(R.string.cancelar))
-                    }
-                }
-            }
-        ) {
-            DatePicker(state = pickerState)
-        }
     }
 
     Scaffold(
@@ -688,6 +669,117 @@ fun abrirMapa(context: Context, direccion: String, latitud: Double?, longitud: D
             context.startActivity(fallbackIntent)
         } catch (e: ActivityNotFoundException) {
             Log.w("AgendaScreen", "No hay ninguna app que pueda abrir el mapa", e)
+        }
+    }
+}
+
+/** Elegir la fecha y la hora de la próxima visita. La hora que ya tenía la obra se conserva por defecto. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DialogReprogramar(
+    obra: Obra,
+    guardando: Boolean,
+    hoyMillis: Long,
+    onCancelar: () -> Unit,
+    onConfirmar: (Obra, Long?, Int?) -> Unit
+) {
+    val context = LocalContext.current
+    val pickerState = rememberDatePickerState(
+        initialSelectedDateMillis = obra.proximaVisita ?: hoyMillis
+    )
+    var hora by rememberSaveable(obra.id) { mutableStateOf(obra.horaVisita) }
+    var eligiendoHora by rememberSaveable { mutableStateOf(false) }
+    var confirmandoQuitar by rememberSaveable { mutableStateOf(false) }
+
+    if (eligiendoHora) {
+        val inicial = hora ?: HORA_VISITA_POR_DEFECTO_MINUTOS
+        val timeState = rememberTimePickerState(
+            initialHour = inicial / 60,
+            initialMinute = inicial % 60,
+            is24Hour = android.text.format.DateFormat.is24HourFormat(context)
+        )
+        AlertDialog(
+            onDismissRequest = { eligiendoHora = false },
+            title = { Text(stringResource(R.string.agenda_hora_visita_titulo)) },
+            text = { TimePicker(state = timeState) },
+            confirmButton = {
+                TextButton(onClick = {
+                    hora = timeState.hour * 60 + timeState.minute
+                    eligiendoHora = false
+                }) { Text(stringResource(R.string.aceptar)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { eligiendoHora = false }) { Text(stringResource(R.string.cancelar)) }
+            }
+        )
+    }
+
+    if (confirmandoQuitar) {
+        AlertDialog(
+            onDismissRequest = { confirmandoQuitar = false },
+            title = { Text(stringResource(R.string.agenda_quitar_confirmar_titulo)) },
+            text = { Text(stringResource(R.string.agenda_quitar_confirmar_mensaje, obra.nombre)) },
+            confirmButton = {
+                TextButton(
+                    enabled = !guardando,
+                    onClick = {
+                        confirmandoQuitar = false
+                        onConfirmar(obra, null, null)
+                    }
+                ) { Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmandoQuitar = false }) { Text(stringResource(R.string.cancelar)) }
+            }
+        )
+    }
+
+    DatePickerDialog(
+        onDismissRequest = { if (!guardando) onCancelar() },
+        confirmButton = {
+            Button(
+                enabled = !guardando,
+                onClick = { onConfirmar(obra, pickerState.selectedDateMillis, hora) }
+            ) {
+                Text(stringResource(if (guardando) R.string.agenda_guardando else R.string.agenda_guardar_fecha))
+            }
+        },
+        dismissButton = {
+            Row {
+                if (obra.proximaVisita != null) {
+                    TextButton(enabled = !guardando, onClick = { confirmandoQuitar = true }) {
+                        Text(stringResource(R.string.agenda_quitar_fecha), color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                TextButton(enabled = !guardando, onClick = onCancelar) {
+                    Text(stringResource(R.string.cancelar))
+                }
+            }
+        }
+    ) {
+        Column {
+            DatePicker(state = pickerState)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = hora?.let { stringResource(R.string.agenda_hora_actual, formatHora(context, it)) }
+                        ?: stringResource(R.string.agenda_sin_hora),
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(enabled = !guardando, onClick = { eligiendoHora = true }) {
+                    Text(stringResource(if (hora == null) R.string.agenda_elegir_hora else R.string.agenda_cambiar_hora))
+                }
+                if (hora != null) {
+                    TextButton(enabled = !guardando, onClick = { hora = null }) {
+                        Text(stringResource(R.string.agenda_quitar_hora))
+                    }
+                }
+            }
         }
     }
 }

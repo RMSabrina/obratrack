@@ -87,4 +87,14 @@
     <!-- Textos por defecto -->
     <string name="home_usuario">User</string>
     <string name="home_obra_desconocida">Unknown project</string>
+    <string name="agenda_hora_visita_titulo">Visit time</string>
+    <string name="agenda_hora_actual">Time: %1$s</string>
+    <string name="agenda_sin_hora">No time</string>
+    <string name="agenda_elegir_hora">Set time</string>
+    <string name="agenda_cambiar_hora">Change time</string>
+    <string name="agenda_quitar_hora">Remove time</string>
+    <string name="agenda_quitar_confirmar_titulo">Remove the visit date?</string>
+    <string name="agenda_quitar_confirmar_mensaje">The date and time of the next visit to %1$s will be removed.</string>
+    <string name="agenda_guardando">Saving…</string>
+    <string name="aceptar">OK</string>
 </resources>

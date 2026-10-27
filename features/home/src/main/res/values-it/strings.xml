@@ -87,4 +87,14 @@
     <!-- Textos por defecto -->
     <string name="home_usuario">Utente</string>
     <string name="home_obra_desconocida">Cantiere sconosciuto</string>
+    <string name="agenda_hora_visita_titulo">Ora della visita</string>
+    <string name="agenda_hora_actual">Ora: %1$s</string>
+    <string name="agenda_sin_hora">Senza ora</string>
+    <string name="agenda_elegir_hora">Scegli l\'ora</string>
+    <string name="agenda_cambiar_hora">Cambia ora</string>
+    <string name="agenda_quitar_hora">Rimuovi ora</string>
+    <string name="agenda_quitar_confirmar_titulo">Rimuovere la data della visita?</string>
+    <string name="agenda_quitar_confirmar_mensaje">Verranno rimosse la data e l\'ora della prossima visita a %1$s.</string>
+    <string name="agenda_guardando">Salvataggio…</string>
+    <string name="aceptar">OK</string>
 </resources>

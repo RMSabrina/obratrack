@@ -11,6 +11,7 @@ import com.unaj.appmoviles.obratrack.core.domain.model.User
 import com.unaj.appmoviles.obratrack.core.domain.repository.AuthRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.ObraRepository
 import com.unaj.appmoviles.obratrack.core.domain.repository.RelevamientoRepository
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -55,11 +56,23 @@ class FakeObraRepository(obras: List<Obra> = emptyList()) : ObraRepository {
         return obras.map { lista -> lista.filter { it.userId == userId } }
     }
 
+    /** Si no es null, update espera a que se complete (para ver el estado "guardando"). */
+    var updateGate: CompletableDeferred<Unit>? = null
+    val actualizaciones = mutableListOf<ObraDraft>()
+
+    override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> {
+        actualizaciones += draft
+        updateGate?.await()
+        val nueva = obras.value.first { it.id == obraId }
+            .copy(proximaVisita = draft.proximaVisita, horaVisita = draft.horaVisita)
+        obras.value = obras.value.map { if (it.id == obraId) nueva else it }
+        return AppResult.Success(nueva)
+    }
+
     override fun observeOne(userId: String, obraId: String): Flow<Obra?> = TODO()
     override fun observePublicas(): Flow<List<Obra>> = TODO()
     override fun observePublica(obraId: String): Flow<Obra?> = TODO()
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> = TODO()
-    override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> = TODO()
     override suspend fun delete(obraId: String): AppResult<Unit> = TODO()
     override suspend fun deleteAllSuscriptoresByObra(obraId: String): AppResult<Unit> = TODO()

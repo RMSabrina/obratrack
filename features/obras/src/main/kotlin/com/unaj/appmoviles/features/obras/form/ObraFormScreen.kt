@@ -1,13 +1,7 @@
 package com.unaj.appmoviles.features.obras.form
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.location.CurrentLocationRequest
-import com.google.android.gms.tasks.CancellationTokenSource
-import androidx.compose.runtime.DisposableEffect
 import android.os.Build
 import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -98,6 +92,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unaj.appmoviles.features.obras.estadoObraFromStorage
 import com.unaj.appmoviles.features.obras.label
+import com.unaj.appmoviles.features.obras.rememberCapturaUbicacion
 import com.unaj.appmoviles.features.obras.rememberSalidaConConfirmacion
 import com.unaj.appmoviles.features.obras.toStorageValue
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
@@ -193,14 +188,26 @@ fun ObraFormScreen(
     var horaVisita by rememberSaveable { mutableStateOf(initial.horaVisita) }
     var showHoraPicker by rememberSaveable { mutableStateOf(false) }
     var ubicacionMensaje by rememberSaveable { mutableStateOf<Int?>(null) }
-    var isCapturingLocation by remember { mutableStateOf(false) }
-    var cancellationTokenSource by remember { mutableStateOf<CancellationTokenSource?>(null) }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            cancellationTokenSource?.cancel()
+    val captura = rememberCapturaUbicacion { ubicacion ->
+        if (ubicacion != null) {
+            latitud = ubicacion.latitud
+            longitud = ubicacion.longitud
+            coroutineScope.launch {
+                val autoAddress = onReverseGeocode?.invoke(ubicacion.latitud, ubicacion.longitud)
+                if (!autoAddress.isNullOrBlank()) {
+                    if (direccion.isBlank()) {
+                        direccion = autoAddress
+                        onInputChanged()
+                    } else if (direccion != autoAddress) {
+                        sugerenciaDireccion = autoAddress
+                    }
+                }
+            }
+        } else {
+            ubicacionMensaje = R.string.obras_error_ubicacion_no_disponible
         }
     }
+    val isCapturingLocation = captura.capturando
 
     val pedirUbicacion = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -208,30 +215,8 @@ fun ObraFormScreen(
         if (concedido) {
             ubicacionMensaje = null
             geocodingFeedback = null
-            isCapturingLocation = true
-            cancellationTokenSource = capturarUbicacion(context) { ubicacion ->
-                isCapturingLocation = false
-                cancellationTokenSource = null
-                if (ubicacion != null) {
-                    latitud = ubicacion.latitud
-                    longitud = ubicacion.longitud
-                    coroutineScope.launch {
-                        val autoAddress = onReverseGeocode?.invoke(ubicacion.latitud, ubicacion.longitud)
-                        if (!autoAddress.isNullOrBlank()) {
-                            if (direccion.isBlank()) {
-                                direccion = autoAddress
-                                onInputChanged()
-                            } else if (direccion != autoAddress) {
-                                sugerenciaDireccion = autoAddress
-                            }
-                        }
-                    }
-                } else {
-                    ubicacionMensaje = R.string.obras_error_ubicacion_no_disponible
-                }
-            }
+            captura.iniciar()
         } else {
-            isCapturingLocation = false
             ubicacionMensaje = R.string.obras_error_permiso_ubicacion
         }
     }
@@ -528,14 +513,25 @@ fun ObraFormScreen(
                             }
                         }
 
-                        OutlinedButton(
-                            onClick = { showMapPicker = true },
-                            enabled = !isCapturingLocation,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text(stringResource(R.string.obras_ajustar_en_mapa))
+                        if (isCapturingLocation) {
+                            OutlinedButton(
+                                onClick = {
+                                    captura.cancelar()
+                                    ubicacionMensaje = R.string.obras_ubicacion_cancelada
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.cancelar))
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = { showMapPicker = true },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.obras_ajustar_en_mapa))
+                            }
                         }
                     }
 
@@ -754,38 +750,4 @@ fun ObraFormScreen(
             }
         }
     }
-}
-
-@SuppressLint("MissingPermission")
-private fun capturarUbicacion(context: Context, onResult: (Ubicacion?) -> Unit): CancellationTokenSource {
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val cancellationTokenSource = CancellationTokenSource()
-
-    fusedLocationClient.lastLocation.addOnSuccessListener { lastLocation ->
-        if (lastLocation != null && (System.currentTimeMillis() - lastLocation.time) < 120_000) {
-            onResult(Ubicacion(lastLocation.latitude, lastLocation.longitude))
-            return@addOnSuccessListener
-        }
-
-        val request = CurrentLocationRequest.Builder()
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .setMaxUpdateAgeMillis(60_000)
-            .setDurationMillis(15_000)
-            .build()
-
-        fusedLocationClient.getCurrentLocation(request, cancellationTokenSource.token)
-            .addOnSuccessListener { location ->
-                onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
-            }
-            .addOnFailureListener {
-                onResult(null)
-            }
-            .addOnCanceledListener {
-                onResult(null)
-            }
-    }.addOnFailureListener {
-        onResult(null)
-    }
-
-    return cancellationTokenSource
 }

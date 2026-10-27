@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -80,9 +82,15 @@ fun ObrasListScreen(
 ) {
     BackHandler(onBack = onBack)
 
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedEstado by remember { mutableStateOf<EstadoObra?>(null) }
-    var showFilterMenu by remember { mutableStateOf(false) }
+    // Se guardan al rotar la pantalla; el estado se guarda por nombre.
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var selectedEstado by rememberSaveable(
+        stateSaver = Saver<EstadoObra?, String>(
+            save = { it?.name.orEmpty() },
+            restore = { nombre -> EstadoObra.entries.firstOrNull { it.name == nombre } }
+        )
+    ) { mutableStateOf<EstadoObra?>(null) }
+    var showFilterMenu by rememberSaveable { mutableStateOf(false) }
     
     // Simple local filter for the list based on the search query and selected state
     val filteredObras = remember(searchQuery, selectedEstado, state.obras) {

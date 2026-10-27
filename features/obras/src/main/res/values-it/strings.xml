@@ -298,4 +298,7 @@
     <string name="obra_proxima_visita_fecha_hora">Prossimo sopralluogo: %1$s alle %2$s</string>
     <string name="obra_proxima_visita_atrasada_hora">Prossimo sopralluogo: %1$s alle %2$s (in ritardo)</string>
     <string name="pdf_generando">Generazione del PDF…</string>
+    <string name="obras_ubicacion_cancelada">Acquisizione della posizione annullata.</string>
+    <string name="relevamiento_tarea_repetida">%1$s (n. %2$d · %3$s)</string>
+    <string name="relevamiento_tarea_sin_fechas">senza date</string>
 </resources>

@@ -299,4 +299,7 @@
     <string name="obra_proxima_visita_fecha_hora">Próxima visita: %1$s a las %2$s</string>
     <string name="obra_proxima_visita_atrasada_hora">Próxima visita: %1$s a las %2$s (Atrasada)</string>
     <string name="pdf_generando">Generando el PDF…</string>
+    <string name="obras_ubicacion_cancelada">Captura de ubicación cancelada.</string>
+    <string name="relevamiento_tarea_repetida">%1$s (n.º %2$d · %3$s)</string>
+    <string name="relevamiento_tarea_sin_fechas">sin fechas</string>
 </resources>

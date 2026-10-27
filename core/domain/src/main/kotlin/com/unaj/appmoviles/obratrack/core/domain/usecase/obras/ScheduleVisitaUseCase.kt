@@ -9,7 +9,12 @@ import javax.inject.Inject
 class ScheduleVisitaUseCase @Inject constructor(
     private val obraRepository: ObraRepository
 ) {
-    suspend operator fun invoke(userId: String, obra: Obra, proximaVisita: Long?): AppResult<Obra> {
+    /**
+     * Programa o quita la próxima visita. [horaVisita] es la hora que queda (null = sin hora): quien
+     * reprograma decide si conserva la que tenía la obra. Sin fecha no puede haber hora.
+     * El aviso previo se reprograma solo: `AvisosVisitaSincronizador` mira los cambios de la obra.
+     */
+    suspend operator fun invoke(userId: String, obra: Obra, proximaVisita: Long?, horaVisita: Int?): AppResult<Obra> {
         val draft = ObraDraft(
             nombre = obra.nombre,
             cliente = obra.cliente,
@@ -18,8 +23,7 @@ class ScheduleVisitaUseCase @Inject constructor(
             estado = obra.estado,
             ubicacion = obra.ubicacion,
             proximaVisita = proximaVisita,
-            // La hora pertenece a su fecha: si la fecha cambia, la hora anterior ya no corresponde.
-            horaVisita = if (proximaVisita == obra.proximaVisita) obra.horaVisita else null
+            horaVisita = if (proximaVisita == null) null else horaVisitaValida(horaVisita)
         )
         return obraRepository.update(userId, obra.id, draft)
     }

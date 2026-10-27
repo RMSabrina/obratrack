@@ -1,14 +1,8 @@
 package com.unaj.appmoviles.features.obras.relevamiento
 
-import android.annotation.SuppressLint
 import android.Manifest
 import android.util.Log
 import android.content.Context
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.location.CurrentLocationRequest
-import com.google.android.gms.tasks.CancellationTokenSource
-import androidx.compose.runtime.DisposableEffect
 import android.net.Uri
 import android.os.Build
 import android.os.Looper
@@ -102,6 +96,13 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.launch
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.formatHora
+import androidx.compose.runtime.DisposableEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import com.unaj.appmoviles.features.obras.export.FotosEnUso
+import com.unaj.appmoviles.features.obras.export.limpiarFotosTemporales
+import com.unaj.appmoviles.features.obras.leerFoto
+import com.unaj.appmoviles.features.obras.rememberCapturaUbicacion
 import com.unaj.appmoviles.features.obras.rememberSalidaConConfirmacion
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import androidx.compose.ui.res.stringResource
@@ -140,14 +141,21 @@ fun RelevamientoFormRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val selector by viewModel.selector.collectAsStateWithLifecycle()
+    val contexto = LocalContext.current
     LaunchedEffect(state) {
         if (state is RelevamientoFormUiState.Saved) onSaved()
+    }
+    // Al terminar de guardar se borran las fotos temporales viejas que ningún formulario usa.
+    LaunchedEffect(state) {
+        if (state is RelevamientoFormUiState.Saved || state is RelevamientoFormUiState.SavedAndContinue) {
+            withContext(Dispatchers.IO) { limpiarFotosTemporales(contexto.cacheDir) }
+        }
     }
     RelevamientoFormScreen(
         initial = initial,
         state = state,
         onBack = onBack,
-        onSave = viewModel::save,
+        onSave = { draft, foto, seguir -> viewModel.guardar(draft, { leerFoto(contexto, foto) }, seguir) },
         onContinueReset = viewModel::onContinueReset,
         onInputChanged = viewModel::onErrorShown,
         selector = selector,
@@ -180,7 +188,8 @@ fun RelevamientoFormScreen(
     initial: RelevamientoFormInitial,
     state: RelevamientoFormUiState,
     onBack: () -> Unit,
-    onSave: (RelevamientoDraft, ByteArray?, Boolean) -> Unit,
+    /** El segundo valor es la foto elegida (ruta o Uri): se lee al guardar, fuera del hilo principal. */
+    onSave: (RelevamientoDraft, String?, Boolean) -> Unit,
     onContinueReset: () -> Unit,
     onInputChanged: () -> Unit,
     selector: SelectorTareaUiState,
@@ -199,20 +208,17 @@ fun RelevamientoFormScreen(
     var horaVisita by rememberSaveable { mutableStateOf(initial.horaVisita) }
     var showHoraPicker by rememberSaveable { mutableStateOf(false) }
     var fotoLocal by rememberSaveable { mutableStateOf<String?>(null) }
+    // Mientras este formulario use la foto, la limpieza de la caché no la borra.
+    DisposableEffect(fotoLocal) {
+        val ruta = fotoLocal
+        if (ruta != null) FotosEnUso.registrar(ruta)
+        onDispose { if (ruta != null) FotosEnUso.liberar(ruta) }
+    }
     var fotoRemota by rememberSaveable { mutableStateOf(initial.fotoUrl) }
     var latitud by rememberSaveable { mutableStateOf(initial.latitud) }
     var longitud by rememberSaveable { mutableStateOf(initial.longitud) }
     var showMapPicker by rememberSaveable { mutableStateOf(false) }
     var ubicacionMensaje by rememberSaveable { mutableStateOf<Int?>(null) }
-    var isCapturingLocation by remember { mutableStateOf(false) }
-    var cancellationTokenSource by remember { mutableStateOf<CancellationTokenSource?>(null) }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            cancellationTokenSource?.cancel()
-        }
-    }
-    
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -265,44 +271,25 @@ fun RelevamientoFormScreen(
         }
     }
 
-    fun readPhotoBytes(pathOrUri: String?): ByteArray? {
-        if (pathOrUri.isNullOrBlank()) return null
-        return try {
-            if (pathOrUri.startsWith("content://")) {
-                context.contentResolver.openInputStream(Uri.parse(pathOrUri))?.use { it.readBytes() }
-            } else {
-                val file = File(pathOrUri.removePrefix("file://"))
-                if (file.exists() && file.length() > 0) {
-                    file.readBytes()
-                } else {
-                    context.contentResolver.openInputStream(Uri.parse(pathOrUri))?.use { it.readBytes() }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("RelevamientoFormScreen", "No se pudo leer la foto elegida", e)
-            null
+    val captura = rememberCapturaUbicacion { ubicacion ->
+        if (ubicacion == null) {
+            ubicacionMensaje = R.string.obras_error_ubicacion_no_disponible
+        } else {
+            latitud = ubicacion.latitud
+            longitud = ubicacion.longitud
         }
     }
+    val isCapturingLocation = captura.capturando
+
     val pedirUbicacion = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
             ubicacionMensaje = null
-            isCapturingLocation = true
-            cancellationTokenSource = capturarUbicacion(context) { ubicacion ->
-                isCapturingLocation = false
-                cancellationTokenSource = null
-                if (ubicacion == null) {
-                    ubicacionMensaje = R.string.obras_error_ubicacion_no_disponible
-                } else {
-                    latitud = ubicacion.latitud
-                    longitud = ubicacion.longitud
-                }
-            }
+            captura.iniciar()
         } else {
-            isCapturingLocation = false
             ubicacionMensaje = R.string.obras_error_permiso_ubicacion
         }
     }
-    
+
     val error = (state as? RelevamientoFormUiState.Error)?.error
     val isLoading = state is RelevamientoFormUiState.Loading
     val salir = rememberSalidaConConfirmacion(
@@ -420,13 +407,12 @@ fun RelevamientoFormScreen(
                     ) {
                         Button(
                             onClick = {
-                                val bytes = readPhotoBytes(fotoLocal)
                                 val lat = latitud
                                 val lng = longitud
                                 val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
                                 onSave(
                                     RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita, horaVisita = horaVisita),
-                                    bytes,
+                                    fotoLocal,
                                     true
                                 )
                             },
@@ -452,13 +438,12 @@ fun RelevamientoFormScreen(
                         OutlinedButton(
                             onClick = {
                                 if (hasPendingContent) {
-                                    val bytes = readPhotoBytes(fotoLocal)
-                                    val lat = latitud
+                                        val lat = latitud
                                     val lng = longitud
                                     val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
                                     onSave(
                                         RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita, horaVisita = horaVisita),
-                                        bytes,
+                                        fotoLocal,
                                         false
                                     )
                                 } else {
@@ -480,13 +465,12 @@ fun RelevamientoFormScreen(
                 } else {
                     Button(
                         onClick = {
-                            val bytes = readPhotoBytes(fotoLocal)
                             val lat = latitud
                             val lng = longitud
                             val ubicacion = if (lat != null && lng != null) Ubicacion(lat, lng) else null
                             onSave(
                                 RelevamientoDraft(fecha = fecha, nota = nota, fotoUrl = fotoRemota, ubicacion = ubicacion, proximaVisita = proximaVisita, horaVisita = horaVisita),
-                                bytes,
+                                fotoLocal,
                                 false
                             )
                         },
@@ -721,14 +705,25 @@ fun RelevamientoFormScreen(
                                 }
                             }
 
-                            OutlinedButton(
-                                onClick = { showMapPicker = true },
-                                enabled = !isCapturingLocation,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.obras_ajustar_en_mapa))
+                            if (isCapturingLocation) {
+                                OutlinedButton(
+                                    onClick = {
+                                        captura.cancelar()
+                                        ubicacionMensaje = R.string.obras_ubicacion_cancelada
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.cancelar))
+                                }
+                            } else {
+                                OutlinedButton(
+                                    onClick = { showMapPicker = true },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(stringResource(R.string.obras_ajustar_en_mapa))
+                                }
                             }
                         }
 
@@ -907,38 +902,4 @@ fun RelevamientoFormScreen(
             }
         }
     }
-}
-
-@SuppressLint("MissingPermission")
-private fun capturarUbicacion(context: Context, onResult: (Ubicacion?) -> Unit): CancellationTokenSource {
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val cancellationTokenSource = CancellationTokenSource()
-
-    fusedLocationClient.lastLocation.addOnSuccessListener { lastLocation ->
-        if (lastLocation != null && (System.currentTimeMillis() - lastLocation.time) < 120_000) {
-            onResult(Ubicacion(lastLocation.latitude, lastLocation.longitude))
-            return@addOnSuccessListener
-        }
-
-        val request = CurrentLocationRequest.Builder()
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .setMaxUpdateAgeMillis(60_000)
-            .setDurationMillis(15_000)
-            .build()
-
-        fusedLocationClient.getCurrentLocation(request, cancellationTokenSource.token)
-            .addOnSuccessListener { location ->
-                onResult(location?.let { Ubicacion(it.latitude, it.longitude) })
-            }
-            .addOnFailureListener {
-                onResult(null)
-            }
-            .addOnCanceledListener {
-                onResult(null)
-            }
-    }.addOnFailureListener {
-        onResult(null)
-    }
-
-    return cancellationTokenSource
 }
