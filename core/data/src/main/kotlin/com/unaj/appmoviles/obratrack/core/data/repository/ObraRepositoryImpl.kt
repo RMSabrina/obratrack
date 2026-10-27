@@ -37,6 +37,15 @@ class ObraRepositoryImpl @Inject constructor(
     override fun observePublica(obraId: String): Flow<Obra?> =
         remoteDataSource.observePublica(obraId).map { it?.toDomain() }
 
+    override fun observeSuscripciones(userId: String): Flow<Set<String>> =
+        remoteDataSource.observeSuscripciones(userId)
+
+    override suspend fun setSuscripcion(userId: String, obraId: String, seguir: Boolean): AppResult<Unit> =
+        when (val result = remoteDataSource.setSuscripcion(userId, obraId, seguir)) {
+            is FirebaseResult.Success -> AppResult.Success(Unit)
+            is FirebaseResult.Error -> AppResult.Error(result.exception.toObraError())
+        }
+
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> {
         val dto = draft.toDto(userId = userId, fechaInicioMillis = LocalDate.now(clock).toMillisCalendario())
         return remoteDataSource.create(dto).toAppResult()

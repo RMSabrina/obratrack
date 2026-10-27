@@ -142,6 +142,10 @@
     <string name="obras_lista_vacia">You haven\'t added any projects yet.</string>
     <string name="obras_busqueda_vacia">No projects match your search.</string>
     <string name="obras_publicas_vacia">No public projects found.</string>
+    <string name="obras_filtro_seguidas">Saved</string>
+    <string name="obras_seguir">Save project</string>
+    <string name="obras_dejar_seguir">Remove from saved</string>
+    <string name="obras_error_suscripcion">Could not update saved projects. Check your connection and try again.</string>
     <string name="estado_obra_activa">Active</string>
     <string name="estado_obra_pausada">Paused</string>
     <string name="estado_obra_finalizada">Completed</string>

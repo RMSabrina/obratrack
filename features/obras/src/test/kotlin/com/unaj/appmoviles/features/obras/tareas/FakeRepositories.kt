@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 const val OBRA_ID = "obra-1"
@@ -52,16 +53,23 @@ class FakeAuthRepository(user: User?) : AuthRepository {
 }
 
 /** Igual que la implementación real: observeOne devuelve null si la obra no es del usuario. */
-class FakeObraRepository(obra: Obra?) : ObraRepository {
+class FakeObraRepository(obra: Obra?, publicas: List<Obra> = emptyList()) : ObraRepository {
     val obra = MutableStateFlow(obra)
+    private val publicas = MutableStateFlow(publicas)
+    private val suscripciones = MutableStateFlow(emptySet<String>())
 
     override fun observeOne(userId: String, obraId: String): Flow<Obra?> =
         this.obra.map { it?.takeIf { o -> o.id == obraId && o.userId == userId } }
 
     override fun observe(userId: String): Flow<List<Obra>> = TODO()
-    override fun observePublicas(): Flow<List<Obra>> = TODO()
+    override fun observePublicas(): Flow<List<Obra>> = publicas
     override fun observePublica(obraId: String): Flow<Obra?> =
         this.obra.map { it?.takeIf { o -> o.id == obraId && o.publica } }
+    override fun observeSuscripciones(userId: String): Flow<Set<String>> = suscripciones
+    override suspend fun setSuscripcion(userId: String, obraId: String, seguir: Boolean): AppResult<Unit> {
+        suscripciones.value = if (seguir) suscripciones.value + obraId else suscripciones.value - obraId
+        return AppResult.Success(Unit)
+    }
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun existsAndOwnedByCurrentUser(obraId: String): AppResult<Boolean> = TODO()

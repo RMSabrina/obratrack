@@ -142,6 +142,10 @@
     <string name="obras_lista_vacia">Non hai ancora aggiunto nessun cantiere.</string>
     <string name="obras_busqueda_vacia">Nessun cantiere corrisponde alla tua ricerca.</string>
     <string name="obras_publicas_vacia">Nessun cantiere pubblico trovato.</string>
+    <string name="obras_filtro_seguidas">Salvati</string>
+    <string name="obras_seguir">Salva cantiere</string>
+    <string name="obras_dejar_seguir">Rimuovi dai salvati</string>
+    <string name="obras_error_suscripcion">Impossibile aggiornare i cantieri salvati. Controlla la connessione e riprova.</string>
     <string name="estado_obra_activa">Attivo</string>
     <string name="estado_obra_pausada">In pausa</string>
     <string name="estado_obra_finalizada">Concluso</string>

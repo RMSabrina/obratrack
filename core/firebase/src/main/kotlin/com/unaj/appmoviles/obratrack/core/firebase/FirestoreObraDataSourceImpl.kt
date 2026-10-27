@@ -75,6 +75,51 @@ class FirestoreObraDataSourceImpl @Inject constructor(
         awaitClose { registration.remove() }
     }
 
+    override fun observeSuscripciones(userId: String): Flow<Set<String>> = callbackFlow {
+        val registration = firestore.collection(COLLECTION_USUARIOS)
+            .document(userId)
+            .collection(COLLECTION_SUSCRIPCIONES)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.documents?.mapTo(mutableSetOf()) { it.id }.orEmpty())
+            }
+        awaitClose { registration.remove() }
+    }
+
+    override suspend fun setSuscripcion(
+        userId: String,
+        obraId: String,
+        seguir: Boolean
+    ): FirebaseResult<Unit> {
+        return try {
+            if (auth.uid != userId) return FirebaseResult.Error(ObraForbiddenException())
+            val obraRef = firestore.collection(COLLECTION).document(obraId)
+            val suscriptorRef = obraRef.collection(COLLECTION_SUSCRIPTORES).document(userId)
+            val indiceRef = firestore.collection(COLLECTION_USUARIOS)
+                .document(userId)
+                .collection(COLLECTION_SUSCRIPCIONES)
+                .document(obraId)
+            val batch = firestore.batch()
+            if (seguir) {
+                val datos = mapOf(FIELD_USER_ID to userId, FIELD_OBRA_ID to obraId)
+                batch.set(suscriptorRef, datos)
+                batch.set(indiceRef, datos)
+            } else {
+                batch.delete(suscriptorRef)
+                batch.delete(indiceRef)
+            }
+            batch.commit().await()
+            FirebaseResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            FirebaseResult.Error(e)
+        }
+    }
+
     override suspend fun create(dto: ObraDto): FirebaseResult<ObraDto> {
         return try {
             val ref = firestore.collection(COLLECTION).document()
@@ -231,7 +276,10 @@ class FirestoreObraDataSourceImpl @Inject constructor(
         const val BATCH_SIZE = 500
         const val COLLECTION = "obras"
         const val COLLECTION_SUSCRIPTORES = "suscriptores"
+        const val COLLECTION_USUARIOS = "usuarios"
+        const val COLLECTION_SUSCRIPCIONES = "suscripciones"
         const val FIELD_USER_ID = "userId"
+        const val FIELD_OBRA_ID = "obraId"
         const val FIELD_NOMBRE = "nombre"
         const val FIELD_CLIENTE = "cliente"
         const val FIELD_PUBLICA = "publica"

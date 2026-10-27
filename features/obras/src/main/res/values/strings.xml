@@ -143,6 +143,10 @@
     <string name="obras_lista_vacia">Todavía no cargaste obras.</string>
     <string name="obras_busqueda_vacia">No se encontraron obras para la búsqueda.</string>
     <string name="obras_publicas_vacia">No se encontraron obras públicas.</string>
+    <string name="obras_filtro_seguidas">Guardadas</string>
+    <string name="obras_seguir">Guardar obra</string>
+    <string name="obras_dejar_seguir">Quitar de guardadas</string>
+    <string name="obras_error_suscripcion">No se pudo actualizar la lista de obras guardadas. Revisá tu conexión e intentá de nuevo.</string>
     <string name="estado_obra_activa">Activa</string>
     <string name="estado_obra_pausada">Pausada</string>
     <string name="estado_obra_finalizada">Finalizada</string>
