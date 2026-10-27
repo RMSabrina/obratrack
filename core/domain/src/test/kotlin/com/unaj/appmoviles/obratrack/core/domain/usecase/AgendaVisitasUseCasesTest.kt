@@ -257,6 +257,9 @@ open class FakeBaseObraRepository : ObraRepository {
     override fun observeOne(userId: String, obraId: String): Flow<Obra?> = flowOf(null)
     override fun observePublicas(): Flow<List<Obra>> = flowOf(emptyList())
     override fun observePublica(obraId: String): Flow<Obra?> = flowOf(null)
+    override fun observeSuscripciones(userId: String): Flow<Set<String>> = flowOf(emptySet())
+    override suspend fun setSuscripcion(userId: String, obraId: String, seguir: Boolean): AppResult<Unit> =
+        AppResult.Success(Unit)
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> =
         AppResult.Error(com.unaj.appmoviles.obratrack.core.domain.error.ObraError.NombreVacio)
     override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> =

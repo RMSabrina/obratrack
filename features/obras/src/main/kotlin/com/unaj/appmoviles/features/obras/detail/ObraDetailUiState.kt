@@ -5,6 +5,15 @@ import com.unaj.appmoviles.obratrack.core.domain.model.Obra
 import com.unaj.appmoviles.obratrack.core.domain.model.Relevamiento
 import com.unaj.appmoviles.obratrack.core.domain.model.ResumenTareas
 import com.unaj.appmoviles.obratrack.core.domain.model.Tarea
+import com.unaj.appmoviles.obratrack.core.domain.model.PronosticoVisita
+
+sealed interface PronosticoUiState {
+    data object Cargando : PronosticoUiState
+    data class Disponible(val pronostico: PronosticoVisita) : PronosticoUiState
+    data object SinUbicacion : PronosticoUiState
+    data object FueraDeRango : PronosticoUiState
+    data object SinDatos : PronosticoUiState
+}
 
 data class ObraDetailUiState(
     val isLoading: Boolean = true,
@@ -18,6 +27,7 @@ data class ObraDetailUiState(
     val resumenTareas: ResumenTareas? = null,
     /** La próxima visita es de un día anterior a hoy (según el Clock). */
     val proximaVisitaAtrasada: Boolean = false,
+    val pronosticoVisita: PronosticoUiState? = null,
     val error: DomainError? = null,
     val isDeleting: Boolean = false,
     val isDeleted: Boolean = false,

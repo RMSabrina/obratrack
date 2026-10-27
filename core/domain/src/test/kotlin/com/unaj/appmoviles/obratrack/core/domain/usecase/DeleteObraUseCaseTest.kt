@@ -226,6 +226,9 @@ open class FakeObraRepo(
     override fun observeOne(userId: String, obraId: String): Flow<Obra?> = emptyFlow()
     override fun observePublicas(): Flow<List<Obra>> = emptyFlow()
     override fun observePublica(obraId: String): Flow<Obra?> = emptyFlow()
+    override fun observeSuscripciones(userId: String): Flow<Set<String>> = emptyFlow()
+    override suspend fun setSuscripcion(userId: String, obraId: String, seguir: Boolean): AppResult<Unit> =
+        AppResult.Success(Unit)
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> = error("Not needed")
     override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> = error("Not needed")
 

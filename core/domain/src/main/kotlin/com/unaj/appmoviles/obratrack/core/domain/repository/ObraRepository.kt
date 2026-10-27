@@ -10,6 +10,8 @@ interface ObraRepository {
     fun observeOne(userId: String, obraId: String): Flow<Obra?>
     fun observePublicas(): Flow<List<Obra>>
     fun observePublica(obraId: String): Flow<Obra?>
+    fun observeSuscripciones(userId: String): Flow<Set<String>>
+    suspend fun setSuscripcion(userId: String, obraId: String, seguir: Boolean): AppResult<Unit>
     suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra>
     suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra>
     /** Con null en [proximaVisita] borra la próxima visita y su hora de la obra. */

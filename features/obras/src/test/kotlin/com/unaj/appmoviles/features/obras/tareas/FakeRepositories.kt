@@ -19,7 +19,9 @@ import com.unaj.appmoviles.obratrack.core.domain.repository.TareaRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 const val OBRA_ID = "obra-1"
@@ -52,8 +54,10 @@ class FakeAuthRepository(user: User?) : AuthRepository {
 }
 
 /** Igual que la implementación real: observeOne devuelve null si la obra no es del usuario. */
-class FakeObraRepository(obra: Obra?) : ObraRepository {
+class FakeObraRepository(obra: Obra?, publicas: List<Obra> = emptyList()) : ObraRepository {
     val obra = MutableStateFlow(obra)
+    private val publicas = MutableStateFlow(publicas)
+    private val suscripciones = MutableStateFlow(emptySet<String>())
 
     /** Si no es null, observe y observeOne fallan con esta excepción (como Firestore). */
     var observeError: Exception? = null
@@ -72,15 +76,23 @@ class FakeObraRepository(obra: Obra?) : ObraRepository {
         if (error != null) return flow { throw error }
         return this.obra.map { listOfNotNull(it?.takeIf { o -> o.userId == userId }) }
     }
+    /** Las obras públicas de la lista inicial más la obra del fake si es pública. */
     override fun observePublicas(): Flow<List<Obra>> {
         val error = observePublicasError
         if (error != null) return flow { throw error }
-        return this.obra.map { listOfNotNull(it?.takeIf { o -> o.publica }) }
+        return combine(this.obra, publicas) { propia, lista ->
+            (lista + listOfNotNull(propia?.takeIf { o -> o.publica })).distinctBy { it.id }
+        }
     }
     override fun observePublica(obraId: String): Flow<Obra?> {
         val error = observePublicasError
         if (error != null) return flow { throw error }
         return this.obra.map { it?.takeIf { o -> o.id == obraId && o.publica } }
+    }
+    override fun observeSuscripciones(userId: String): Flow<Set<String>> = suscripciones
+    override suspend fun setSuscripcion(userId: String, obraId: String, seguir: Boolean): AppResult<Unit> {
+        suscripciones.value = if (seguir) suscripciones.value + obraId else suscripciones.value - obraId
+        return AppResult.Success(Unit)
     }
     override suspend fun create(userId: String, draft: ObraDraft): AppResult<Obra> = TODO()
     override suspend fun update(userId: String, obraId: String, draft: ObraDraft): AppResult<Obra> = TODO()

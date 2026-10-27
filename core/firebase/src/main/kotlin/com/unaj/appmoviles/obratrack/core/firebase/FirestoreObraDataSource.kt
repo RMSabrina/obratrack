@@ -7,6 +7,8 @@ interface FirestoreObraDataSource {
     fun observeOne(userId: String, obraId: String): Flow<ObraDto?>
     fun observePublicas(): Flow<List<ObraDto>>
     fun observePublica(obraId: String): Flow<ObraDto?>
+    fun observeSuscripciones(userId: String): Flow<Set<String>>
+    suspend fun setSuscripcion(userId: String, obraId: String, seguir: Boolean): FirebaseResult<Unit>
     suspend fun create(dto: ObraDto): FirebaseResult<ObraDto>
     suspend fun update(userId: String, obraId: String, dto: ObraDto): FirebaseResult<ObraDto>
     suspend fun existsAndOwnedByCurrentUser(obraId: String): FirebaseResult<Boolean>

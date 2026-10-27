@@ -14,9 +14,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.HomeWork
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +29,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.unaj.appmoviles.obras.R
 import com.unaj.appmoviles.features.obras.label
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
 import com.unaj.appmoviles.obratrack.core.domain.model.Obra
@@ -35,6 +40,9 @@ import com.unaj.appmoviles.obratrack.core.ui.components.StatusBadge
 fun ObraCard(
     obra: Obra,
     onClick: () -> Unit,
+    isFollowing: Boolean = false,
+    followEnabled: Boolean = true,
+    onFollowToggle: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -94,6 +102,18 @@ fun ObraCard(
                     textColor = textColor,
                     backgroundColor = bgColor
                 )
+            }
+            if (onFollowToggle != null) {
+                IconButton(onClick = onFollowToggle, enabled = followEnabled) {
+                    Icon(
+                        imageVector = if (isFollowing) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                        contentDescription = stringResource(
+                            if (isFollowing) R.string.obras_dejar_seguir else R.string.obras_seguir
+                        ),
+                        tint = if (isFollowing) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
