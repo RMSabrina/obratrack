@@ -12,7 +12,7 @@ import com.unaj.appmoviles.features.auth.login.LoginRoute
 import com.unaj.appmoviles.features.auth.register.RegisterRoute
 
 @Composable
-fun AuthNavigation() {
+fun AuthNavigation(mostrarAvisoObraPendiente: Boolean = false) {
     val backStack = rememberNavBackStack(LoginDestination)
     fun goBack() { backStack.removeAt(backStack.lastIndex) }
 
@@ -26,7 +26,8 @@ fun AuthNavigation() {
         entryProvider = entryProvider {
             entry<LoginDestination> {
                 LoginRoute(
-                    onNavigateToRegister = { backStack.add(RegisterDestination) }
+                    onNavigateToRegister = { backStack.add(RegisterDestination) },
+                    mostrarAvisoObraPendiente = mostrarAvisoObraPendiente
                 )
             }
             entry<RegisterDestination> {

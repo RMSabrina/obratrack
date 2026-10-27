@@ -62,7 +62,8 @@ class AvisoVisitaWorker @AssistedInject constructor(
             applicationContext,
             obra.id.hashCode() + 2,
             contexto.getString(R.string.notif_aviso_titulo, obra.nombre),
-            mensaje
+            mensaje,
+            obraId = obra.id
         )
         return Result.success()
     }

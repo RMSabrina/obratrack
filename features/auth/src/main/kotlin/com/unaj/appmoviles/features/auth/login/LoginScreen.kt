@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,7 +35,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginRoute(
     viewModel: LoginViewModel = hiltViewModel(),
-    onNavigateToRegister: () -> Unit
+    onNavigateToRegister: () -> Unit,
+    /** Se tocó una notificación de obra sin sesión: después del login se abre esa obra. */
+    mostrarAvisoObraPendiente: Boolean = false
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -53,7 +56,8 @@ fun LoginRoute(
             }
         },
         onInputChanged = viewModel::onErrorShown,
-        onRegisterClick = onNavigateToRegister
+        onRegisterClick = onNavigateToRegister,
+        mostrarAvisoObraPendiente = mostrarAvisoObraPendiente
     )
 }
 
@@ -64,7 +68,8 @@ fun LoginScreen(
     onGoogleClick: () -> Unit,
     onInputChanged: () -> Unit,
     onRegisterClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    mostrarAvisoObraPendiente: Boolean = false
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -104,6 +109,16 @@ fun LoginScreen(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+
+        if (mostrarAvisoObraPendiente) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.auth_aviso_obra_notificacion),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+        }
         
         Spacer(modifier = Modifier.height(32.dp))
 

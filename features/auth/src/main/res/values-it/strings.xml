@@ -52,4 +52,5 @@
     <string name="auth_aviso_15_min">15 minuti prima</string>
     <string name="auth_aviso_1_hora">1 ora prima</string>
     <string name="auth_aviso_1_dia">1 giorno prima</string>
+    <string name="auth_aviso_obra_notificacion">Accedi per vedere il cantiere della notifica.</string>
 </resources>

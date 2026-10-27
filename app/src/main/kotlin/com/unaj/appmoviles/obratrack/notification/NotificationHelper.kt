@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -45,12 +46,19 @@ object NotificationHelper {
         context: Context,
         notificationId: Int,
         title: String,
-        message: String
+        message: String,
+        /** Si viene, tocar la notificación abre el detalle de esa obra. */
+        obraId: String? = null
     ) {
         // Sin CLEAR_TASK: si la app está abierta, vuelve a la pantalla donde estaba
         // (con CLEAR_TASK se recreaba la Activity y se perdía, por ejemplo, un formulario a medio cargar).
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            // Solo el id, en el dato: además del request code, distingue el PendingIntent de cada obra.
+            if (esObraIdValido(obraId)) {
+                action = ACTION_ABRIR_OBRA
+                data = Uri.parse(uriObra(obraId!!))
+            }
         }
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
             context,

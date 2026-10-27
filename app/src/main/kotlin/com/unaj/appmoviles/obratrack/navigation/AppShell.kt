@@ -37,7 +37,12 @@ import com.unaj.appmoviles.obratrack.notification.NotificationHelper
 import com.unaj.appmoviles.obratrack.worker.RelevamientoReminderWorker
 
 @Composable
-fun AppShell(onLogout: () -> Unit) {
+fun AppShell(
+    onLogout: () -> Unit,
+    /** Obra que pidió abrir una notificación; null si no hay nada pendiente. */
+    obraAAbrir: String? = null,
+    onObraAbierta: () -> Unit = {}
+) {
     val backStack = rememberNavBackStack(HomeDestination)
     val appContext = LocalContext.current
 
@@ -84,6 +89,15 @@ fun AppShell(onLogout: () -> Unit) {
             backStack.clear()
             backStack.add(HomeDestination)
         }
+    }
+
+    // Se apila el detalle sin vaciar el back stack (no se pierde un formulario abierto); con la
+    // app cerrada queda [Home, ObraDetail]. Navegar y consumir van juntos, sin suspender entre
+    // ambos: cada intent navega una sola vez. Si arriba ya está esa obra, navigateTo no hace nada.
+    LaunchedEffect(obraAAbrir) {
+        val obraId = obraAAbrir ?: return@LaunchedEffect
+        navigateTo(ObraDetailDestination(obraId))
+        onObraAbierta()
     }
 
     NavDisplay(
