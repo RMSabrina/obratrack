@@ -7,12 +7,12 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.unaj.appmoviles.obratrack.core.ui.R
@@ -47,8 +47,9 @@ fun SearchBarComponent(
         shape = RoundedCornerShape(12.dp),
         singleLine = true,
         colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = Color.LightGray,
-            focusedBorderColor = Color.Gray
+            // Borde de 3:1 como mínimo con y sin foco; con foco, color de marca y más grueso (lo hace el campo).
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedBorderColor = MaterialTheme.colorScheme.primary
         )
     )
 }

@@ -127,7 +127,7 @@ fun LoginScreen(
             onValueChange = { email = it; onInputChanged() },
             label = stringResource(R.string.auth_campo_email),
             error = if (error == AuthError.InvalidEmail) error.asMessage() else null,
-            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.Gray) },
+            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
             keyboardType = KeyboardType.Email
         )
         Spacer(Modifier.height(8.dp))
@@ -136,7 +136,7 @@ fun LoginScreen(
             onValueChange = { password = it; onInputChanged() },
             label = stringResource(R.string.auth_campo_password),
             error = if (error == AuthError.PasswordTooShort) error.asMessage() else null,
-            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) },
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
             isPassword = true
         )
 

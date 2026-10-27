@@ -397,6 +397,12 @@ fun AgendaVisitaCard(
         CategoriaAgendaVisita.SIN_PROGRAMAR -> MaterialTheme.colorScheme.tertiary
     }
 
+    // El texto del badge nunca va en secondary ni outline (poco contraste): esos acentos son solo de borde y fondo.
+    val textoAcento = when (item.categoria) {
+        CategoriaAgendaVisita.ESTA_SEMANA, CategoriaAgendaVisita.PROXIMAS -> MaterialTheme.colorScheme.onSurfaceVariant
+        else -> accentColor
+    }
+
     val context = LocalContext.current
     val horaTexto = item.obra.horaVisita?.takeIf { item.fechaProgramadaMillis != null }?.let { formatHora(context, it) }
     val fechaProgramada = item.fechaProgramadaMillis?.let { formatFecha(it) }.orEmpty()
@@ -447,7 +453,7 @@ fun AgendaVisitaCard(
                         text = badgeText,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = accentColor,
+                        color = textoAcento,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -510,13 +516,13 @@ fun AgendaVisitaCard(
                     Icon(
                         imageVector = Icons.Outlined.Schedule,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.outline,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = stringResource(R.string.agenda_ultimo_relevamiento, formatFecha(ultima)),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
