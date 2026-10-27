@@ -102,6 +102,7 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.launch
 import com.unaj.appmoviles.features.obras.formatFecha
 import com.unaj.appmoviles.features.obras.formatHora
+import com.unaj.appmoviles.features.obras.rememberSalidaConConfirmacion
 import com.unaj.appmoviles.obratrack.core.domain.error.RelevamientoError
 import androidx.compose.ui.res.stringResource
 import com.unaj.appmoviles.obras.R
@@ -154,6 +155,24 @@ fun RelevamientoFormRoute(
         hoyMillisUtc = viewModel.hoyMillisUtc
     )
 }
+
+/** Si lo que hay en el formulario difiere de lo que tenía al abrirse (una foto nueva siempre cuenta). */
+internal fun relevamientoTieneCambios(
+    initial: RelevamientoFormInitial,
+    hoyMillisUtc: Long,
+    nota: String,
+    fecha: Long,
+    proximaVisita: Long?,
+    horaVisita: Int?,
+    fotoLocal: String?,
+    fotoRemota: String?,
+    latitud: Double?,
+    longitud: Double?
+): Boolean = nota != initial.nota ||
+    fecha != (if (initial.fechaMillis > 0L) initial.fechaMillis else hoyMillisUtc) ||
+    proximaVisita != initial.proximaVisita || horaVisita != initial.horaVisita ||
+    fotoLocal != null || fotoRemota != initial.fotoUrl ||
+    latitud != initial.latitud || longitud != initial.longitud
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -286,6 +305,12 @@ fun RelevamientoFormScreen(
     
     val error = (state as? RelevamientoFormUiState.Error)?.error
     val isLoading = state is RelevamientoFormUiState.Loading
+    val salir = rememberSalidaConConfirmacion(
+        hayCambios = !isLoading && relevamientoTieneCambios(
+            initial, hoyMillisUtc, nota, fecha, proximaVisita, horaVisita, fotoLocal, fotoRemota, latitud, longitud
+        ),
+        onSalir = onBack
+    )
 
     if (showDatePicker) {
         val pickerState = rememberDatePickerState(initialSelectedDateMillis = fecha)
@@ -376,7 +401,7 @@ fun RelevamientoFormScreen(
             TopAppBar(
                 title = { Text(stringResource(if (initial.relevamientoId == null) R.string.relevamiento_form_nuevo else R.string.relevamiento_form_editar)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = salir) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 }
@@ -405,7 +430,8 @@ fun RelevamientoFormScreen(
                                     true
                                 )
                             },
-                            enabled = !isLoading && hasPendingContent,
+                            // Sin esperar al GPS se guardaría sin la ubicación que se está capturando.
+                            enabled = !isLoading && !isCapturingLocation && hasPendingContent,
                             modifier = Modifier.weight(1.2f)
                         ) {
                             if (isLoading) {
@@ -436,10 +462,10 @@ fun RelevamientoFormScreen(
                                         false
                                     )
                                 } else {
-                                    onBack()
+                                    salir()
                                 }
                             },
-                            enabled = !isLoading,
+                            enabled = !isLoading && !isCapturingLocation,
                             modifier = Modifier.weight(0.8f)
                         ) {
                             Icon(
@@ -464,7 +490,7 @@ fun RelevamientoFormScreen(
                                 false
                             )
                         },
-                        enabled = !isLoading,
+                        enabled = !isLoading && !isCapturingLocation,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         if (isLoading) {

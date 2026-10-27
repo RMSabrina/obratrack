@@ -58,4 +58,10 @@
     <string name="ui_buscar_placeholder">Search...</string>
     <string name="ui_buscar">Search</string>
     <string name="ui_filtros">Filters</string>
+
+    <!-- Descartar cambios -->
+    <string name="descartar_titulo">Discard changes?</string>
+    <string name="descartar_mensaje">If you leave now, what you entered and have not saved will be lost.</string>
+    <string name="descartar_confirmar">Discard</string>
+    <string name="descartar_seguir">Keep editing</string>
 </resources>

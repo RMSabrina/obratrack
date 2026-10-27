@@ -98,6 +98,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unaj.appmoviles.features.obras.estadoObraFromStorage
 import com.unaj.appmoviles.features.obras.label
+import com.unaj.appmoviles.features.obras.rememberSalidaConConfirmacion
 import com.unaj.appmoviles.features.obras.toStorageValue
 import com.unaj.appmoviles.obratrack.core.domain.error.ObraError
 import com.unaj.appmoviles.obratrack.core.domain.model.EstadoObra
@@ -121,6 +122,22 @@ data class ObraFormInitial(
     val proximaVisita: Long? = null,
     val horaVisita: Int? = null
 )
+
+/** Si lo que hay en el formulario difiere de lo que tenía al abrirse. */
+internal fun obraTieneCambios(
+    initial: ObraFormInitial,
+    nombre: String,
+    cliente: String,
+    direccion: String,
+    estado: String,
+    publica: Boolean,
+    latitud: Double?,
+    longitud: Double?,
+    proximaVisita: Long?,
+    horaVisita: Int?
+): Boolean = nombre != initial.nombre || cliente != initial.cliente || direccion != initial.direccion ||
+    estado != initial.estado || publica != initial.publica || latitud != initial.latitud ||
+    longitud != initial.longitud || proximaVisita != initial.proximaVisita || horaVisita != initial.horaVisita
 
 @Composable
 fun ObraFormRoute(
@@ -222,6 +239,12 @@ fun ObraFormScreen(
     val estadoActual = estadoObraFromStorage(estado)
     val error = (state as? ObraFormUiState.Error)?.error
     val isLoading = state is ObraFormUiState.Loading
+    val salir = rememberSalidaConConfirmacion(
+        hayCambios = !isLoading && obraTieneCambios(
+            initial, nombre, cliente, direccion, estado, publica, latitud, longitud, proximaVisita, horaVisita
+        ),
+        onSalir = onBack
+    )
 
     if (showHoraPicker) {
         val inicial = horaVisita ?: HORA_VISITA_POR_DEFECTO_MINUTOS
@@ -276,7 +299,7 @@ fun ObraFormScreen(
             TopAppBar(
                 title = { Text(stringResource(if (initial.obraId == null) R.string.obras_nueva_obra else R.string.obras_editar_obra)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = salir) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 }
@@ -302,7 +325,8 @@ fun ObraFormScreen(
                             )
                         )
                     },
-                    enabled = !isLoading,
+                    // Sin esperar al GPS se guardaría sin la ubicación que se está capturando.
+                    enabled = !isLoading && !isCapturingLocation,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (isLoading) {
