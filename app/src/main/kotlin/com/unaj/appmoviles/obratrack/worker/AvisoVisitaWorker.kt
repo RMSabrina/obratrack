@@ -42,7 +42,7 @@ class AvisoVisitaWorker @AssistedInject constructor(
         if (obra.proximaVisita != proximaVisita || obra.horaVisita != hora) return Result.success()
 
         // El texto sale en el idioma elegido en la app, no en el del sistema.
-        val contexto = NotificationHelper.contextoLocalizado(applicationContext, languagePreferences.getLanguage())
+        val contexto = NotificationHelper.contextoLocalizado(applicationContext, languagePreferences.getBackgroundLanguage())
         val fecha = proximaVisita.toFechaCalendario()
         val locale = contexto.resources.configuration.locales[0]
         val horaTexto = hora?.let { formatHora(contexto, it) }

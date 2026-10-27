@@ -138,6 +138,8 @@ private class FakeLanguageRepo : LanguagePreferencesRepository {
     private val idioma = MutableStateFlow(AppLanguage.SPANISH)
     override fun observeLanguage(): Flow<AppLanguage> = idioma
     override fun getLanguage(): AppLanguage = idioma.value
+    override fun getBackgroundLanguage(): AppLanguage = idioma.value
+    override fun sincronizarEspejo() = Unit
     override suspend fun setLanguage(language: AppLanguage) {
         idioma.value = language
     }

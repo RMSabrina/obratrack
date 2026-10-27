@@ -1,8 +1,12 @@
 package com.unaj.appmoviles.obratrack.core.data.repository
 
+import android.app.LocaleManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Resources
+import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.ConfigurationCompat
 import androidx.core.os.LocaleListCompat
 import com.unaj.appmoviles.obratrack.core.domain.model.AppLanguage
 import com.unaj.appmoviles.obratrack.core.domain.repository.LanguagePreferencesRepository
@@ -39,20 +43,97 @@ class LanguagePreferencesRepositoryImpl @Inject constructor(
     }
 
     /**
-     * La fuente de verdad es el idioma de la app que guarda AppCompat (y el sistema en Android 13+).
-     * Las preferencias son solo un espejo para cuando AppCompat no lo conoce: un Worker en
-     * Android 12 o inferior, donde no hay Activity que lo cargue.
+     * Idioma que ve el usuario. La fuente de verdad es el idioma de la app que guarda AppCompat;
+     * sin elección sigue al sistema, como los recursos. Solo en Android 12 o inferior, donde
+     * AppCompat puede no tener cargado el idioma antes de abrir una Activity, se mira antes el espejo.
      */
-    override fun getLanguage(): AppLanguage {
-        val deLaApp = AppCompatDelegate.getApplicationLocales()
-        if (!deLaApp.isEmpty) return idiomaDeCodigo(deLaApp.get(0)?.language) ?: AppLanguage.SPANISH
-        return idiomaDeCodigo(prefs.getString(KEY_LANGUAGE, null)) ?: AppLanguage.SPANISH
+    override fun getLanguage(): AppLanguage = idiomaEfectivo(
+        idiomasApp = codigosDe(AppCompatDelegate.getApplicationLocales()),
+        espejo = prefs.getString(KEY_LANGUAGE, null),
+        idiomasSistema = codigosDeSistema(),
+        usarEspejo = Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2
+    )
+
+    /**
+     * Idioma para un Worker: no consulta a AppCompat (sin Activity no es confiable), usa el espejo
+     * que [sincronizarEspejo] y [setLanguage] mantienen, y si no hay elección, el sistema.
+     */
+    override fun getBackgroundLanguage(): AppLanguage = idiomaEfectivo(
+        idiomasApp = emptyList(),
+        espejo = prefs.getString(KEY_LANGUAGE, null),
+        idiomasSistema = codigosDeSistema(),
+        usarEspejo = true
+    )
+
+    override fun sincronizarEspejo() {
+        val actual = prefs.getString(KEY_LANGUAGE, null)
+        val nuevo = espejoTrasSincronizar(
+            idiomasApp = idiomasDeLaAppSinActivity(),
+            espejoActual = actual,
+            appCompatEsLaFuente = Build.VERSION.SDK_INT > Build.VERSION_CODES.S_V2
+        )
+        if (nuevo == actual) return
+        prefs.edit().apply { if (nuevo == null) remove(KEY_LANGUAGE) else putString(KEY_LANGUAGE, nuevo) }.apply()
     }
 
     override suspend fun setLanguage(language: AppLanguage) {
         AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(language.code))
         prefs.edit().putString(KEY_LANGUAGE, language.code).apply()
     }
+
+    private fun codigosDe(locales: LocaleListCompat): List<String> =
+        (0 until locales.size()).mapNotNull { locales.get(it)?.language }
+
+    /**
+     * Idioma elegido para la app, leído sin depender de una Activity. En Android 13+ se le pregunta
+     * al sistema: AppCompat necesita un contexto que todavía no existe en Application.onCreate y
+     * devolvería vacío aunque haya idioma elegido.
+     */
+    private fun idiomasDeLaAppSinActivity(): List<String> =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val locales = context.getSystemService(LocaleManager::class.java).applicationLocales
+            (0 until locales.size()).mapNotNull { locales.get(it)?.language }
+        } else {
+            codigosDe(AppCompatDelegate.getApplicationLocales())
+        }
+
+    /** Idiomas del sistema, en orden de preferencia (no los de la app). */
+    private fun codigosDeSistema(): List<String> =
+        codigosDe(ConfigurationCompat.getLocales(Resources.getSystem().configuration))
+}
+
+/**
+ * Idioma efectivo de la app. Orden: el de la app (AppCompat); el espejo, si [usarEspejo]; el primer
+ * idioma del sistema que la app soporta (igual que Android al elegir los recursos); y español, el
+ * idioma por defecto, si el sistema usa uno que la app no tiene. Un idioma de la app que no sea
+ * es/en/it también cae en español, porque los recursos caen en los valores por defecto.
+ */
+internal fun idiomaEfectivo(
+    idiomasApp: List<String>,
+    espejo: String?,
+    idiomasSistema: List<String>,
+    usarEspejo: Boolean
+): AppLanguage {
+    idiomasApp.firstOrNull()?.let { return idiomaDeCodigo(it) ?: AppLanguage.SPANISH }
+    if (usarEspejo) idiomaDeCodigo(espejo)?.let { return it }
+    idiomasSistema.firstNotNullOfOrNull { idiomaDeCodigo(it) }?.let { return it }
+    return AppLanguage.SPANISH
+}
+
+/**
+ * Valor que debe quedar en el espejo al arrancar (null = borrarlo). Con idioma elegido en la app,
+ * se guarda. Sin elección: en Android 13+ AppCompat es la fuente de verdad, así que el espejo se
+ * borra (si no, un idioma viejo reaparecería al volver a "idioma del sistema"); en Android 12 o
+ * inferior vacío puede ser "todavía no cargado", y el espejo se conserva.
+ */
+internal fun espejoTrasSincronizar(
+    idiomasApp: List<String>,
+    espejoActual: String?,
+    appCompatEsLaFuente: Boolean
+): String? {
+    val elegido = idiomasApp.firstOrNull()
+    if (elegido != null) return idiomaDeCodigo(elegido)?.code
+    return if (appCompatEsLaFuente) null else espejoActual
 }
 
 /** Idioma de la app para un código ("es", "en" o "it", con o sin región); null si no es uno de ellos. */
