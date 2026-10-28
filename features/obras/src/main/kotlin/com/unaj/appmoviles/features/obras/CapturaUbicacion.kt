@@ -1,19 +1,28 @@
 package com.unaj.appmoviles.features.obras
 
+import android.app.Activity
 import android.content.Context
+import android.content.IntentSender
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.location.CurrentLocationRequest
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.unaj.appmoviles.obratrack.core.domain.model.Ubicacion
@@ -76,9 +85,31 @@ class ControlCaptura(
 fun rememberCapturaUbicacion(onResultado: (Ubicacion?) -> Unit): ControlCaptura {
     val contexto by rememberUpdatedState(LocalContext.current)
     val alTerminar by rememberUpdatedState(onResultado)
+    // Resultado del diálogo "activar ubicación" que está abierto, si hay uno.
+    var respuestaDialogo by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
+    val dialogoAjustes = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { resultado ->
+        val responder = respuestaDialogo
+        respuestaDialogo = null
+        responder?.invoke(resultado.resultCode == Activity.RESULT_OK)
+    }
     fun crear(capturando: Boolean) = ControlCaptura(
         capturandoInicial = capturando,
-        lanzar = { onResult -> capturarUbicacion(contexto, onResult) },
+        lanzar = { onResult ->
+            val token = CancellationTokenSource()
+            comprobarAjustesYCapturar(
+                contexto = contexto,
+                token = token,
+                pedirActivacion = { intentSender, alResponder ->
+                    respuestaDialogo = alResponder
+                    dialogoAjustes.launch(IntentSenderRequest.Builder(intentSender).build())
+                },
+                onResult = onResult
+            )
+            return@ControlCaptura {
+                respuestaDialogo = null
+                token.cancel()
+            }
+        },
         alTerminar = { alTerminar(it) }
     )
     val control = rememberSaveable(
@@ -89,9 +120,41 @@ fun rememberCapturaUbicacion(onResultado: (Ubicacion?) -> Unit): ControlCaptura 
     return control
 }
 
-/** Pide la ubicación al GPS (la última conocida si es reciente) y devuelve cómo cancelar el pedido. */
-private fun capturarUbicacion(context: Context, onResult: (Ubicacion?) -> Unit): () -> Unit {
-    val cancellationTokenSource = CancellationTokenSource()
+/**
+ * Con la ubicación del teléfono apagada, pide activarla con el diálogo del sistema (si el usuario
+ * acepta se captura; si no, [onResult] recibe null). Si no se puede resolver, se intenta igual.
+ */
+private fun comprobarAjustesYCapturar(
+    contexto: Context,
+    token: CancellationTokenSource,
+    pedirActivacion: (IntentSender, (Boolean) -> Unit) -> Unit,
+    onResult: (Ubicacion?) -> Unit
+) {
+    val ajustes = LocationSettingsRequest.Builder()
+        .addLocationRequest(LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10_000).build())
+        .build()
+    LocationServices.getSettingsClient(contexto).checkLocationSettings(ajustes)
+        .addOnSuccessListener {
+            if (!token.token.isCancellationRequested) capturarUbicacion(contexto, token, onResult)
+        }
+        .addOnFailureListener { e ->
+            when {
+                token.token.isCancellationRequested -> Unit
+                e is ResolvableApiException -> try {
+                    pedirActivacion(e.resolution.intentSender) { activada ->
+                        if (activada) capturarUbicacion(contexto, token, onResult) else onResult(null)
+                    }
+                } catch (ex: IntentSender.SendIntentException) {
+                    Log.w(TAG, "No se pudo mostrar el diálogo de ubicación", ex)
+                    onResult(null)
+                }
+                else -> capturarUbicacion(contexto, token, onResult)
+            }
+        }
+}
+
+/** Pide la ubicación al GPS (la última conocida si es reciente); [token] permite cancelar el pedido. */
+private fun capturarUbicacion(context: Context, cancellationTokenSource: CancellationTokenSource, onResult: (Ubicacion?) -> Unit) {
     try {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         fusedLocationClient.lastLocation.addOnSuccessListener { lastLocation ->
@@ -126,5 +189,4 @@ private fun capturarUbicacion(context: Context, onResult: (Ubicacion?) -> Unit):
         Log.w(TAG, "Sin permiso de ubicación", e)
         onResult(null)
     }
-    return { cancellationTokenSource.cancel() }
 }
